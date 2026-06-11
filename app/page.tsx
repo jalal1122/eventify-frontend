@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BookOpen, Trophy, Monitor, Music, Briefcase, Palette, ChevronRight, Plus, Search } from "lucide-react";
+import { ArrowRight, BookOpen, Trophy, Monitor, Music, Briefcase, Palette, ChevronRight, Plus, Search, ChevronDown } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
