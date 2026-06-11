@@ -19,7 +19,7 @@ export default function Navbar() {
           {/* Left side: Logo & Search */}
           <div className="flex items-center gap-8 flex-1">
             <Link href="/" className="flex items-center text-2xl font-bold text-[#111827]">
-              Eventify <span className="text-[#006782] ml-1">.</span>
+              Eventify
             </Link>
 
             {/* Search Bar (Matches screenshot) */}

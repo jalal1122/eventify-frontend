@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BookOpen, Trophy, Monitor, Music, Briefcase, Palette, ChevronRight } from "lucide-react";
+import { ArrowRight, BookOpen, Trophy, Monitor, Music, Briefcase, Palette, ChevronRight, Plus } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -117,9 +117,9 @@ export default function Home() {
         {/* 1. Hero Section */}
         <section className="max-w-[1280px] mx-auto px-8 pt-8 mb-16">
           <div className="relative w-full h-[400px] md:h-[480px] rounded-[2rem] overflow-hidden">
-            {/* Hero Background - using an Unsplash crowd image similar to screenshot */}
+            {/* Hero Background - using local image placed in public/ */}
             <img 
-              src="https://images.unsplash.com/photo-1470229722913-7c090be5f524?w=1600&q=80" 
+              src="/hero-bg.png" 
               alt="Crowd at event" 
               className="absolute inset-0 w-full h-full object-cover"
             />
