@@ -1,0 +1,430 @@
+# Nextt Event — Frontend Implementation Plan (Phase 1)
+
+## Overview
+
+Build the public-facing and authentication frontend for **Nextt Event** using Next.js 16 (App Router) + TypeScript + Tailwind CSS v4 + Shadcn/UI. The frontend will consume the existing Express/MongoDB backend running at `http://localhost:5000`.
+
+**Phase 1 scope** covers the 12 Figma screens shared so far — all public and auth pages. Dashboard pages (attendee, organizer, admin) are deferred to Phase 2.
+
+---
+
+## Design System (Extracted from Figma)
+
+### Color Palette
+
+| Token | Hex | Usage |
+|---|---|---|
+| `brand-primary` | `#006782` | Buttons, links, CTAs |
+| `brand-deep` | `#004E63` | Gradient end, hover states |
+| `brand-darkest` | `#001F29` | Left auth panel |
+| `dark-bg` | `#1F242E` | Footer background |
+| `dark-card` | `#111827` | Auth image panel |
+| `border-light` | `#F3F4F6` | Navbar bottom border |
+| `border-mid` | `#D1D5DB` | Google button border |
+| `border-dark` | `#374151` | Footer column divider |
+| `page-bg` | `#F8FAFC` | Event detail page body |
+| `white` | `#FFFFFF` | Modals, cards, panels |
+
+### Key CSS Gradients
+
+```css
+/* Hero/CTA overlay */
+linear-gradient(90deg, rgba(0,78,99,0.9) 0%, rgba(0,78,99,0.4) 50%, rgba(0,78,99,0) 100%)
+
+/* Brand bar (modal tops) */
+linear-gradient(90deg, #006782 0%, #004E63 100%)
+
+/* Auth panel dark overlay */
+linear-gradient(0deg, #111827 0%, rgba(17,24,39,0.6) 50%, rgba(0,0,0,0.4) 100%)
+
+/* Organizer CTA subtle highlight */
+linear-gradient(270deg, rgba(186,234,255,0.2) 0%, rgba(186,234,255,0) 100%)
+```
+
+### Typography
+- **Font**: Inter (Google Fonts — already specified in Figma)
+- **Weights used**: 400, 500, 600, 700
+
+### Layout Constants
+- **Navbar height**: 83px (with 1px bottom border `#F3F4F6`)
+- **Page max-width**: 1280px, inner content 1152px (`padding: 0 64px`)
+- **Navbar padding**: `16px 32px`
+- **Footer**: `#1F242E`, `padding: 64px 96px 32px`
+- **Card border-radius**: 24px
+- **Modal border-radius**: 24px with 8px brand gradient bar at top
+- **Auth layout**: 50/50 split (640px left image panel | 640px right form)
+
+---
+
+## Phase 1 — Dependencies to Install
+
+> [!IMPORTANT]
+> The existing `package.json` only has bare Next.js 16 + Tailwind v4. All below must be installed.
+
+```bash
+npm install \
+  @shadcn/ui \
+  lucide-react \
+  react-hook-form \
+  @hookform/resolvers \
+  zod \
+  axios \
+  @radix-ui/react-dialog \
+  @radix-ui/react-dropdown-menu \
+  @radix-ui/react-tabs \
+  clsx \
+  tailwind-merge \
+  class-variance-authority \
+  next-themes
+```
+
+---
+
+## Proposed File Structure
+
+```
+frontend/
+├── app/
+│   ├── layout.tsx                  # Root layout (font, providers)
+│   ├── page.tsx                    # Landing page (/)
+│   ├── categories/
+│   │   └── page.tsx               # All Categories (/categories)
+│   ├── discover/
+│   │   └── page.tsx               # Discovery Feed (/discover)
+│   ├── cities/
+│   │   └── page.tsx               # Popular Cities (/cities)
+│   ├── events/
+│   │   └── [id]/
+│   │       └── page.tsx           # Event Detail (/events/[id])
+│   └── auth/
+│       ├── signin/page.tsx        # Login (/auth/signin)
+│       ├── signup/page.tsx        # Sign Up (/auth/signup)
+│       └── reset-password/page.tsx # Reset Password
+├── components/
+│   ├── layout/
+│   │   ├── Navbar.tsx             # Top navigation (shared)
+│   │   └── Footer.tsx             # Footer (shared)
+│   ├── ui/                        # Shadcn/UI primitives
+│   ├── events/
+│   │   ├── EventCard.tsx          # Reusable event card
+│   │   ├── EventGrid.tsx          # Grid wrapper
+│   │   └── CategoryBadge.tsx
+│   ├── modals/
+│   │   ├── SearchModal.tsx        # Full-screen search modal
+│   │   ├── RegisterModal.tsx      # "Sign in / Guest" gate modal
+│   │   └── GuestCheckoutModal.tsx # Guest registration form
+│   └── auth/
+│       ├── AuthLayout.tsx         # 50/50 split auth wrapper
+│       └── GoogleButton.tsx       # Google OAuth button
+├── lib/
+│   ├── api.ts                     # Axios instance (baseURL, interceptors)
+│   ├── auth.ts                    # Auth helpers (token storage, getUser)
+│   └── utils.ts                   # cn() and shared utilities
+├── hooks/
+│   ├── useAuth.ts                 # Auth state hook
+│   ├── useEvents.ts               # Event discovery hook
+│   └── useDebounce.ts             # Search debounce
+├── types/
+│   ├── event.ts                   # Event interface matching backend schema
+│   ├── user.ts                    # User interface
+│   └── api.ts                     # API response wrappers
+└── public/
+    └── logo.svg                   # Brand logo
+```
+
+---
+
+## Backend API Surface (Complete Reference)
+
+### Auth Routes — `POST/GET/PUT /api/auth/*`
+
+| Method | Endpoint | Auth | Frontend Usage |
+|---|---|---|---|
+| `POST` | `/api/auth/register` | ❌ | Sign Up page |
+| `POST` | `/api/auth/login` | ❌ | Sign In page |
+| `POST` | `/api/auth/google` | ❌ | Google OAuth button |
+| `GET` | `/api/auth/profile` | ✅ JWT | User profile fetch |
+| `PUT` | `/api/auth/profile` | ✅ JWT | Edit profile |
+| `POST` | `/api/auth/forgot-password` | ❌ | Reset password request |
+| `POST` | `/api/auth/reset-password` | ❌ | Reset password submit (with token) |
+
+### Event Routes — `/api/events/*`
+
+| Method | Endpoint | Auth | Frontend Usage |
+|---|---|---|---|
+| `GET` | `/api/events/discover` | ❌ | Discovery feed, Landing page events |
+| `GET` | `/api/events/:id` | ❌ | Event detail page |
+| `POST` | `/api/events/:id/interest` | ✅ JWT | "Interested" toggle button |
+| `POST` | `/api/events/magic-fill/text` | ✅ JWT | Organizer (Phase 2) |
+| `POST` | `/api/events/magic-fill/image` | ✅ JWT | Organizer (Phase 2) |
+
+**Key query params for `GET /api/events/discover`**:
+- `search` — text search (title, tags, city)
+- `city` — city filter
+- `category` — category filter
+- `sort` — `soonest` | `trending`
+- `page` / `limit`
+
+### Registration Routes — `/api/registrations/*`
+
+| Method | Endpoint | Auth | Frontend Usage |
+|---|---|---|---|
+| `POST` | `/api/registrations/register` | Optional | Event registration (logged in OR guest) |
+| `POST` | `/api/registrations/:id/payment-proof` | Optional | Upload payment screenshot |
+| `POST` | `/api/registrations/:id/confirmation-email` | Optional | Resend confirmation |
+
+### Attendee Routes — `/api/attendees/*` (JWT required)
+
+| Method | Endpoint | Frontend Usage |
+|---|---|---|
+| `GET` | `/api/attendees/tickets` | My Tickets page (Phase 2) |
+| `POST` | `/api/attendees/registrations/:id/cancel` | Cancel ticket (Phase 2) |
+| `GET` | `/api/attendees/following` | Following page (Phase 2) |
+| `POST` | `/api/attendees/follow/:organizerId` | Follow/unfollow button |
+
+### Organizer Routes — `/api/organizers/*`
+
+| Method | Endpoint | Auth | Frontend Usage |
+|---|---|---|---|
+| `GET` | `/api/organizers/public/:id` | ❌ | Organizer public profile (Phase 1 — "not logged in" view) |
+| `GET` | `/api/organizers/dashboard/metrics` | ✅ JWT | Organizer dashboard (Phase 2) |
+
+---
+
+## Page-by-Page Build Plan
+
+---
+
+### 1. Shared: `Navbar.tsx`
+
+**Design**: 83px height, white bg, `#F3F4F6` bottom border, padding `16px 32px`.
+- **Left**: Logo (Nextt Event brand)
+- **Center**: Smart Search Bar (576px wide) — clicking opens `SearchModal`
+- **Right**: Nav links + "Sign In" / "Sign Up" buttons OR avatar dropdown when logged in
+
+**API**: Reads auth state from `useAuth` hook (no API call).
+
+---
+
+### 2. Shared: `Footer.tsx`
+
+**Design**: Dark `#1F242E`, 385px tall, `padding: 64px 96px 32px`.
+- 5-column link grid with `#374151` bottom divider
+- Copyright line at bottom
+
+---
+
+### 3. Landing Page — `/`
+
+**Design**: 4007px tall canvas, white background.
+
+**Sections (top → bottom)**:
+1. **Hero Banner** — 1152px × 480px, `border-radius: 32px`, crowd image + left gradient overlay (`rgba(0,78,99,0.9→0)`). Headline + CTA buttons overlay.
+2. **Category Row** — 354px section, horizontal scrolling category chips
+3. **Popular Events** — 1062px section, event card grid (2 rows), "View All" link
+4. **Community Partners** — 434px, soft gradient bg, partner logos
+5. **Organizer CTA Banner** — 491px, `#006782` bg, `border-radius: 40px`, right-side illustration, left text + button
+6. **FAQ Section** — 768px centered, accordion items
+7. **Newsletter/Footer Banner** — 200px, `#006782`
+8. **Full Footer** — `#1F242E`
+
+**API**: `GET /api/events/discover?sort=trending&limit=6` for popular events section.
+
+---
+
+### 4. Search Modal — `SearchModal.tsx`
+
+**Design**: Full-screen overlay, triggered from Navbar search bar.
+- Large search input at top
+- Recent searches list
+- "Popular cities" chips
+- Live results grid as user types (debounced 300ms)
+
+**API**: `GET /api/events/discover?search=<query>&city=<city>` (debounced).
+
+---
+
+### 5. Category Page — `/categories`
+
+**Design**: Grid of category cards (visual matrix layout).
+- Each card: icon/image + category name + event count badge
+- Categories: Music, Tech, Food, Art, Sports, Business, Education, etc.
+
+**API**: `GET /api/events/discover?category=<cat>` (client-side filter + count aggregation).
+
+---
+
+### 6. Discovery Feed — `/discover`
+
+**Design**: Full browse workspace.
+- **Top bar**: Search field + city filter dropdown + sort dropdown (`Soonest` / `Trending`)
+- **Sidebar** (optional): Category filters
+- **Grid**: Event cards with infinite scroll or pagination
+
+**API**: `GET /api/events/discover` with all filter params.
+
+---
+
+### 7. Event Detail — `/events/[id]`
+
+**Design**: `#F8FAFC` body bg, 2829px tall canvas.
+
+**Sections**:
+1. **Top Navigation** — shared Navbar
+2. **Hero Banner** — 1280px × 400px, `#111827` bg, event banner image
+3. **Main Content Canvas** (1216px wide, `gap: 48px`):
+   - **Left Column** (795px): Event title, tags, description, agenda, speakers, organizer info
+   - **Right Column / Sticky Sidebar** (373px): Date/time/venue info card + Register CTA button
+4. **Related Events** — 3-card horizontal row at bottom (336px × 465px cards, `border-radius: 24px`)
+5. **Footer**
+
+**API**: `GET /api/events/:id` | `POST /api/events/:id/interest`
+
+---
+
+### 8. Register Modal (Not Logged In) — `RegisterModal.tsx`
+
+**Design**: Centered modal, white `#FFFFFF` card, 448px × 471px, `border-radius: 24px`, 8px brand gradient bar at top, dark overlay + blur backdrop.
+
+**Trigger**: Clicking "Register" on event detail when not authenticated.
+
+**Content**:
+- Close button (top-right)
+- Event summary snippet
+- Two primary options: **"Sign In / Sign Up"** → redirects to `/auth/signin` | **"Continue as Guest"** → opens `GuestCheckoutModal`
+
+**API**: None (routing only).
+
+---
+
+### 9. Guest Checkout Modal — `GuestCheckoutModal.tsx`
+
+**Design**: 448px × 495px modal, same style (8px brand bar, 24px radius, blur overlay).
+- Back button
+- Title + subtitle
+- Guest info form: Name + Email
+- Custom form fields (from `event.customFormSchema`)
+- Submit button
+
+**API**: `POST /api/registrations/register` with `{ eventId, guestDetails: { name, email }, customAnswers }`.
+
+---
+
+### 10. Popular Cities Page — `/cities`
+
+**Design**: Grid of city cards with background photos + city name overlay.
+
+**API**: `GET /api/events/discover?city=<city>` per city to show event counts.
+
+---
+
+### 11. Login Page — `/auth/signin`
+
+**Design**: 1280px × 1023px, two-column split:
+- **Left** (640px): `#111827` bg, event image + dark gradient overlay, logo top-left, testimonial/quote bottom
+- **Right** (640px): White, form centered (448px × 573px at `left: 96px, top: 225px`)
+  - Heading + subheading (64px container)
+  - Form: Email + Password fields (295px)
+  - Divider line (16px)
+  - Google Sign-In button (448px × 50px, `border: 1px solid #D1D5DB`, `border-radius: 12px`)
+  - "Don't have an account? Sign Up" link
+
+**API**: `POST /api/auth/login` | `POST /api/auth/google`
+
+---
+
+### 12. Reset Password Page — `/auth/reset-password`
+
+**Design**: Same 50/50 split layout as Login.
+- **Left** (533px): `#001F29` bg, background image + dark gradient, logo top-left, bottom tagline text
+- **Right** (747px): White, form at `left: 149px, top: 349px` (448px × 327px)
+  - Email field + "Send Reset Link" button
+  - (Second state after token received): New Password + Confirm Password + Submit
+
+**API**:
+- Step 1: `POST /api/auth/forgot-password` `{ email }`
+- Step 2: `POST /api/auth/reset-password` `{ token, newPassword }`
+
+---
+
+### 13. Sign Up Page — `/auth/signup`
+
+**Design**: Same split auth layout.
+- Right form: Name + Email + Password + City + Role (attendee/organizer) fields
+- Google Sign-Up option
+- "Already have an account? Sign In" link
+
+**API**: `POST /api/auth/register`
+
+---
+
+### 14. Organizer Public Profile (Not Logged In) — `/organizers/[id]`
+
+**Design** (node 3-3995): Public-facing organizer page when visitor is not logged in.
+- Organizer brand header (logo, name, bio, social links)
+- "Follow" button → gate to login if not authenticated
+- Active events grid from this organizer
+- "No account?" CTA banner
+
+**API**: `GET /api/organizers/public/:organizerId`
+
+---
+
+## Build Phases & Order
+
+### Phase 1A — Foundation (Do First)
+- [ ] Install all dependencies
+- [ ] Set up `lib/api.ts` (axios instance with `baseURL`, `withCredentials: true`)
+- [ ] Set up `lib/utils.ts` (`cn()` helper)
+- [ ] Define all TypeScript types in `types/`
+- [ ] Configure Tailwind v4 with custom color tokens
+- [ ] Build `Navbar.tsx` + `Footer.tsx`
+- [ ] Build `EventCard.tsx` (used everywhere)
+
+### Phase 1B — Public Pages
+- [ ] Landing Page `/`
+- [ ] Category Page `/categories`
+- [ ] Discovery Feed `/discover`
+- [ ] Popular Cities `/cities`
+- [ ] Event Detail `/events/[id]`
+
+### Phase 1C — Auth + Modals
+- [ ] `AuthLayout.tsx` (50/50 split wrapper)
+- [ ] Login Page `/auth/signin`
+- [ ] Sign Up Page `/auth/signup`
+- [ ] Reset Password Page `/auth/reset-password`
+- [ ] `RegisterModal.tsx` (auth gate on event detail)
+- [ ] `GuestCheckoutModal.tsx` (guest registration)
+- [ ] `SearchModal.tsx`
+
+### Phase 1D — Organizer Public View
+- [ ] Organizer Profile Page `/organizers/[id]` (not logged in state)
+
+---
+
+## Open Questions
+
+> [!IMPORTANT]
+> **Google OAuth flow**: The backend validates Google ID tokens server-side via `google-auth-library`. The frontend needs a `GOOGLE_CLIENT_ID`. Do you have this set up, and should we use `@react-oauth/google` on the frontend?
+
+> [!IMPORTANT]
+> **JWT storage strategy**: The spec says "JWT cookies." Is the backend sending `httpOnly` cookies automatically, or does the frontend store the token in `localStorage`? This determines how `axios` interceptors are configured.
+
+> [!NOTE]
+> **City list for filters**: The backend does text-based city filtering. Should the city dropdown be a static hardcoded list, or should there be a `GET /api/events/cities` endpoint to fetch distinct cities? (That endpoint doesn't exist yet on the backend.)
+
+> [!NOTE]
+> **Figma images**: Several Figma nodes reference raster images (hero crowd photo, auth page event photo, etc.) with Figma image hashes. Should I download these images from Figma and bundle them as static assets in `public/`, or use placeholder images initially?
+
+---
+
+## Verification Plan
+
+### After each page:
+1. `npm run dev` — confirm no TypeScript/build errors
+2. Visual check in browser at `localhost:3000`
+3. API calls verified via browser Network tab against running backend at `localhost:5000`
+
+### End-to-end flows:
+- Guest can browse landing → discover → event detail → guest checkout → receives confirmation email
+- User can sign up → login → register for event → (Phase 2) view ticket
