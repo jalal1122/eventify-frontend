@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BookOpen, Trophy, Monitor, Music, Briefcase, Palette, ChevronRight, Plus } from "lucide-react";
+import { ArrowRight, BookOpen, Trophy, Monitor, Music, Briefcase, Palette, ChevronRight, Plus, Search } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -141,7 +141,7 @@ export default function Home() {
         </section>
 
         {/* 2. Browse by Category */}
-        <section className="max-w-[1280px] mx-auto px-8 mb-20">
+        <section className="max-w-[1280px] mx-auto px-8 mb-16">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-gray-900">Browse by Category</h2>
             <Link href="/categories" className="text-sm font-semibold text-[#006782] hover:underline">
@@ -158,6 +158,51 @@ export default function Home() {
                 <span className="text-sm font-medium text-gray-900">{cat.name}</span>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* 2.5 Filter Search Bar */}
+        <section className="max-w-[1280px] mx-auto px-8 mb-20 relative z-10">
+          <div className="bg-[#F8FAFC] md:bg-transparent">
+            <div className="bg-white md:rounded-full rounded-2xl md:h-20 border border-[#F3F4F6] shadow-md flex flex-col md:flex-row items-center divide-y md:divide-y-0 md:divide-x divide-[#F3F4F6] px-4 md:px-2 py-4 md:py-0 w-full">
+              
+              <div className="flex-1 w-full md:w-auto px-4 md:px-6 py-2 md:py-0 flex flex-col justify-center cursor-pointer group">
+                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 cursor-pointer">Where</label>
+                <input type="text" placeholder="Search for local Events" className="w-full bg-transparent text-sm text-gray-900 font-medium placeholder:font-normal placeholder:text-gray-500 focus:outline-none" />
+              </div>
+              
+              <div className="flex-1 w-full md:w-auto px-4 md:px-6 py-2 md:py-0 flex flex-col justify-center cursor-pointer group">
+                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 cursor-pointer">What</label>
+                <input type="text" placeholder="Event name or type" className="w-full bg-transparent text-sm text-gray-900 font-medium placeholder:font-normal placeholder:text-gray-500 focus:outline-none" />
+              </div>
+              
+              <div className="flex-1 w-full md:w-auto px-4 md:px-6 py-2 md:py-0 flex flex-col justify-center cursor-pointer group">
+                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 cursor-pointer">When</label>
+                <select className="w-full bg-transparent text-sm text-gray-500 font-normal focus:outline-none cursor-pointer appearance-none">
+                  <option value="">Select Month</option>
+                  <option value="jan">January</option>
+                  <option value="feb">February</option>
+                  <option value="mar">March</option>
+                </select>
+              </div>
+              
+              <div className="flex-1 w-full md:w-auto px-4 md:px-6 py-2 md:py-0 flex flex-col justify-center cursor-pointer group relative">
+                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 cursor-pointer">Format</label>
+                <select className="w-full bg-transparent text-sm text-gray-900 font-medium focus:outline-none cursor-pointer appearance-none">
+                  <option value="">Online/Offline</option>
+                  <option value="online">Online</option>
+                  <option value="offline">Offline</option>
+                </select>
+                <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              </div>
+
+              <div className="px-4 py-3 md:py-0 shrink-0 w-full md:w-auto flex justify-center md:justify-end">
+                <button className="w-full md:w-14 h-12 md:h-14 rounded-xl md:rounded-full bg-[#8BC5D1] hover:bg-[#7AB1BD] transition-colors flex items-center justify-center text-[#003B4C] shadow-sm">
+                  <Search size={20} className="stroke-[2.5px]" />
+                </button>
+              </div>
+
+            </div>
           </div>
         </section>
 
