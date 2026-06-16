@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { User, AuthState } from "@/types/user";
 import { authApi } from "@/lib/api";
 import { tokenStore } from "@/lib/auth";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 interface AuthContextValue extends AuthState {
   login: (email: string, password: string) => Promise<void>;
@@ -66,9 +67,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, googleLogin, logout, refresh }}>
-      {children}
-    </AuthContext.Provider>
+    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+      <AuthContext.Provider value={{ ...state, login, googleLogin, logout, refresh }}>
+        {children}
+      </AuthContext.Provider>
+    </GoogleOAuthProvider>
   );
 }
 
