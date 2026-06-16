@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Search, MapPin, Plus, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -10,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const { isAuthenticated, user } = useAuth();
+  const pathname = usePathname();
 
   return (
     <>
@@ -38,10 +40,10 @@ export default function Navbar() {
 
           {/* Right side: Links & Auth */}
           <div className="flex items-center gap-6">
-            <Link href="/" className="hidden lg:block text-sm font-semibold text-[#006782] border-b-2 border-[#006782] pb-1">
+            <Link href="/" className={`hidden lg:block text-sm pb-1 border-b-2 transition-colors ${pathname === "/" ? "font-semibold text-[#006782] border-[#006782]" : "font-medium text-gray-600 border-transparent hover:text-gray-900"}`}>
               Home
             </Link>
-            <Link href="/discover" className="hidden lg:block text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+            <Link href="/discover" className={`hidden lg:block text-sm pb-1 border-b-2 transition-colors ${pathname === "/discover" ? "font-semibold text-[#006782] border-[#006782]" : "font-medium text-gray-600 border-transparent hover:text-gray-900"}`}>
               Discover
             </Link>
             <Link href="/organizers/onboarding" className="hidden md:flex items-center gap-1 text-sm font-medium text-[#006782] hover:text-[#004E63] transition-colors">
