@@ -17,7 +17,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
   const [date, setDate] = useState<"today" | "tomorrow" | "weekend" | "month" | null>("today");
 
   const recentSearches = ["Web3 Seminar", "University Sports", "Peshawar Food Fest"];
-  
+
   const trendingEvents = [
     { title: "Tech Summit 2024", interested: "450+ interested", icon: "bg-gray-900" },
     { title: "Millions of modern", interested: "Trending Now", icon: "bg-gray-800" },
@@ -28,37 +28,43 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-[750px] p-0 gap-0 overflow-hidden rounded-[2rem] shadow-2xl">
         <DialogTitle className="sr-only">Search Filters</DialogTitle>
-        
+
+        {/* Close Button */}
+        {query && (
+          <button
+            onClick={onClose}
+            className="absolute right-1 top-1 text-gray-400 hover:text-gray-600 transition-colors z-10"
+          >
+            <X size={20} />
+          </button>)}
+
         {/* Header Search Input */}
-        <div className="p-4 px-6 border-b border-[#F3F4F6] flex items-center gap-3 relative">
-          <Search size={20} className="text-gray-400 shrink-0" />
-          <Input 
-            autoFocus
-            placeholder="Search for events, workshops or organizers..." 
-            className="border-none shadow-none focus-visible:ring-0 text-base h-12 px-0 rounded-none bg-transparent"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          {query && (
-            <button onClick={() => setQuery("")} className="text-gray-400 hover:text-gray-600 transition-colors">
-              <X size={16} />
-            </button>
-          )}
+        <div className="p-6 px-8 border-b border-[#F3F4F6] relative">
+          <div className="relative">
+            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 shrink-0" />
+            <Input
+              autoFocus
+              placeholder="Search for events, workshops or organizers..."
+              className="w-full pl-12 pr-12 border border-[#E5E7EB] shadow-sm focus-visible:ring-[#006782] text-base h-14 rounded-2xl bg-white"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
         </div>
 
         <div className="p-6">
           {/* Toggles Row */}
           <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-            
+
             {/* Format Toggles */}
             <div className="flex bg-white border border-[#E5E7EB] rounded-full p-1 w-fit shadow-sm">
-              <button 
+              <button
                 onClick={() => setFormat("online")}
                 className={`px-5 py-2 text-xs font-semibold rounded-full transition-colors ${format === "online" ? "bg-[#E6F0F3] text-[#006782]" : "text-gray-500 hover:text-gray-700"}`}
               >
                 Online
               </button>
-              <button 
+              <button
                 onClick={() => setFormat("offline")}
                 className={`px-5 py-2 text-xs font-semibold rounded-full transition-colors ${format === "offline" ? "bg-[#E6F0F3] text-[#006782]" : "text-gray-500 hover:text-gray-700"}`}
               >
@@ -68,25 +74,25 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
 
             {/* Date Toggles */}
             <div className="flex bg-white border border-[#E5E7EB] rounded-full p-1 w-fit shadow-sm overflow-x-auto">
-              <button 
+              <button
                 onClick={() => setDate("today")}
                 className={`px-4 py-2 text-xs font-semibold rounded-full transition-colors whitespace-nowrap ${date === "today" ? "bg-[#E6F0F3] text-[#006782]" : "text-gray-500 hover:text-gray-700"}`}
               >
                 Today
               </button>
-              <button 
+              <button
                 onClick={() => setDate("tomorrow")}
                 className={`px-4 py-2 text-xs font-semibold rounded-full transition-colors whitespace-nowrap ${date === "tomorrow" ? "bg-[#E6F0F3] text-[#006782]" : "text-gray-500 hover:text-gray-700"}`}
               >
                 Tomorrow
               </button>
-              <button 
+              <button
                 onClick={() => setDate("weekend")}
                 className={`px-4 py-2 text-xs font-semibold rounded-full transition-colors whitespace-nowrap ${date === "weekend" ? "bg-[#E6F0F3] text-[#006782]" : "text-gray-500 hover:text-gray-700"}`}
               >
                 This weekend
               </button>
-              <button 
+              <button
                 onClick={() => setDate("month")}
                 className={`px-4 py-2 text-xs font-semibold rounded-full transition-colors whitespace-nowrap ${date === "month" ? "bg-[#E6F0F3] text-[#006782]" : "text-gray-500 hover:text-gray-700"}`}
               >
@@ -112,7 +118,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
 
           {/* Lists Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            
+
             {/* Recent Searches */}
             <div>
               <h4 className="text-xs font-bold text-gray-400 mb-4 tracking-wider">RECENT SEARCHES</h4>
@@ -149,12 +155,12 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
 
         {/* Footer */}
         <div className="p-4 px-6 border-t border-[#F3F4F6] flex items-center justify-between">
-          <button 
+          <button
             onClick={() => {
               setQuery("");
               setFormat(null);
               setDate(null);
-            }} 
+            }}
             className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors"
           >
             Clear Filters
