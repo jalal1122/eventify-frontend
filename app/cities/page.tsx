@@ -45,7 +45,7 @@ export default function CitiesPage() {
           ) : cities.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 animate-slide-up">
               {cities.map((city) => (
-                <Link key={city} href={`/discover?city=${encodeURIComponent(city)}`}>
+                <Link key={city} href={`/cities/${encodeURIComponent(city.toLowerCase())}`}>
                   <div className="group relative bg-white rounded-3xl p-6 overflow-hidden border border-[#F3F4F6] hover:shadow-lg transition-all duration-300">
                     {/* Decorative gradient blob */}
                     <div className="absolute -right-8 -top-8 w-32 h-32 bg-[#006782]/5 rounded-full blur-2xl group-hover:bg-[#006782]/10 transition-colors" />

@@ -239,14 +239,16 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-gray-900 mb-8">Trending in Top Cities</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 h-[320px]">
             {cities.map((city, i) => (
-              <div key={i} className="relative rounded-3xl overflow-hidden group cursor-pointer border border-[#F3F4F6] shadow-sm">
-                <img src={city.img} alt={city.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <div className="absolute bottom-6 left-6 text-left">
-                  <h3 className="text-xl font-bold text-white mb-1">{city.name}</h3>
-                  <p className="text-sm text-gray-300">{city.count}</p>
+              <Link key={i} href={`/cities/${city.name.toLowerCase()}`}>
+                <div className="relative rounded-3xl overflow-hidden group cursor-pointer border border-[#F3F4F6] shadow-sm w-full h-full">
+                  <img src={city.img} alt={city.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="absolute bottom-6 left-6 text-left">
+                    <h3 className="text-xl font-bold text-white mb-1">{city.name}</h3>
+                    <p className="text-sm text-gray-300">{city.count}</p>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
