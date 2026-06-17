@@ -95,7 +95,7 @@ export default function OrganizerProfilePage() {
     );
   }
 
-  const upcomingEvents = events.filter(e => e.status === "published" && new Date(e.dateTime) >= new Date());
+  const upcomingEvents = events.filter(e => e.status === "posted" && new Date(e.dateTime) >= new Date());
   const pastEvents = events.filter(e => e.status === "completed" || new Date(e.dateTime) < new Date());
 
   return (

@@ -29,7 +29,7 @@ export default function EventDetailPage() {
   
   // A simplistic check to see if current user is the organizer. 
   // Normally backend returns boolean flags or we check IDs.
-  const isOrganizer = user?._id === event?.organizerId || (event?.organizerProfileId as any)?._id === user?._id;
+  const isOrganizer = (event?.organizerProfileId as any)?._id === user?._id || (event?.organizerProfileId as any)?.ownerId === user?._id;
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -173,11 +173,10 @@ export default function EventDetailPage() {
                     {event.agenda.map((item, index) => (
                       <div key={index} className="flex gap-4">
                         <div className="w-20 text-sm font-semibold text-[#006782] shrink-0 pt-1">
-                          {item.startTime}
+                          {item.time}
                         </div>
                         <div>
-                          <h4 className="font-semibold text-gray-900">{item.title}</h4>
-                          {item.description && <p className="text-sm text-gray-500 mt-1">{item.description}</p>}
+                          <h4 className="font-semibold text-gray-900">{item.activity}</h4>
                         </div>
                       </div>
                     ))}
@@ -199,10 +198,10 @@ export default function EventDetailPage() {
                         {isFree ? "Free" : `Rs ${event.ticketPrice}`}
                       </p>
                     </div>
-                    {event.capacity && (
+                    {event.capacityLimit && (
                       <div className="text-right">
                         <p className="text-sm text-gray-500 font-medium mb-1">Capacity</p>
-                        <p className="font-semibold text-gray-900">{event.capacity} spots</p>
+                        <p className="font-semibold text-gray-900">{event.capacityLimit} spots</p>
                       </div>
                     )}
                   </div>

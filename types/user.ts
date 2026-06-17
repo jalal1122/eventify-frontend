@@ -33,10 +33,13 @@ export interface OrganizerProfile {
   logoUrl?: string;
   bio?: string;
   contactEmail?: string;
+  city?: string;
+  followersCount?: number;
   socialLinks?: {
     website?: string;
     facebook?: string;
     instagram?: string;
+    twitter?: string;
   };
   isVerified: boolean;
   createdAt: string;

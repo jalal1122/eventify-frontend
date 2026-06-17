@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading } = useAuth();
   const pathname = usePathname();
 
   return (

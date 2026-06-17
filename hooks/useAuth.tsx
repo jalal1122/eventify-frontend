@@ -16,10 +16,21 @@ interface AuthContextValue extends AuthState {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    isLoading: true,
-    isAuthenticated: false,
+  const [state, setState] = useState<AuthState>(() => {
+    // If we're on the client, check if we have a token synchronously
+    if (typeof window !== "undefined") {
+      const hasToken = !!tokenStore.get();
+      return {
+        user: null,
+        isLoading: hasToken, // Only loading if we have a token to fetch profile for
+        isAuthenticated: hasToken, // Optimistically assume logged in if token exists
+      };
+    }
+    return {
+      user: null,
+      isLoading: true,
+      isAuthenticated: false,
+    };
   });
 
   const refresh = async () => {
