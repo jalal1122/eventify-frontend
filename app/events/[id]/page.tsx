@@ -6,13 +6,14 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Share2, Heart, Clock, AlertCircle } from "lucide-react";
+import { Calendar, MapPin, Share2, Heart, ExternalLink, CalendarPlus, UserCheck, Star, AlertCircle } from "lucide-react";
 import { eventsApi, registrationsApi } from "@/lib/api";
 import { type Event } from "@/types/event";
-import { formatShortDate, formatRelativeTime } from "@/lib/utils";
+import { formatShortDate } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { RegisterModal } from "@/components/modals/RegisterModal";
 import { GuestCheckoutModal } from "@/components/modals/GuestCheckoutModal";
+import AuthPromptModal from "@/components/modals/AuthPromptModal";
 
 export default function EventDetailPage() {
   const params = useParams();
@@ -22,13 +23,15 @@ export default function EventDetailPage() {
 
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Modals state
+  const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [guestModalOpen, setGuestModalOpen] = useState(false);
+  
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   
-  // A simplistic check to see if current user is the organizer. 
-  // Normally backend returns boolean flags or we check IDs.
   const isOrganizer = (event?.organizerProfileId as any)?._id === user?._id || (event?.organizerProfileId as any)?.ownerId === user?._id;
 
   useEffect(() => {
@@ -47,11 +50,11 @@ export default function EventDetailPage() {
 
   const handleRegisterClick = () => {
     if (isAuthenticated) {
-      // Direct register
-      handleDirectRegistration();
-    } else {
-      // Open auth gate
+      // If authenticated, we could either directly register or show the final confirmation modal
       setRegisterModalOpen(true);
+    } else {
+      // Open auth prompt
+      setAuthPromptOpen(true);
     }
   };
 
@@ -60,6 +63,7 @@ export default function EventDetailPage() {
       setIsRegistering(true);
       await registrationsApi.register({ eventId });
       setRegistrationSuccess(true);
+      setRegisterModalOpen(false);
     } catch (err: any) {
       alert(err.response?.data?.message || "Registration failed");
     } finally {
@@ -98,9 +102,11 @@ export default function EventDetailPage() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
            <div className="text-center">
-             <h2 className="text-2xl font-bold mb-2">Event Not Found</h2>
+             <h2 className="text-2xl font-bold mb-2 text-gray-900">Event Not Found</h2>
              <p className="text-gray-500 mb-6">This event may have been deleted or doesn't exist.</p>
-             <Button onClick={() => router.push("/discover")}>Back to Events</Button>
+             <Button onClick={() => router.push("/discover")} className="bg-[#006782] hover:bg-[#004E63]">
+               Back to Events
+             </Button>
            </div>
         </main>
       </div>
@@ -113,95 +119,125 @@ export default function EventDetailPage() {
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       <Navbar />
       
-      <main className="flex-1">
+      <main className="flex-1 pb-20">
         {/* Banner Section */}
-        <div className="w-full h-[400px] md:h-[500px] bg-gray-900 relative">
-          {event.bannerUrl || event.cardImageUrl ? (
-            <img 
-              src={event.bannerUrl || event.cardImageUrl} 
-              alt={event.title}
-              className="w-full h-full object-cover opacity-60"
-            />
-          ) : (
-             <div className="w-full h-full bg-[#006782]/20" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-90" />
-          
-          <div className="absolute bottom-0 left-0 w-full p-8 pb-12">
-            <div className="max-w-[1280px] mx-auto flex flex-col md:flex-row gap-6 md:items-end justify-between">
-              <div className="max-w-3xl animate-slide-up">
-                {event.category && (
-                   <Badge variant="secondary" className="mb-4 bg-white/20 text-white hover:bg-white/30 backdrop-blur border-none">
-                     {event.category}
-                   </Badge>
-                )}
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-tight mb-4">
-                  {event.title}
-                </h1>
-                <div className="flex flex-wrap items-center gap-6 text-gray-200 font-medium">
-                  <div className="flex items-center gap-2">
-                    <Calendar size={20} className="text-[#BAEAFF]" />
-                    <span>{formatShortDate(event.dateTime)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin size={20} className="text-[#BAEAFF]" />
-                    <span>{event.venueName}, {event.city}</span>
-                  </div>
-                </div>
+        <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 mt-8">
+          <div className="w-full h-[300px] md:h-[480px] rounded-[2rem] overflow-hidden relative shadow-md">
+            {event.bannerUrl || event.cardImageUrl ? (
+              <img 
+                src={event.bannerUrl || event.cardImageUrl} 
+                alt={event.title}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-[#006782]/20 flex items-center justify-center">
+                <span className="text-gray-400">No Image Available</span>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
         {/* Content Section */}
-        <div className="max-w-[1280px] mx-auto px-8 py-12">
-          <div className="flex flex-col lg:flex-row gap-12 relative">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-8 py-12">
+          <div className="flex flex-col lg:flex-row gap-12">
             
             {/* Left Column - Details */}
-            <div className="flex-1">
-              <div className="bg-white rounded-3xl p-8 border border-[#F3F4F6] mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">About this event</h2>
+            <div className="flex-1 flex flex-col gap-8">
+              
+              {/* Header Info */}
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="px-4 py-1.5 bg-blue-50 text-blue-700 font-bold text-sm rounded-full border border-blue-100 shadow-sm">
+                    1.2k Views
+                  </span>
+                  <span className="px-4 py-1.5 bg-yellow-50 text-yellow-800 font-bold text-sm rounded-full border border-yellow-100 shadow-sm">
+                    27+ interested
+                  </span>
+                  <span className="px-4 py-1.5 bg-[#006782]/10 text-[#006782] font-black tracking-wide text-sm rounded-full border border-[#006782]/20 shadow-sm uppercase">
+                    UPCOMING
+                  </span>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-black text-[#0F172A] leading-[1.1]">
+                  {event.title}
+                </h1>
+                
+                <div className="flex items-center gap-4 mt-2">
+                  <div className="flex items-center gap-3 p-1.5 pr-4 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
+                      {(event.organizerProfileId as any)?.logoUrl ? (
+                         <img src={(event.organizerProfileId as any).logoUrl} alt="Organizer" className="w-full h-full object-cover" />
+                      ) : (
+                         <span className="text-gray-400 font-semibold text-sm">ORG</span>
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs text-gray-500 font-medium">Organized by</span>
+                      <span className="text-sm font-bold text-gray-900 leading-tight">
+                        {(event.organizerProfileId as any)?.brandName || "Unknown Organizer"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-3 py-4 border-y border-gray-200">
+                <Button variant="outline" className="rounded-xl border-gray-300 text-gray-700 hover:bg-gray-50 h-12 px-6">
+                  <Star size={18} className="mr-2 text-gray-500" /> I am interested
+                </Button>
+                <Button variant="outline" className="rounded-xl border-gray-300 text-gray-700 hover:bg-gray-50 h-12 px-6">
+                  <CalendarPlus size={18} className="mr-2 text-gray-500" /> Add to Calendar
+                </Button>
+                <Button variant="outline" className="rounded-xl border-gray-300 text-gray-700 hover:bg-gray-50 h-12 px-6">
+                  <Share2 size={18} className="mr-2 text-gray-500" /> Share Event
+                </Button>
+              </div>
+
+              {/* Info Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-6 flex flex-col gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mb-2">
+                    <Calendar size={20} />
+                  </div>
+                  <h3 className="font-bold text-gray-900 text-lg">Date & Registration</h3>
+                  <p className="text-gray-600 text-sm">{formatShortDate(event.dateTime)}</p>
+                  <p className="text-gray-500 text-xs mt-1">Registration closes soon.</p>
+                </div>
+                <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-6 flex flex-col gap-3">
+                  <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 mb-2">
+                    <MapPin size={20} />
+                  </div>
+                  <h3 className="font-bold text-gray-900 text-lg">Location</h3>
+                  <p className="text-gray-600 text-sm">{event.venueName}</p>
+                  <p className="text-gray-500 text-xs mt-1">{event.city}</p>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Description</h2>
                 <div className="prose prose-gray max-w-none text-gray-600 leading-relaxed whitespace-pre-wrap">
                   {event.description}
                 </div>
               </div>
-
-              {event.agenda && event.agenda.length > 0 && (
-                <div className="bg-white rounded-3xl p-8 border border-[#F3F4F6] mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Agenda</h2>
-                  <div className="space-y-6">
-                    {event.agenda.map((item, index) => (
-                      <div key={index} className="flex gap-4">
-                        <div className="w-20 text-sm font-semibold text-[#006782] shrink-0 pt-1">
-                          {item.time}
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{item.activity}</h4>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Right Column - Sticky Sidebar */}
             <div className="w-full lg:w-[400px]">
-              <div className="sticky top-32 space-y-6">
+              <div className="sticky top-28 space-y-6">
                 
-                {/* Booking Card */}
-                <div className="bg-white rounded-3xl p-8 border border-[#F3F4F6] shadow-sm">
-                  <div className="flex justify-between items-center mb-6 pb-6 border-b border-[#F3F4F6]">
+                {/* Registration Card */}
+                <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-lg">
+                  <div className="flex justify-between items-center mb-6">
                     <div>
-                      <p className="text-sm text-gray-500 font-medium mb-1">Price</p>
-                      <p className="text-3xl font-bold text-gray-900">
+                      <p className="text-sm text-gray-500 font-medium mb-1">Registration</p>
+                      <p className="text-4xl font-black text-gray-900">
                         {isFree ? "Free" : `Rs ${event.ticketPrice}`}
                       </p>
                     </div>
                     {event.capacityLimit && (
-                      <div className="text-right">
-                        <p className="text-sm text-gray-500 font-medium mb-1">Capacity</p>
-                        <p className="font-semibold text-gray-900">{event.capacityLimit} spots</p>
+                      <div className="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold border border-red-100 flex items-center gap-1">
+                        <AlertCircle size={14} /> Limited Slots
                       </div>
                     )}
                   </div>
@@ -209,58 +245,58 @@ export default function EventDetailPage() {
                   {registrationSuccess ? (
                     <div className="bg-green-50 border border-green-100 rounded-2xl p-6 text-center">
                       <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                        ✓
+                        <UserCheck size={24} />
                       </div>
                       <h4 className="font-bold text-green-900 mb-1">You're Registered!</h4>
                       <p className="text-sm text-green-700">Check your email for tickets.</p>
-                      <Button className="w-full mt-4" variant="outline" onClick={() => router.push("/attendee/tickets")}>
+                      <Button className="w-full mt-4 bg-green-600 hover:bg-green-700" onClick={() => router.push("/profile?tab=tickets")}>
                         View My Tickets
                       </Button>
                     </div>
                   ) : event.status === "completed" || event.status === "cancelled" ? (
-                    <Button disabled className="w-full h-14 text-base rounded-xl bg-gray-200 text-gray-500">
+                    <Button disabled className="w-full h-14 text-base font-bold rounded-xl bg-gray-200 text-gray-500">
                       Event {event.status === "completed" ? "Ended" : "Cancelled"}
                     </Button>
                   ) : isOrganizer ? (
-                    <Button className="w-full h-14 text-base rounded-xl" onClick={() => router.push(`/organizer/events/${event._id}`)}>
+                    <Button className="w-full h-14 text-base font-bold rounded-xl bg-[#006782] hover:bg-[#004E63] text-white" onClick={() => router.push(`/organizers/dashboard/events/${event._id}`)}>
                       Manage Event
                     </Button>
                   ) : (
                     <Button 
-                      className="w-full h-14 text-base font-semibold shadow-md rounded-xl"
+                      className="w-full h-14 text-base font-bold shadow-md rounded-xl bg-[#006782] hover:bg-[#004E63] text-white"
                       onClick={handleRegisterClick}
                       disabled={isRegistering}
                     >
                       {isRegistering ? "Processing..." : "Register Now"}
                     </Button>
                   )}
-
-                  <div className="flex items-center justify-center gap-4 mt-6">
-                    <button className="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-[#006782] transition-colors">
-                      <Share2 size={16} /> Share
-                    </button>
-                    <div className="w-1 h-1 rounded-full bg-gray-300" />
-                    <button className="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-red-500 transition-colors">
-                      <Heart size={16} /> Save
-                    </button>
-                  </div>
+                  
+                  <p className="text-center text-xs text-gray-400 mt-4 font-medium">Secure checkout via Nextt Event</p>
                 </div>
 
-                {/* Organizer Info */}
-                <div className="bg-white rounded-3xl p-6 border border-[#F3F4F6] flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-gray-100 overflow-hidden shrink-0">
-                    {/* Assuming populated organizerProfileId */}
-                    {(event.organizerProfileId as any)?.logoUrl ? (
-                       <img src={(event.organizerProfileId as any).logoUrl} alt="Organizer" className="w-full h-full object-cover" />
-                    ) : (
-                       <div className="w-full h-full bg-[#006782]/10" />
-                    )}
+                {/* Organizer Info Summary Card */}
+                <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-sm">
+                  <h3 className="font-bold text-gray-900 mb-4">Organizer</h3>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
+                      {(event.organizerProfileId as any)?.logoUrl ? (
+                         <img src={(event.organizerProfileId as any).logoUrl} alt="Organizer" className="w-full h-full object-cover" />
+                      ) : (
+                         <div className="w-full h-full bg-[#006782]/10 flex items-center justify-center font-bold text-gray-400">ORG</div>
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 leading-tight mb-1">
+                        {(event.organizerProfileId as any)?.brandName || "Unknown Organizer"}
+                      </p>
+                      <p className="text-xs text-gray-500 font-medium">12.5k Followers • 42 Events</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500 font-medium">Organized by</p>
-                    <p className="font-bold text-gray-900 group-hover:text-[#006782] transition-colors">
-                      {(event.organizerProfileId as any)?.brandName || "Organizer"}
-                    </p>
+                  <Button variant="outline" className="w-full rounded-xl border-[#006782] text-[#006782] hover:bg-[#006782]/5 font-semibold">
+                    Follow
+                  </Button>
+                  <div className="mt-4 text-center">
+                    <a href="#" className="text-xs text-gray-400 hover:text-gray-600 underline underline-offset-2">Report or Claim Event</a>
                   </div>
                 </div>
 
@@ -274,16 +310,31 @@ export default function EventDetailPage() {
       <Footer />
 
       {/* Modals */}
+      
+      {/* 1. Auth Prompt Modal (For Unauthenticated Users) */}
+      <AuthPromptModal 
+        open={authPromptOpen}
+        onClose={() => setAuthPromptOpen(false)}
+        onSelectGuest={() => {
+          setAuthPromptOpen(false);
+          setGuestModalOpen(true);
+        }}
+      />
+
+      {/* 2. Authenticated Confirmation Modal */}
       <RegisterModal 
         open={registerModalOpen} 
         onClose={() => setRegisterModalOpen(false)}
         onContinueAsGuest={() => {
+          // Should not happen here normally, but just in case
           setRegisterModalOpen(false);
           setGuestModalOpen(true);
         }}
         eventName={event.title}
+        onConfirm={handleDirectRegistration}
       />
 
+      {/* 3. Guest Details Modal */}
       <GuestCheckoutModal 
         open={guestModalOpen} 
         onClose={() => setGuestModalOpen(false)}
