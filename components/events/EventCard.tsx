@@ -20,14 +20,8 @@ export function EventCard({ event, attended }: EventCardProps) {
 
   return (
     <Link href={`/events/${event._id}`} className="block h-full">
-      <Card className={`h-full flex flex-col group overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer border-gray-100/50 shadow-sm rounded-3xl relative bg-white ${attended ? 'opacity-80 hover:opacity-100 grayscale-[20%] hover:grayscale-0' : ''}`}>
+      <Card className="h-full flex flex-col group overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer border-gray-100/50 shadow-sm rounded-3xl relative bg-white">
         
-        {attended && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm border border-gray-100 font-bold text-[#006782] text-sm flex items-center gap-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-            <CheckCircle2 size={16} /> Attended
-          </div>
-        )}
-
         {/* Image Header */}
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100 shrink-0">
           {event.cardImageUrl || event.bannerUrl ? (
@@ -44,7 +38,11 @@ export function EventCard({ event, attended }: EventCardProps) {
 
           {/* Top Badges */}
           <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
-            {event.category && (
+            {attended ? (
+              <Badge variant="secondary" className="bg-[#E6F4EA] text-[#1E8E3E] font-bold text-[10px] tracking-wider px-3 py-1 rounded-full border-none shadow-sm uppercase">
+                ATTENDED
+              </Badge>
+            ) : event.category && (
               <Badge variant="secondary" className="bg-white/40 backdrop-blur-md text-[#BAEAFF] font-bold text-xs px-4 py-1.5 rounded-full border border-white/20 shadow-sm">
                 {event.category}
               </Badge>
@@ -96,9 +94,15 @@ export function EventCard({ event, attended }: EventCardProps) {
             </div>
             
             <div className="flex items-center gap-3 text-gray-500">
-              <button className="hover:text-[#006782] transition-colors p-1" onClick={(e) => e.preventDefault()}>
-                <Star size={20} />
-              </button>
+              {attended ? (
+                <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center">
+                  <CheckCircle2 size={14} />
+                </div>
+              ) : (
+                <button className="hover:text-[#006782] transition-colors p-1" onClick={(e) => e.preventDefault()}>
+                  <Star size={20} />
+                </button>
+              )}
               <button className="hover:text-[#006782] transition-colors p-1" onClick={(e) => e.preventDefault()}>
                 <Share2 size={20} />
               </button>
