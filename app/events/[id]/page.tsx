@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { RegisterModal } from "@/components/modals/RegisterModal";
 import { GuestCheckoutModal } from "@/components/modals/GuestCheckoutModal";
 import AuthPromptModal from "@/components/modals/AuthPromptModal";
+import { mockEvents } from "@/lib/dummyData";
 
 export default function EventDetailPage() {
   const params = useParams();
@@ -40,7 +41,11 @@ export default function EventDetailPage() {
         const res = await eventsApi.getById(eventId);
         setEvent(res.data.event);
       } catch (error) {
-        console.error("Failed to load event", error);
+        console.error("Failed to load event from API, falling back to dummy data", error);
+        const mockEvent = mockEvents.find(e => e._id === eventId);
+        if (mockEvent) {
+          setEvent(mockEvent);
+        }
       } finally {
         setLoading(false);
       }
