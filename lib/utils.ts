@@ -41,3 +41,20 @@ export function truncate(str: string, length: number): string {
   if (str.length <= length) return str;
   return str.slice(0, length) + "…";
 }
+
+export function formatEventCardDate(date: string | Date): string {
+  const d = new Date(date);
+  const datePart = new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short"
+  }).format(d);
+  
+  const timePart = new Intl.DateTimeFormat("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true
+  }).format(d);
+  
+  return `${datePart} . ${timePart}`;
+}
