@@ -161,50 +161,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 2.5 Filter Search Bar */}
-        <section className="max-w-[1280px] mx-auto px-8 mb-20 relative z-10">
-          <div className="bg-[#F8FAFC] md:bg-transparent">
-            <div className="bg-white md:rounded-full rounded-2xl md:h-20 border border-[#F3F4F6] shadow-md flex flex-col md:flex-row items-center divide-y md:divide-y-0 md:divide-x divide-[#F3F4F6] px-4 md:px-2 py-4 md:py-0 w-full">
-              
-              <div className="flex-1 w-full md:w-auto px-4 md:px-6 py-2 md:py-0 flex flex-col justify-center cursor-pointer group">
-                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 cursor-pointer">Where</label>
-                <input type="text" placeholder="Search for local Events" className="w-full bg-transparent text-sm text-gray-900 font-medium placeholder:font-normal placeholder:text-gray-500 focus:outline-none" />
-              </div>
-              
-              <div className="flex-1 w-full md:w-auto px-4 md:px-6 py-2 md:py-0 flex flex-col justify-center cursor-pointer group">
-                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 cursor-pointer">What</label>
-                <input type="text" placeholder="Event name or type" className="w-full bg-transparent text-sm text-gray-900 font-medium placeholder:font-normal placeholder:text-gray-500 focus:outline-none" />
-              </div>
-              
-              <div className="flex-1 w-full md:w-auto px-4 md:px-6 py-2 md:py-0 flex flex-col justify-center cursor-pointer group">
-                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 cursor-pointer">When</label>
-                <select className="w-full bg-transparent text-sm text-gray-500 font-normal focus:outline-none cursor-pointer appearance-none">
-                  <option value="">Select Month</option>
-                  <option value="jan">January</option>
-                  <option value="feb">February</option>
-                  <option value="mar">March</option>
-                </select>
-              </div>
-              
-              <div className="flex-1 w-full md:w-auto px-4 md:px-6 py-2 md:py-0 flex flex-col justify-center cursor-pointer group relative">
-                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 cursor-pointer">Format</label>
-                <select className="w-full bg-transparent text-sm text-gray-900 font-medium focus:outline-none cursor-pointer appearance-none">
-                  <option value="">Online/Offline</option>
-                  <option value="online">Online</option>
-                  <option value="offline">Offline</option>
-                </select>
-                <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              </div>
-
-              <div className="px-4 py-3 md:py-0 shrink-0 w-full md:w-auto flex justify-center md:justify-end">
-                <button className="w-full md:w-14 h-12 md:h-14 rounded-xl md:rounded-full bg-[#8BC5D1] hover:bg-[#7AB1BD] transition-colors flex items-center justify-center text-[#003B4C] shadow-sm">
-                  <Search size={20} className="stroke-[2.5px]" />
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </section>
 
         {/* 3. Most Popular Upcoming Events */}
         <section className="max-w-[1280px] mx-auto px-8 mb-20">
@@ -279,28 +235,22 @@ export default function Home() {
               </p>
               <div className="flex flex-wrap items-center gap-4">
                 <Button className="bg-white text-[#006782] hover:bg-gray-100 rounded-full px-6 py-6 text-base font-semibold shadow-md">
-                  Create an Event <Plus className="ml-2 w-5 h-5" />
+                  Create an Event <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
-                <Button variant="outline" className="border-white text-[#006782] hover:bg-white hover:text-[#006782] rounded-full px-6 py-6 text-base font-semibold">
+                <Button variant="outline" className="border-white text-white hover:bg-white hover:text-[#006782] bg-transparent rounded-full px-6 py-6 text-base font-semibold transition-colors">
                   Learn More
                 </Button>
               </div>
             </div>
             {/* Right side graphic mockup */}
-            <div className="w-full md:w-[45%] h-[300px] md:h-auto relative bg-[#004E63]">
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-2xl flex flex-col">
-                <div className="w-full h-8 flex gap-2 border-b border-white/10 pb-2 mb-4">
-                  <div className="w-full h-full bg-white/20 rounded" />
-                  <div className="w-1/2 h-full bg-white/20 rounded" />
-                </div>
-                <div className="flex-1 flex items-end gap-2 px-4 pb-4">
-                   <div className="w-full bg-blue-400 h-[30%] rounded-t-sm" />
-                   <div className="w-full bg-[#006782] h-[70%] rounded-t-sm" />
-                   <div className="w-full bg-blue-300 h-[50%] rounded-t-sm" />
-                   <div className="w-full bg-[#006782] h-[90%] rounded-t-sm" />
-                   <div className="w-full bg-blue-400 h-[60%] rounded-t-sm" />
-                </div>
-              </div>
+            <div className="w-full md:w-[45%] h-[300px] md:h-auto relative bg-[#004E63] overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80"
+                alt="Event organizer dashboard"
+                className="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-overlay hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#006782] to-transparent md:block hidden" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#006782] to-transparent md:hidden block" />
             </div>
           </div>
         </section>
