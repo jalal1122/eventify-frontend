@@ -41,10 +41,10 @@ export default function Navbar() {
 
           {/* Right side: Links & Auth */}
           <div className="flex items-center gap-6">
-            <Link href="/" className={`hidden lg:block text-sm pb-1 border-b-2 transition-colors ${pathname === "/" ? "font-semibold text-[#006782] border-[#006782]" : "font-medium text-gray-600 border-transparent hover:text-gray-900"}`}>
+            <Link href="/" className={`hidden lg:block text-sm pb-0 border-b-2 transition-colors ${pathname === "/" ? "font-semibold text-[#006782] border-[#006782]" : "font-medium text-gray-600 border-transparent hover:text-gray-900"}`}>
               Home
             </Link>
-            <Link href="/discover" className={`hidden lg:block text-sm pb-1 border-b-2 transition-colors ${pathname === "/discover" ? "font-semibold text-[#006782] border-[#006782]" : "font-medium text-gray-600 border-transparent hover:text-gray-900"}`}>
+            <Link href="/discover" className={`hidden lg:block text-sm pb-0 border-b-2 transition-colors ${pathname === "/discover" ? "font-semibold text-[#006782] border-[#006782]" : "font-medium text-gray-600 border-transparent hover:text-gray-900"}`}>
               Discover
             </Link>
             <Link href="/organizers/onboarding" className="hidden md:flex items-center gap-1 text-sm font-medium text-[#006782] hover:text-[#004E63] transition-colors">
