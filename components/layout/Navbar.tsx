@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import SearchModal from "@/components/modals/SearchModal";
 import { useAuth } from "@/hooks/useAuth";
+import ProfileDropdown from "@/components/layout/ProfileDropdown";
 
 export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -53,11 +54,7 @@ export default function Navbar() {
             <div className="w-[1px] h-6 bg-[#E5E7EB] hidden sm:block mx-2" />
 
             {isAuthenticated ? (
-               <Link href="/dashboard" className="flex items-center gap-2">
-                 <div className="w-8 h-8 rounded-full bg-[#006782] text-white flex items-center justify-center font-semibold text-sm">
-                   {user?.name?.charAt(0) || "U"}
-                 </div>
-               </Link>
+               <ProfileDropdown />
             ) : (
                <Link href="/auth/signin" className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors">
                  <User size={18} className="text-[#006782]" /> Sign In
