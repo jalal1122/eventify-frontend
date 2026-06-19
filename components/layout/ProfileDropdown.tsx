@@ -53,7 +53,7 @@ export default function ProfileDropdown() {
             </DropdownMenu.Item>
             <DropdownMenu.Item asChild>
               <Link
-                href="/profile?tab=tickets"
+                href="/profile/mytickets"
                 className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
                 onClick={() => setOpen(false)}
               >
