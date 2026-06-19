@@ -157,3 +157,34 @@ export const mockUserProfile = {
     following: 10,
   }
 };
+
+export const mockTickets = [
+  {
+    _id: "PTF-8842",
+    eventId: "1",
+    status: "confirmed" as const,
+    attendeeName: "Inayat ur Rehman",
+    message: ""
+  },
+  {
+    _id: "PDF-5534",
+    eventId: "2",
+    status: "pending" as const,
+    attendeeName: "Inayat ur Rehman",
+    message: "Your payment is currently under verification, it will take 2-3 hrs."
+  },
+  {
+    _id: "CCS-9921",
+    eventId: "3",
+    status: "rejected" as const,
+    attendeeName: "Inayat ur Rehman",
+    message: "Your Payment receipt is invalid. Please provide a valid transaction ID."
+  },
+  {
+    _id: "TCF-2212",
+    eventId: "4",
+    status: "confirmed" as const,
+    attendeeName: "Inayat ur Rehman",
+    message: ""
+  }
+];
