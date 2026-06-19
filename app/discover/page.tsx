@@ -7,38 +7,7 @@ import { EventBannerCard } from "@/components/events/EventBannerCard";
 import { type Event } from "@/types/event";
 import { ChevronDown, Loader2 } from "lucide-react";
 
-const dummyBannerEvents: Partial<Event>[] = [
-  {
-    _id: "b1",
-    title: "Job Fair 2026: Empowering KP's Youth",
-    description: "Connecting graduates with opportunities. Ambition into Action - Your skills deserve a stage.",
-    organizerProfileId: { _id: "org1", brandName: "GDG on Campus KUP", logoUrl: "" } as any,
-    category: "Career",
-    venueName: "Islamia College University",
-    city: "Peshawar",
-    dateTime: "2026-05-19T09:00:00.000Z",
-    isPaid: false,
-    ticketPrice: 0,
-    status: "posted",
-    interestedCount: 500,
-    cardImageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1600&q=80",
-  },
-  {
-    _id: "b2",
-    title: "AI Seekho Phase II - Google Antigravity Hackathon",
-    description: "Build. Innovate. Solve. Develop next-gen agent-driven solutions to tackle real-world challenges across Pakistan.",
-    organizerProfileId: { _id: "org2", brandName: "Google for Developers", logoUrl: "" } as any,
-    category: "Hackathon",
-    venueName: "Online / Pitching",
-    city: "Islamabad",
-    dateTime: "2026-05-14T10:00:00.000Z",
-    isPaid: true,
-    ticketPrice: 1500,
-    status: "posted",
-    interestedCount: 125,
-    cardImageUrl: "https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=1600&q=80",
-  }
-];
+import { mockEvents } from "@/lib/dummyData";
 
 export default function DiscoverPage() {
   const [activeFilter, setActiveFilter] = useState("all");
@@ -111,7 +80,7 @@ export default function DiscoverPage() {
         {/* Events Stack */}
         <div className="max-w-[1280px] mx-auto px-8 pb-12">
           <div className="flex flex-col gap-8 max-w-4xl mx-auto">
-            {dummyBannerEvents.map(event => (
+            {mockEvents.map(event => (
               <EventBannerCard key={event._id} event={event as Event} />
             ))}
           </div>
