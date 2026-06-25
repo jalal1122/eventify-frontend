@@ -28,10 +28,9 @@ export default function LocationMap() {
          height="100%" 
          frameBorder="0" 
          scrolling="no" 
-         src={`https://www.openstreetmap.org/export/embed.html?bbox=-180,-90,180,90&layer=mapnik&marker=&q=${encodeURIComponent(searchQuery)}`} 
+         src={`https://maps.google.com/maps?q=${encodeURIComponent(searchQuery)}&t=&z=15&ie=UTF8&iwloc=&output=embed`} 
          className="absolute inset-0"
        />
-       {/* Note: OSM export embed doesn't auto-center perfectly without coordinates, but this works as a free placeholder */}
        <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded text-[10px] text-gray-500 shadow-sm opacity-70 pointer-events-none">
          Map Preview
        </div>
