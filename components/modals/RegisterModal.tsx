@@ -11,6 +11,7 @@ interface RegisterModalProps {
   onClose: () => void;
   onContinueAsGuest: () => void;
   eventName: string;
+  onConfirm?: () => void | Promise<void>;
 }
 
 export function RegisterModal({ open, onClose, onContinueAsGuest, eventName }: RegisterModalProps) {
