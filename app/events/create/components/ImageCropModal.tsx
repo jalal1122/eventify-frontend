@@ -21,8 +21,10 @@ export default function ImageCropModal({
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [croppedArea, setCroppedArea] = useState<any>(null);
 
   const onCropComplete = useCallback((croppedArea: any, croppedAreaPixels: any) => {
+    setCroppedArea(croppedArea);
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
@@ -69,8 +71,21 @@ export default function ImageCropModal({
               <p className="text-xs text-gray-500 mb-4">This is how your banner will appear on the event page and discovery feed.</p>
               
               <div className="bg-slate-200 rounded-lg w-full aspect-[2/1] overflow-hidden relative shadow-sm border border-slate-100 flex items-center justify-center">
-                 {/* This would normally show a live preview, simplified for now */}
-                 <span className="text-xs text-gray-400">Live Preview Area</span>
+                 {croppedArea ? (
+                   <img 
+                     src={imageSrc} 
+                     alt="Live Preview"
+                     className="absolute top-0 left-0 max-w-none"
+                     style={{
+                       width: `${10000 / croppedArea.width}%`,
+                       height: `${10000 / croppedArea.height}%`,
+                       transform: `translate(-${croppedArea.x}%, -${croppedArea.y}%)`,
+                       transformOrigin: 'top left',
+                     }}
+                   />
+                 ) : (
+                   <span className="text-xs text-gray-400">Loading Preview...</span>
+                 )}
               </div>
             </div>
 
