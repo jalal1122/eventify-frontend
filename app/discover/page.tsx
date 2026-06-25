@@ -5,9 +5,11 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { EventBannerCard } from "@/components/events/EventBannerCard";
 import { type Event } from "@/types/event";
-import { ChevronDown, Loader2 } from "lucide-react";
-
+import { ChevronDown, Search } from "lucide-react";
+import { EventBannerCardSkeleton } from "@/components/ui/skeletons";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useEvents } from "@/hooks/useEvents";
+import Link from "next/link";
 export default function DiscoverPage() {
   const [activeFilter, setActiveFilter] = useState("all");
   const { events, loading, error } = useEvents();
@@ -80,22 +82,26 @@ export default function DiscoverPage() {
         {/* Events Stack */}
         <div className="max-w-[1280px] mx-auto px-8 pb-12">
           <div className="flex flex-col gap-8 max-w-4xl mx-auto">
-            {events.map(event => (
-              <EventBannerCard key={event._id} event={event as Event} />
-            ))}
+            {loading ? (
+              <>
+                <EventBannerCardSkeleton />
+                <EventBannerCardSkeleton />
+                <EventBannerCardSkeleton />
+              </>
+            ) : events.length === 0 ? (
+              <EmptyState 
+                icon={Search} 
+                title="No events match your filters" 
+                description="Try adjusting your filters or search criteria." 
+                actionLabel="Clear Filters"
+                onAction={() => setActiveFilter("all")}
+              />
+            ) : (
+              events.map(event => (
+                <EventBannerCard key={event._id} event={event as Event} />
+              ))
+            )}
           </div>
-          
-          {loading && (
-            <div className="flex flex-col items-center justify-center py-16 gap-3 text-gray-500">
-              <Loader2 className="w-8 h-8 animate-spin text-[#006782]" />
-              <p className="text-sm font-medium">Loading events...</p>
-            </div>
-          )}
-          {!loading && events.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-              <p className="text-sm font-medium">No events found.</p>
-            </div>
-          )}
         </div>
       </main>
 

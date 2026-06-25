@@ -10,9 +10,10 @@ import { organizerApi, attendeeApi } from "@/lib/api";
 import { type OrganizerProfile } from "@/types/user";
 import { type Event } from "@/types/event";
 import { EventCard } from "@/components/events/EventCard";
-import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
+import { EventCardSkeleton } from "@/components/ui/skeletons";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { CalendarX } from "lucide-react";
 const TwitterIcon = ({ size = 20 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
 );
@@ -76,7 +77,32 @@ export default function OrganizerProfilePage() {
       <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
         <Navbar />
         <main className="flex-1 max-w-[1280px] w-full mx-auto px-8 py-12">
-           <div className="h-64 bg-gray-200 rounded-3xl animate-pulse mb-12" />
+          {/* Header Skeleton */}
+          <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-8 md:p-12 mb-12 flex flex-col md:flex-row items-center md:items-start gap-8 relative overflow-hidden animate-pulse">
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gray-200 border-4 border-white shadow-md shrink-0" />
+            <div className="flex-1 text-center md:text-left flex flex-col h-full w-full">
+              <div className="h-10 w-64 bg-gray-200 rounded-md mb-4 mx-auto md:mx-0" />
+              <div className="h-4 w-40 bg-gray-200 rounded-md mb-6 mx-auto md:mx-0" />
+              <div className="flex flex-wrap gap-4 justify-center md:justify-start mb-6">
+                <div className="h-6 w-24 bg-gray-200 rounded-md" />
+                <div className="h-6 w-24 bg-gray-200 rounded-md" />
+              </div>
+              <div className="h-4 w-full bg-gray-200 rounded-md max-w-md mx-auto md:mx-0" />
+            </div>
+            <div className="md:absolute top-12 right-12 flex flex-col items-center md:items-end gap-3 mt-6 md:mt-0">
+              <div className="h-12 w-40 bg-gray-200 rounded-full" />
+              <div className="h-10 w-32 bg-gray-200 rounded-full" />
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6 animate-pulse">
+            <div className="h-8 w-48 bg-gray-200 rounded-md" />
+            <div className="flex bg-gray-100 p-1 rounded-full w-48 h-12" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map(i => <EventCardSkeleton key={i} />)}
+          </div>
         </main>
       </div>
     );
@@ -214,25 +240,25 @@ export default function OrganizerProfilePage() {
               </TabsList>
             </div>
             
-            <TabsContent value="upcoming" className="mt-0 outline-none">
+            <TabsContent value="upcoming" className="mt-0">
               {upcomingEvents.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {upcomingEvents.map(event => (
                     <EventCard key={event._id} event={event} />
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
-                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
-                    <Calendar size={24} />
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">No upcoming events</h3>
-                  <p className="text-sm font-medium text-gray-500">This organizer doesn't have any scheduled events at the moment.</p>
+                <div className="mt-8">
+                  <EmptyState 
+                    icon={CalendarX} 
+                    title="No upcoming events" 
+                    description="This organizer currently has no upcoming events." 
+                  />
                 </div>
               )}
             </TabsContent>
 
-            <TabsContent value="past" className="mt-0 outline-none">
+            <TabsContent value="past" className="mt-0">
               {pastEvents.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {pastEvents.map(event => (
@@ -242,12 +268,12 @@ export default function OrganizerProfilePage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
-                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
-                    <Trophy size={24} />
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">No past events</h3>
-                  <p className="text-sm font-medium text-gray-500">This organizer hasn't hosted any events yet.</p>
+                <div className="mt-8">
+                  <EmptyState 
+                    icon={Trophy} 
+                    title="No past events" 
+                    description="This organizer hasn't hosted any events yet." 
+                  />
                 </div>
               )}
             </TabsContent>

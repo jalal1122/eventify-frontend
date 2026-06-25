@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { EventCard } from "@/components/events/EventCard";
+import { EventCardSkeleton } from "@/components/ui/skeletons";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { CalendarX } from "lucide-react";
 import { type Event } from "@/types/event";
 import LoginToCreateModal from "@/components/modals/LoginToCreateModal";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,6 +40,7 @@ const cities = [
 export default function Home() {
   const [loginToCreateOpen, setLoginToCreateOpen] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
@@ -50,6 +54,8 @@ export default function Home() {
         }
       } catch (err) {
         console.error("Failed to fetch events:", err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchEvents();
@@ -134,16 +140,32 @@ export default function Home() {
             </div>
             
             <TabsContent value="all" className="mt-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {events.map((event) => (
-                  <EventCard key={event._id} event={event} />
-                ))}
-              </div>
-              <div className="flex justify-center mt-10">
-                <Button className="bg-[#006782] hover:bg-[#004E63] text-white rounded-full px-8 py-6 text-base shadow-md">
-                  View all Events
-                </Button>
-              </div>
+              {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[1, 2, 3, 4].map(i => <EventCardSkeleton key={i} />)}
+                </div>
+              ) : events.length === 0 ? (
+                <EmptyState 
+                  icon={CalendarX} 
+                  title="No events yet" 
+                  description="Be the first to create an amazing event for the community." 
+                  actionLabel="Create Event" 
+                  onAction={handleCreateEventClick} 
+                />
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {events.map((event) => (
+                      <EventCard key={event._id} event={event} />
+                    ))}
+                  </div>
+                  <div className="flex justify-center mt-10">
+                    <Button className="bg-[#006782] hover:bg-[#004E63] text-white rounded-full px-8 py-6 text-base shadow-md">
+                      View all Events
+                    </Button>
+                  </div>
+                </>
+              )}
             </TabsContent>
           </Tabs>
         </section>

@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Ticket } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { TicketCard } from "@/components/events/TicketCard";
+import { TicketCardSkeleton } from "@/components/ui/skeletons";
 import { attendeeApi, authApi } from "@/lib/api";
 function ProfileContent() {
   const router = useRouter();
@@ -115,7 +116,7 @@ function ProfileContent() {
             <div className="w-full">
               {loading ? (
                 <div className="flex flex-col gap-6">
-                  {[1,2,3].map(i => <div key={i} className="h-[200px] w-full bg-gray-200 animate-pulse rounded-3xl" />)}
+                  {[1,2,3].map(i => <TicketCardSkeleton key={i} />)}
                 </div>
               ) : (
                 <>

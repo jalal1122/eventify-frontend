@@ -10,6 +10,7 @@ import { LogOut, Globe, Camera, Edit2, Share2, Ticket, Star, Users } from "lucid
 import { useAuth } from "@/hooks/useAuth";
 import { EventCard } from "@/components/events/EventCard";
 import { OrganizerCard } from "@/components/organizers/OrganizerCard";
+import { EventCardSkeleton, OrganizerCardSkeleton } from "@/components/ui/skeletons";
 import { attendeeApi, authApi } from "@/lib/api";
 function ProfileContent() {
   const router = useRouter();
@@ -134,9 +135,23 @@ function ProfileContent() {
             </div>
             
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[1,2,3,4].map(i => <div key={i} className="h-[360px] bg-gray-200 animate-pulse rounded-3xl" />)}
-              </div>
+              <>
+                <TabsContent value="attended" className="mt-0 outline-none">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {[1, 2, 3, 4].map(i => <EventCardSkeleton key={i} />)}
+                  </div>
+                </TabsContent>
+                <TabsContent value="interested" className="mt-0 outline-none">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {[1, 2, 3, 4].map(i => <EventCardSkeleton key={i} />)}
+                  </div>
+                </TabsContent>
+                <TabsContent value="following" className="mt-0 outline-none">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {[1, 2, 3, 4].map(i => <OrganizerCardSkeleton key={i} />)}
+                  </div>
+                </TabsContent>
+              </>
             ) : (
               <>
                 <TabsContent value="attended" className="mt-0 outline-none">

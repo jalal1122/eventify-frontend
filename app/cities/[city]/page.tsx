@@ -1,14 +1,15 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { EventCard } from "@/components/events/EventCard";
+import { EventCardSkeleton } from "@/components/ui/skeletons";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { MapPinOff } from "lucide-react";
 import { type Event } from "@/types/event";
-import { useState } from "react";
-
-// Helper to capitalize city name
 function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
@@ -79,8 +80,18 @@ export default function CityPage() {
 
           {/* Event Grid */}
           {loading ? (
-            <div className="flex justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#006782]"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map(i => <EventCardSkeleton key={i} />)}
+            </div>
+          ) : events.length === 0 ? (
+            <div className="mt-8">
+              <EmptyState 
+                icon={MapPinOff} 
+                title={`No events in ${city}`} 
+                description="We couldn't find any events matching your criteria in this city." 
+                actionLabel="View All Cities"
+                actionHref="/"
+              />
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

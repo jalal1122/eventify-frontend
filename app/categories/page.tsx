@@ -7,6 +7,9 @@ import { ArrowRight, GraduationCap, Monitor, Trophy, Gamepad2, Briefcase, Palett
 
 import { useEffect, useState } from "react";
 import { eventsApi } from "@/lib/api";
+import { CategoryCardSkeleton } from "@/components/ui/skeletons";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { LayoutGrid } from "lucide-react";
 
 const ICON_MAP: Record<string, any> = {
   "Education": GraduationCap,
@@ -25,6 +28,7 @@ const ICON_MAP: Record<string, any> = {
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<{name: string, count: string, icon: any}[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -40,6 +44,8 @@ export default function CategoriesPage() {
         }
       } catch (error) {
         console.error("Failed to fetch categories:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchCategories();
@@ -60,20 +66,34 @@ export default function CategoriesPage() {
 
         {/* Categories Grid */}
         <div className="max-w-[1280px] mx-auto px-8 -mt-16">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-24">
-            {categories.map((cat, i) => {
-              const Icon = cat.icon;
-              return (
-                <div key={i} className="bg-white rounded-3xl p-8 flex flex-col items-center text-center shadow-sm border border-[#F3F4F6] hover:shadow-md hover:border-[#006782]/30 transition-all cursor-pointer">
-                  <div className="w-14 h-14 rounded-full bg-[#E6F0F3] text-[#006782] flex items-center justify-center mb-6">
-                    <Icon size={24} />
+          {loading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-24">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <CategoryCardSkeleton key={i} />)}
+            </div>
+          ) : categories.length === 0 ? (
+            <div className="mb-24 mt-20">
+              <EmptyState 
+                icon={LayoutGrid} 
+                title="No categories found" 
+                description="There are currently no event categories available." 
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-24">
+              {categories.map((cat, i) => {
+                const Icon = cat.icon;
+                return (
+                  <div key={i} className="bg-white rounded-3xl p-8 flex flex-col items-center text-center shadow-sm border border-[#F3F4F6] hover:shadow-md hover:border-[#006782]/30 transition-all cursor-pointer">
+                    <div className="w-14 h-14 rounded-full bg-[#E6F0F3] text-[#006782] flex items-center justify-center mb-6">
+                      <Icon size={24} />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">{cat.name}</h3>
+                    <p className="text-sm text-gray-500">{cat.count}</p>
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">{cat.name}</h3>
-                  <p className="text-sm text-gray-500">{cat.count}</p>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Host CTA Banner */}
           <div className="bg-[#EBEBEB] rounded-[2rem] overflow-hidden flex flex-col lg:flex-row relative">
