@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -20,9 +21,11 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export default function SignInPage() {
+function SignInForm() {
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams?.get("callbackUrl") || "/discover";
   const [error, setError] = useState<string | null>(null);
 
   const {
@@ -37,7 +40,7 @@ export default function SignInPage() {
     try {
       setError(null);
       await login(data.email, data.password);
-      router.push("/discover");
+      router.push(callbackUrl);
     } catch (err: any) {
       console.error("Login error:", err);
       setError(err.response?.data?.message || "Invalid email or password");
@@ -45,11 +48,7 @@ export default function SignInPage() {
   };
 
   return (
-    <AuthLayout
-      title="Sign in to Nextt Event"
-      subtitle="Welcome back! Please enter your details."
-      type="signin"
-    >
+    <>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
@@ -107,10 +106,25 @@ export default function SignInPage() {
 
       <p className="mt-8 text-center text-sm text-gray-600">
         Don't have an account?{" "}
-        <Link href="/auth/signup" className="font-semibold text-[#006782] hover:underline">
+        <Link href={`/auth/signup${callbackUrl !== '/discover' ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ''}`} className="font-semibold text-[#006782] hover:underline">
           Sign up
         </Link>
       </p>
+    </>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <AuthLayout
+      title="Sign in to Eventify"
+      subtitle="Welcome back! Please enter your details."
+      type="signin"
+    >
+      <Suspense fallback={<div>Loading...</div>}>
+        <SignInForm />
+      </Suspense>
     </AuthLayout>
   );
 }
+

@@ -2,13 +2,15 @@
 
 import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 
-export function GoogleButton() {
+function GoogleButtonInner() {
   const { googleLogin } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams?.get("callbackUrl") || "/discover";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,7 +20,7 @@ export function GoogleButton() {
       setLoading(true);
       setError(null);
       await googleLogin(credentialResponse.credential);
-      router.push("/discover");
+      router.push(callbackUrl);
     } catch (err: any) {
       console.error(err);
       setError(err.response?.data?.message || "Google sign-in failed");
@@ -49,3 +51,12 @@ export function GoogleButton() {
     </div>
   );
 }
+
+export function GoogleButton() {
+  return (
+    <Suspense fallback={<div>Loading Google Sign-in...</div>}>
+      <GoogleButtonInner />
+    </Suspense>
+  );
+}
+

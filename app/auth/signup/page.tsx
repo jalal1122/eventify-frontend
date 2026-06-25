@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -23,9 +24,11 @@ const signupSchema = z.object({
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
-export default function SignUpPage() {
+function SignUpForm() {
   const { refresh } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams?.get("callbackUrl") || "/discover";
   const [error, setError] = useState<string | null>(null);
 
   const {
@@ -46,7 +49,7 @@ export default function SignUpPage() {
         password: data.password,
       });
       await refresh();
-      router.push("/discover");
+      router.push(callbackUrl);
     } catch (err: any) {
       console.error("Signup error:", err);
       setError(err.response?.data?.message || "Failed to create account. Please try again.");
@@ -54,11 +57,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <AuthLayout
-      title="Create an account"
-      subtitle="Join to discover and book local events seamlessly."
-      type="signup"
-    >
+    <>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
@@ -113,10 +112,25 @@ export default function SignUpPage() {
 
       <p className="mt-8 text-center text-sm text-gray-600">
         Already have an account?{" "}
-        <Link href="/auth/signin" className="font-semibold text-[#006782] hover:underline">
+        <Link href={`/auth/signin${callbackUrl !== '/discover' ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ''}`} className="font-semibold text-[#006782] hover:underline">
           Sign in
         </Link>
       </p>
+    </>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <AuthLayout
+      title="Create an account"
+      subtitle="Join to discover and book local events seamlessly."
+      type="signup"
+    >
+      <Suspense fallback={<div>Loading...</div>}>
+        <SignUpForm />
+      </Suspense>
     </AuthLayout>
   );
 }
+
