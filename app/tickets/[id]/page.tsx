@@ -7,7 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Download, QrCode } from "lucide-react";
-import { mockEvents, mockTickets } from "@/lib/dummyData";
+import { attendeeApi } from "@/lib/api";
 import { formatEventCardDate } from "@/lib/utils";
 
 export default function TicketDetailPage() {
@@ -17,15 +17,21 @@ export default function TicketDetailPage() {
 
   const [ticketData, setTicketData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    // Simulate fetching
-    setTimeout(() => {
-      const ticket = mockTickets.find(t => t._id === ticketId) || mockTickets[0];
-      const event = mockEvents.find(e => e._id === ticket.eventId) || mockEvents[0];
-      setTicketData({ ticket, event });
-      setLoading(false);
-    }, 500);
+    const fetchTicket = async () => {
+      try {
+        const res = await attendeeApi.getTicket(ticketId);
+        setTicketData({ ticket: res.data.ticket, event: res.data.ticket.eventId });
+      } catch (err) {
+        console.error(err);
+        setError("Ticket not found.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTicket();
   }, [ticketId]);
 
   if (loading) {
@@ -38,6 +44,21 @@ export default function TicketDetailPage() {
             <div className="w-48 h-12 bg-gray-200 rounded-full"></div>
           </div>
         </main>
+      </div>
+    );
+  }
+
+  if (error || !ticketData) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center text-gray-500">
+            <h2 className="text-2xl font-bold mb-2">Error</h2>
+            <p>{error || "Ticket not found."}</p>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }

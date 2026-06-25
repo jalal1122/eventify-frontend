@@ -10,8 +10,7 @@ import { LogOut, Globe, Camera, Edit2, Share2, Ticket, Star, Users } from "lucid
 import { useAuth } from "@/hooks/useAuth";
 import { EventCard } from "@/components/events/EventCard";
 import { OrganizerCard } from "@/components/organizers/OrganizerCard";
-import { mockEvents, mockOrganizers, mockUserProfile } from "@/lib/dummyData";
-
+import { attendeeApi, authApi } from "@/lib/api";
 function ProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -30,17 +29,30 @@ function ProfileContent() {
       return;
     }
     
-    // Simulate loading data
     const fetchProfileData = async () => {
       setLoading(true);
-      setTimeout(() => {
-        setProfile(mockUserProfile);
-        // Let's assume all mock events are attended for demonstration of the screenshot state
-        setTickets(mockEvents);
-        setInterested(mockEvents.slice(0, 2));
-        setFollowing(mockOrganizers);
+      try {
+        const [profileRes, ticketsRes, interestedRes, followingRes] = await Promise.all([
+          authApi.getProfile(),
+          attendeeApi.getTickets(),
+          attendeeApi.getInterestedEvents(),
+          attendeeApi.getFollowing(),
+        ]);
+        
+        setProfile(profileRes.data.user);
+        
+        // Ensure tickets exist in response, backend returns { success: true, registrations: [...] }
+        setTickets(ticketsRes.data.registrations || ticketsRes.data.tickets || []);
+        
+        // Ensure interested exist
+        setInterested(interestedRes.data.events || []);
+
+        setFollowing(followingRes.data.following || []);
+      } catch (err) {
+        console.error("Failed to fetch profile data:", err);
+      } finally {
         setLoading(false);
-      }, 500);
+      }
     };
     
     fetchProfileData();
@@ -130,8 +142,8 @@ function ProfileContent() {
                 <TabsContent value="attended" className="mt-0 outline-none">
                   {tickets.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                      {tickets.map((event: any) => (
-                        <EventCard key={event._id} event={event} attended={true} />
+                      {tickets.map((registration: any) => (
+                        <EventCard key={registration._id} event={registration.eventId} attended={true} href={`/tickets/${registration.ticketCode || registration._id}`} />
                       ))}
                     </div>
                   ) : (

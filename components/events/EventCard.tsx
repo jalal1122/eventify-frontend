@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge";
 interface EventCardProps {
   event: Event;
   attended?: boolean;
+  href?: string;
 }
 
-export function EventCard({ event, attended }: EventCardProps) {
+export function EventCard({ event, attended, href }: EventCardProps) {
   // If organizer is populated (it might be an object), extract its properties
   const orgName = typeof event.organizerProfileId === 'object' ? event.organizerProfileId.brandName : "Organizer";
   const orgLogo = typeof event.organizerProfileId === 'object' ? event.organizerProfileId.logoUrl : undefined;
@@ -18,8 +19,10 @@ export function EventCard({ event, attended }: EventCardProps) {
   // Create a placeholder string for the avatar if logo is missing (e.g., "UA" from "UAP IT Society")
   const orgInitials = orgName.substring(0, 3).toUpperCase();
 
+  const linkHref = href || `/events/${event._id}`;
+
   return (
-    <Link href={`/events/${event._id}`} className="block h-full">
+    <Link href={linkHref} className="block h-full">
       <Card className="h-full flex flex-col group overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer border-gray-100/50 shadow-sm rounded-3xl relative bg-white">
         
         {/* Image Header */}
