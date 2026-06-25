@@ -8,7 +8,7 @@ interface EventBannerCardProps {
 }
 
 export function EventBannerCard({ event }: EventBannerCardProps) {
-  const isFree = !event.isPaid || event.ticketPrice === 0;
+  const isFree = !event.tickets || !event.tickets.some(t => t.type === "PAID");
 
   return (
     <div className="w-full bg-white rounded-3xl border border-[#F3F4F6] shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col group">

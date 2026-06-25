@@ -118,7 +118,15 @@ export default function EventDetailPage() {
     );
   }
 
-  const isFree = !event.isPaid || event.ticketPrice === 0;
+  const isFree = !event.tickets || !event.tickets.some(t => t.type === "PAID");
+
+  const getDisplayPrice = () => {
+    if (!event.tickets || event.tickets.length === 0) return "Free";
+    const paidTickets = event.tickets.filter(t => t.type === "PAID" && t.price);
+    if (paidTickets.length === 0) return "Free";
+    const minPrice = Math.min(...paidTickets.map(t => t.price || 0));
+    return paidTickets.length > 1 ? `From Rs ${minPrice}` : `Rs ${minPrice}`;
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -237,7 +245,7 @@ export default function EventDetailPage() {
                     <div>
                       <p className="text-sm text-gray-500 font-medium mb-1">Registration</p>
                       <p className="text-4xl font-black text-gray-900">
-                        {isFree ? "Free" : `Rs ${event.ticketPrice}`}
+                        {getDisplayPrice()}
                       </p>
                     </div>
                     {event.capacityLimit && (

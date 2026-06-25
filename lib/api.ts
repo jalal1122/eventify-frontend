@@ -126,6 +126,26 @@ export const eventsApi = {
   toggleInterest: (id: string) => api.post(`/api/events/${id}/interest`),
 
   getCities: (q?: string) => api.get("/api/events/cities", { params: { q } }),
+
+  getCategories: () => api.get("/api/events/categories"),
+
+  create: (data: any) => api.post("/api/events", data),
+  
+  update: (id: string, data: any) => api.put(`/api/events/${id}`, data),
+  
+  delete: (id: string) => api.delete(`/api/events/${id}`),
+
+  updateStatus: (id: string, status: string) => api.patch(`/api/events/${id}/status`, { status }),
+
+  magicFillText: (text: string) => api.post("/api/events/magic-fill/text", { text }),
+
+  magicFillImage: (file: File) => {
+    const formData = new FormData();
+    formData.append("image", file);
+    return api.post("/api/events/magic-fill/image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
 };
 
 // ── Registrations ─────────────────────────────────────────────────────────
@@ -153,11 +173,17 @@ export const registrationsApi = {
 
   sendConfirmationEmail: (registrationId: string) =>
     api.post(`/api/registrations/${registrationId}/confirmation-email`),
+    
+  verifyQr: (ticketCode: string) => api.post("/api/registrations/verify-qr", { ticketCode }),
 };
 
 // ── Attendee ────────────────────────────────────────────────────────────────
 export const attendeeApi = {
   getTickets: () => api.get("/api/attendee/tickets"),
+
+  getTicket: (ticketCode: string) => api.get(`/api/attendee/tickets/${ticketCode}`),
+
+  getInterestedEvents: () => api.get("/api/attendee/interested"),
 
   cancelRegistration: (registrationId: string) =>
     api.post(`/api/attendee/registrations/${registrationId}/cancel`),
@@ -184,4 +210,8 @@ export const organizerApi = {
 
   updateProfile: (data: Record<string, unknown>) =>
     api.put("/api/organizer/profile", data),
+
+  getProfiles: () => api.get("/api/organizer/profiles"),
+
+  createProfile: (data: any) => api.post("/api/organizer/profile", data),
 };

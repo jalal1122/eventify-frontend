@@ -50,8 +50,20 @@ export interface Event {
   interestedCount: number;
   capacityLimit?: number;
   remainingCapacity?: number;
-  isPaid: boolean;
-  ticketPrice: number;
+  locationType: "VENUE" | "ONLINE";
+  platform?: string;
+  virtualLink?: string;
+  tickets: {
+    id: string;
+    type: "PAID" | "FREE";
+    name: string;
+    quantity: number;
+    price?: number;
+    paymentAccountType?: string;
+    paymentAccountNumber?: string;
+    salesStartDate?: string;
+    salesEndDate?: string;
+  }[];
   registrationMethod: RegistrationMethod;
   externalUrl?: string;
   externalVerificationCode?: string;
