@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { eventFormSchema, type EventFormValues } from "./schema";
@@ -12,8 +12,9 @@ import StepRegistration from "./components/StepRegistration";
 import StepTickets from "./components/StepTickets";
 import StepPublish from "./components/StepPublish";
 import SuccessScreen from "./components/SuccessScreen";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import ProfileDropdown from "@/components/layout/ProfileDropdown";
+import { useAuth } from "@/hooks/useAuth";
 
 const STEPS = [
   { id: "basics", title: "Basic Info" },
@@ -23,8 +24,10 @@ const STEPS = [
 ];
 
 export default function CreateEventPage() {
+  const { user, isAuthenticated, isLoading, upgradeToOrganizer } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
   const methods = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema) as any,
@@ -45,6 +48,18 @@ export default function CreateEventPage() {
     },
     mode: "onChange",
   });
+
+  useEffect(() => {
+    if (isAuthenticated && user?.role === "attendee") {
+      setIsUpgrading(true);
+      upgradeToOrganizer()
+        .then(() => setIsUpgrading(false))
+        .catch((err) => {
+          console.error("Failed to upgrade role:", err);
+          setIsUpgrading(false);
+        });
+    }
+  }, [isAuthenticated, user?.role, upgradeToOrganizer]);
 
   const { watch, trigger } = methods;
   const registrationMethod = watch("registrationMethod");
@@ -141,6 +156,16 @@ export default function CreateEventPage() {
 
   if (isSuccess) {
     return <SuccessScreen title={methods.getValues("title")} />;
+  }
+
+  if (isLoading || isUpgrading || (isAuthenticated && user?.role === "attendee")) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center">
+        <Loader2 className="w-12 h-12 text-[#006782] animate-spin mb-4" />
+        <h2 className="text-xl font-semibold text-[#001F29]">Setting up your organizer profile...</h2>
+        <p className="text-gray-500 mt-2">Just a moment while we get things ready.</p>
+      </div>
+    );
   }
 
   const currentStepId = activeSteps[currentStep].id;

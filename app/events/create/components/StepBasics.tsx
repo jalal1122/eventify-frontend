@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import CreateOrganizerModal from "./CreateOrganizerModal";
 import { useAuth } from "@/hooks/useAuth";
+import { organizerApi } from "@/lib/api";
 
 const CATEGORIES = [
   { id: "1", name: "Music & Concerts" },
@@ -38,32 +39,26 @@ export default function StepBasics() {
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
 
   useEffect(() => {
-    // Simulate fetching organizer profiles from the backend
     const fetchProfiles = async () => {
       setIsLoadingProfiles(true);
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const mockProfiles: any[] = [];
-      
-      if (mockProfiles.length === 0 && user) {
-        // Auto-create a basic profile if none exists
-        const newProfile = {
-          id: "default-org-" + Date.now(),
-          brandName: user.name + "'s Organization",
-        };
-        setOrganizerProfiles([newProfile]);
-        setValue("organizerProfileId", newProfile.id, { shouldValidate: true });
-      } else {
-        setOrganizerProfiles(mockProfiles);
-        if (mockProfiles.length > 0) {
-          setValue("organizerProfileId", mockProfiles[0].id, { shouldValidate: true });
+      try {
+        const res = await organizerApi.getProfiles();
+        const profiles = res.data.profiles || [];
+        setOrganizerProfiles(profiles);
+        if (profiles.length > 0 && !organizerProfileId) {
+          setValue("organizerProfileId", profiles[0]._id || profiles[0].id, { shouldValidate: true });
         }
+      } catch (error) {
+        console.error("Failed to fetch organizer profiles:", error);
+      } finally {
+        setIsLoadingProfiles(false);
       }
-      setIsLoadingProfiles(false);
     };
 
-    fetchProfiles();
-  }, [user, setValue]);
+    if (user) {
+      fetchProfiles();
+    }
+  }, [user, setValue, organizerProfileId]);
 
   const handleOrganizerCreated = (newId: string) => {
     // Mock updating the list with the new organizer
@@ -377,10 +372,10 @@ export default function StepBasics() {
                       </SelectTrigger>
                       <SelectContent className="bg-white">
                         {organizerProfiles.map((profile) => (
-                          <SelectItem key={profile.id} value={profile.id}>
+                          <SelectItem key={profile._id || profile.id} value={profile._id || profile.id}>
                             <div className="flex items-center gap-3">
                               <div className="w-6 h-6 rounded bg-[#006782] text-white flex items-center justify-center text-xs font-bold">
-                                {profile.brandName.charAt(0)}
+                                {profile.brandName?.charAt(0) || "O"}
                               </div>
                               <span>{profile.brandName}</span>
                             </div>

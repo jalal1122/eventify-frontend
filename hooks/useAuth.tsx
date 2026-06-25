@@ -11,6 +11,7 @@ interface AuthContextValue extends AuthState {
   googleLogin: (credential: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  upgradeToOrganizer: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -77,9 +78,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState({ user: null, isLoading: false, isAuthenticated: false });
   };
 
+  const upgradeToOrganizer = async () => {
+    const { attendeeApi } = await import("@/lib/api");
+    const res = await attendeeApi.upgradeToOrganizer();
+    if (res.data.token) {
+      tokenStore.set(res.data.token);
+      await refresh();
+    }
+  };
+
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
-      <AuthContext.Provider value={{ ...state, login, googleLogin, logout, refresh }}>
+      <AuthContext.Provider value={{ ...state, login, googleLogin, logout, refresh, upgradeToOrganizer }}>
         {children}
       </AuthContext.Provider>
     </GoogleOAuthProvider>

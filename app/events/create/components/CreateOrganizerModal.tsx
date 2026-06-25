@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -24,12 +24,15 @@ export default function CreateOrganizerModal({ isOpen, onClose, onSuccess }: Cre
 
     setIsLoading(true);
     try {
-      // In a real app, this would be an API call to POST /api/organizers/profile
-      // For now, we simulate the API call and return a mock ID
-      await new Promise(resolve => setTimeout(resolve, 800));
-      const mockNewId = Math.random().toString(36).substring(7);
+      const { organizerApi } = await import("@/lib/api");
+      const res = await organizerApi.createProfile({
+        brandName,
+        bio,
+        contactEmail,
+      });
       
-      onSuccess(mockNewId);
+      const newProfileId = res.data.profile._id || res.data.profile.id;
+      onSuccess(newProfileId);
       onClose();
     } catch (error) {
       console.error(error);

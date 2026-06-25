@@ -192,7 +192,9 @@ export const attendeeApi = {
 
   toggleFollow: (organizerId: string) =>
     api.post(`/api/attendee/follow/${organizerId}`),
-    
+
+  upgradeToOrganizer: () => api.post("/api/attendee/upgrade"),
+
   submitClaim: (eventId: string, reason: string, description: string) =>
     api.post("/api/attendee/claims", { eventId, reason, description }),
 };
