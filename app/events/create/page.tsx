@@ -286,6 +286,9 @@ function CreateEventForm() {
       }
       
       if (res.data.success) {
+        if (!eventId && res.data.event?._id) {
+          setEventId(res.data.event._id);
+        }
         setIsSuccess(true);
       }
     } catch (error: any) {
@@ -295,7 +298,11 @@ function CreateEventForm() {
   };
 
   if (isSuccess) {
-    return <SuccessScreen title={methods.getValues("title")} />;
+    return <SuccessScreen 
+      title={methods.getValues("title")} 
+      eventId={eventId!} 
+      organizerProfileId={methods.getValues("organizerProfileId")}
+    />;
   }
 
   if (isLoading || isUpgrading || (isAuthenticated && user?.role === "attendee")) {
