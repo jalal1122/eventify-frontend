@@ -9,6 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { EventCard } from "@/components/events/EventCard";
 import { type Event } from "@/types/event";
+import LoginToCreateModal from "@/components/modals/LoginToCreateModal";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 // Mock data to match the screenshot layout
 const categories = [
@@ -31,6 +35,18 @@ const cities = [
 ];
 
 export default function Home() {
+  const [loginToCreateOpen, setLoginToCreateOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const handleCreateEventClick = () => {
+    if (isAuthenticated) {
+      router.push("/events/create");
+    } else {
+      setLoginToCreateOpen(true);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       <Navbar />
@@ -56,7 +72,10 @@ export default function Home() {
               <p className="text-white/90 text-lg max-w-[500px] mb-8">
                 Find student events, workshops, seminars, and meetups inside and near your local community.
               </p>
-              <Button className="w-fit bg-white text-[#006782] hover:bg-gray-100 rounded-full px-6 py-6 text-base font-semibold shadow-lg">
+              <Button 
+                onClick={handleCreateEventClick}
+                className="w-fit bg-white text-[#006782] hover:bg-gray-100 rounded-full px-6 py-6 text-base font-semibold shadow-lg"
+              >
                 Create Event <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </div>
@@ -157,7 +176,10 @@ export default function Home() {
                 Let's shape Pakistan's UI happenings... together. Reach thousands of target attendees with our seamless platform tools.
               </p>
               <div className="flex flex-wrap items-center gap-4">
-                <Button className="bg-white text-[#006782] hover:bg-gray-100 rounded-full px-6 py-6 text-base font-semibold shadow-md">
+                <Button 
+                  onClick={handleCreateEventClick}
+                  className="bg-white text-[#006782] hover:bg-gray-100 rounded-full px-6 py-6 text-base font-semibold shadow-md"
+                >
                   Create an Event <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
                 <Button variant="outline" className="border-white text-white hover:bg-white hover:text-[#006782] bg-transparent rounded-full px-6 py-6 text-base font-semibold transition-colors">
@@ -226,6 +248,7 @@ export default function Home() {
       </section>
 
       <Footer />
+      <LoginToCreateModal open={loginToCreateOpen} onClose={() => setLoginToCreateOpen(false)} />
     </div>
   );
 }

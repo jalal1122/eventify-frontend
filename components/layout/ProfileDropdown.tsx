@@ -71,6 +71,16 @@ export default function ProfileDropdown() {
                 Interested Events
               </Link>
             </DropdownMenu.Item>
+            <DropdownMenu.Item asChild>
+              <Link
+                href="/events/create"
+                className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
+                onClick={() => setOpen(false)}
+              >
+                <Plus size={16} className="text-gray-400" />
+                Create An Event
+              </Link>
+            </DropdownMenu.Item>
           </div>
 
           {/* Organizer Control Section - Hidden for Attendees */}
@@ -79,16 +89,6 @@ export default function ProfileDropdown() {
               <div className="px-3 py-2 text-xs font-semibold text-gray-400 tracking-wider">
                 ORGANIZER CONTROL
               </div>
-              <DropdownMenu.Item asChild>
-                <Link
-                  href="/organizers/onboarding"
-                  className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
-                  onClick={() => setOpen(false)}
-                >
-                  <Plus size={16} className="text-gray-400" />
-                  Create An Event
-                </Link>
-              </DropdownMenu.Item>
               <DropdownMenu.Item asChild>
                 <Link
                   href="/dashboard"

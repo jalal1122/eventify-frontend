@@ -1,18 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Search, MapPin, Plus, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import SearchModal from "@/components/modals/SearchModal";
+import LoginToCreateModal from "@/components/modals/LoginToCreateModal";
 import { useAuth } from "@/hooks/useAuth";
 import ProfileDropdown from "@/components/layout/ProfileDropdown";
 
 export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [loginToCreateOpen, setLoginToCreateOpen] = useState(false);
   const { isAuthenticated, user, isLoading } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleCreateEventClick = () => {
+    if (isAuthenticated) {
+      router.push("/events/create");
+    } else {
+      setLoginToCreateOpen(true);
+    }
+  };
 
   return (
     <>
@@ -47,9 +58,12 @@ export default function Navbar() {
             <Link href="/discover" className={`hidden lg:block text-sm pb-0 border-b-2 transition-colors ${pathname === "/discover" ? "font-semibold text-[#006782] border-[#006782]" : "font-medium text-gray-600 border-transparent hover:text-gray-900"}`}>
               Discover
             </Link>
-            <Link href="/organizers/onboarding" className="hidden md:flex items-center gap-1 text-sm font-medium text-[#006782] hover:text-[#004E63] transition-colors">
+            <button 
+              onClick={handleCreateEventClick} 
+              className="hidden md:flex items-center gap-1 text-sm font-medium text-[#006782] hover:text-[#004E63] transition-colors bg-transparent border-none cursor-pointer outline-none"
+            >
               <Plus size={16} /> Create Event
-            </Link>
+            </button>
 
             <div className="w-[1px] h-6 bg-[#E5E7EB] hidden sm:block mx-2" />
 
@@ -65,6 +79,8 @@ export default function Navbar() {
       </nav>
 
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <LoginToCreateModal open={loginToCreateOpen} onClose={() => setLoginToCreateOpen(false)} />
     </>
   );
 }
+
