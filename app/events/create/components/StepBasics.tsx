@@ -1,5 +1,6 @@
-"use client";
+﻿"use client";
 
+import { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { EventFormValues } from "../schema";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -9,12 +10,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import ImageUploadZone from "./ImageUploadZone";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import LocationMap from "./LocationMap";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import CreateOrganizerModal from "./CreateOrganizerModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CATEGORIES = [
   { id: "1", name: "Music & Concerts" },
@@ -25,11 +28,52 @@ const CATEGORIES = [
 ];
 
 export default function StepBasics() {
-  const { control, watch } = useFormContext<EventFormValues>();
+  const { control, watch, setValue } = useFormContext<EventFormValues>();
   const locationType = watch("locationType");
+  const organizerProfileId = watch("organizerProfileId");
+  const { user } = useAuth();
+  
+  const [organizerProfiles, setOrganizerProfiles] = useState<any[]>([]);
+  const [isOrganizerModalOpen, setIsOrganizerModalOpen] = useState(false);
+  const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
+
+  useEffect(() => {
+    // Simulate fetching organizer profiles from the backend
+    const fetchProfiles = async () => {
+      setIsLoadingProfiles(true);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const mockProfiles: any[] = [];
+      
+      if (mockProfiles.length === 0 && user) {
+        // Auto-create a basic profile if none exists
+        const newProfile = {
+          id: "default-org-" + Date.now(),
+          brandName: user.name + "'s Organization",
+        };
+        setOrganizerProfiles([newProfile]);
+        setValue("organizerProfileId", newProfile.id, { shouldValidate: true });
+      } else {
+        setOrganizerProfiles(mockProfiles);
+        if (mockProfiles.length > 0) {
+          setValue("organizerProfileId", mockProfiles[0].id, { shouldValidate: true });
+        }
+      }
+      setIsLoadingProfiles(false);
+    };
+
+    fetchProfiles();
+  }, [user, setValue]);
+
+  const handleOrganizerCreated = (newId: string) => {
+    // Mock updating the list with the new organizer
+    const newProfile = { id: newId, brandName: "New Organization" };
+    setOrganizerProfiles(prev => [...prev, newProfile]);
+    setValue("organizerProfileId", newId, { shouldValidate: true });
+  };
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-12 pb-8">
       {/* 1. Event Details */}
       <section>
         <h2 className="text-2xl font-semibold text-[#001F29] mb-6">1. Event Details</h2>
@@ -298,10 +342,10 @@ export default function StepBasics() {
         </div>
       </section>
 
-      {/* 5. Event Overview */}
+      {/* 5. Event Overview & Organizer Page */}
       <section>
         <h2 className="text-2xl font-semibold text-[#001F29] mb-6">5. Event Overview</h2>
-        <div className="max-w-3xl">
+        <div className="max-w-3xl space-y-12">
           <FormField
             control={control}
             name="overview"
@@ -318,10 +362,53 @@ export default function StepBasics() {
               </FormItem>
             )}
           />
+          
+          <div className="pt-8 border-t border-gray-100">
+            <h3 className="text-lg font-semibold text-[#001F29] mb-4">Organizer Page</h3>
+            <FormField
+              control={control}
+              name="organizerProfileId"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-2">
+                  <FormControl>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingProfiles}>
+                      <SelectTrigger className="w-[350px] h-12 border-gray-300 rounded-xl focus:ring-[#006782]">
+                        <SelectValue placeholder={isLoadingProfiles ? "Loading organizers..." : "Select an organizer page"} />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white">
+                        {organizerProfiles.map((profile) => (
+                          <SelectItem key={profile.id} value={profile.id}>
+                            <div className="flex items-center gap-3">
+                              <div className="w-6 h-6 rounded bg-[#006782] text-white flex items-center justify-center text-xs font-bold">
+                                {profile.brandName.charAt(0)}
+                              </div>
+                              <span>{profile.brandName}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <button 
+                    type="button" 
+                    onClick={() => setIsOrganizerModalOpen(true)}
+                    className="text-[#006782] text-sm font-medium hover:underline flex items-center gap-1 self-start mt-2"
+                  >
+                    <Plus className="w-4 h-4" /> Create new organizer page
+                  </button>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
       </section>
+
+      <CreateOrganizerModal 
+        isOpen={isOrganizerModalOpen} 
+        onClose={() => setIsOrganizerModalOpen(false)} 
+        onSuccess={handleOrganizerCreated}
+      />
     </div>
   );
 }
-
-
