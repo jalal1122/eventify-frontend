@@ -13,20 +13,14 @@ function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
 
-import { mockEvents } from "@/lib/dummyData";
+import { useEvents } from "@/hooks/useEvents";
 
 export default function CityPage() {
   const params = useParams();
   const city = capitalizeFirstLetter(decodeURIComponent(params.city as string));
   const [activeFilter, setActiveFilter] = useState("all");
 
-  // Modify dummy events so that the title is prepended with the city name
-  // This gives the illusion that the events are specific to whatever city was clicked
-  const cityEvents = mockEvents.map(e => ({
-    ...e,
-    title: `${city} ${e.title}`,
-    city: city,
-  })) as Event[];
+  const { events, loading } = useEvents({ city });
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -84,11 +78,17 @@ export default function CityPage() {
           </div>
 
           {/* Event Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {cityEvents.map(event => (
-              <EventCard key={event._id} event={event} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#006782]"></div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {events.map(event => (
+                <EventCard key={event._id} event={event} />
+              ))}
+            </div>
+          )}
           
           <div className="flex justify-center mt-12">
             <Button className="bg-[#006782] hover:bg-[#004E63] text-white rounded-full px-8 py-6 text-base font-semibold shadow-md">

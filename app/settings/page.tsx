@@ -6,11 +6,14 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, Settings, CheckCircle2, Trash2 } from "lucide-react";
-import { mockUserProfile } from "@/lib/dummyData";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AccountSettingsPage() {
   const [authType, setAuthType] = useState<"email" | "google">("google"); // For demo purposes
   const [emailSent, setEmailSent] = useState(true); // For demo of the green alert
+  const { user } = useAuth();
+  
+  if (!user) return null;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -31,7 +34,7 @@ export default function AccountSettingsPage() {
               <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 border-2 border-white shadow-sm shrink-0">
                 <img 
                   src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80" 
-                  alt={mockUserProfile.name} 
+                  alt={user.name} 
                   className="w-full h-full object-cover" 
                 />
               </div>
@@ -39,8 +42,8 @@ export default function AccountSettingsPage() {
                 <Settings size={12} />
               </div>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-1">{mockUserProfile.name}</h2>
-            <p className="text-gray-500 text-sm font-medium mb-4">{mockUserProfile.email}</p>
+            <h2 className="text-xl font-bold text-gray-900 mb-1">{user.name}</h2>
+            <p className="text-gray-500 text-sm font-medium mb-4">{user.email}</p>
             <Link href="/profile/edit">
               <Button variant="outline" className="h-9 px-6 rounded-full font-bold border-gray-200 hover:bg-gray-50 text-gray-700 shadow-sm text-sm">
                 Edit Profile
@@ -64,7 +67,7 @@ export default function AccountSettingsPage() {
                     </div>
                     <input 
                       type="email" 
-                      defaultValue={mockUserProfile.email}
+                      defaultValue={user.email}
                       className="w-full h-11 pl-12 pr-4 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-[#006782] outline-none font-medium text-gray-900"
                     />
                   </div>

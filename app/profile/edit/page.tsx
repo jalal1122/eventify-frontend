@@ -1,28 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Lock, Info } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { mockUserProfile } from "@/lib/dummyData";
+import { authApi } from "@/lib/api";
 
 export default function EditProfilePage() {
   const router = useRouter();
   const { user } = useAuth();
   
-  // Use mock data if user is missing since backend isn't fully hooked up
-  const [firstName, setFirstName] = useState("Inayat");
-  const [lastName, setLastName] = useState("ur Rehman");
-  const [city, setCity] = useState("Peshawar");
-  const email = mockUserProfile.email || user?.email || "iminayaturrahman@gmail.com";
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [city, setCity] = useState("");
+  const [email, setEmail] = useState("");
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      const parts = user.name ? user.name.split(" ") : [""];
+      setFirstName(parts[0] || "");
+      setLastName(parts.slice(1).join(" ") || "");
+      setCity((user as any).city || "");
+      setEmail(user.email || "");
+    }
+  }, [user]);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Saving profile", { firstName, lastName, city });
-    router.push("/profile");
+    try {
+      await authApi.updateProfile({ 
+        name: `${firstName} ${lastName}`.trim(),
+        city
+      });
+      router.push("/profile");
+    } catch (err) {
+      console.error("Failed to update profile", err);
+      alert("Failed to update profile.");
+    }
   };
 
   return (

@@ -10,8 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Ticket } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { TicketCard } from "@/components/events/TicketCard";
-import { mockEvents, mockTickets, mockUserProfile } from "@/lib/dummyData";
-
+import { attendeeApi, authApi } from "@/lib/api";
 function ProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -28,20 +27,27 @@ function ProfileContent() {
       return;
     }
     
-    // Simulate loading data
     const fetchProfileData = async () => {
       setLoading(true);
-      setTimeout(() => {
-        setProfile(mockUserProfile);
-        // Map mock events to mock tickets for UI demo
-        const demoTickets = mockTickets.map(t => {
-          const event = mockEvents.find(e => e._id === t.eventId);
-          return { event, ticket: t };
-        }).filter(item => item.event);
+      try {
+        const [profileRes, ticketsRes] = await Promise.all([
+          authApi.getProfile(),
+          attendeeApi.getTickets(),
+        ]);
+        setProfile(profileRes.data.user);
+        
+        const backendTickets = ticketsRes.data.registrations || ticketsRes.data.tickets || [];
+        const mappedTickets = backendTickets.map((t: any) => ({
+          event: t.eventId,
+          ticket: t
+        }));
 
-        setTickets(demoTickets);
+        setTickets(mappedTickets);
+      } catch (err) {
+        console.error("Failed to fetch tickets", err);
+      } finally {
         setLoading(false);
-      }, 500);
+      }
     };
     
     fetchProfileData();
