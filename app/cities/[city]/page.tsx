@@ -15,13 +15,44 @@ function capitalizeFirstLetter(string: string) {
 }
 
 import { useEvents } from "@/hooks/useEvents";
+import { useEffect } from "react";
 
 export default function CityPage() {
   const params = useParams();
   const city = capitalizeFirstLetter(decodeURIComponent(params.city as string));
   const [activeFilter, setActiveFilter] = useState("all");
+  const [activeCategory, setActiveCategory] = useState("All");
 
-  const { events, loading } = useEvents({ city });
+  const { events, loading, updateFilters } = useEvents({ city });
+
+  useEffect(() => {
+    let startDate: string | undefined;
+    let endDate: string | undefined;
+    const now = new Date();
+
+    if (activeFilter === "today") {
+      startDate = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+      endDate = new Date(now.setHours(23, 59, 59, 999)).toISOString();
+    } else if (activeFilter === "this week") {
+      const currentDay = now.getDay();
+      const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+      const firstDay = new Date(now.setDate(now.getDate() + distanceToMonday));
+      const lastDay = new Date(firstDay);
+      lastDay.setDate(lastDay.getDate() + 6);
+      startDate = new Date(firstDay.setHours(0, 0, 0, 0)).toISOString();
+      endDate = new Date(lastDay.setHours(23, 59, 59, 999)).toISOString();
+    } else if (activeFilter === "next week") {
+      const currentDay = now.getDay();
+      const distanceToNextMonday = currentDay === 0 ? 1 : 8 - currentDay;
+      const firstDay = new Date(now.setDate(now.getDate() + distanceToNextMonday));
+      const lastDay = new Date(firstDay);
+      lastDay.setDate(lastDay.getDate() + 6);
+      startDate = new Date(firstDay.setHours(0, 0, 0, 0)).toISOString();
+      endDate = new Date(lastDay.setHours(23, 59, 59, 999)).toISOString();
+    }
+
+    updateFilters({ startDate, endDate, category: activeCategory });
+  }, [activeFilter, activeCategory, updateFilters]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -68,8 +99,12 @@ export default function CityPage() {
                   </button>
                 ))}
               </div>
-              <select className="h-10 rounded-xl border border-[#D1D5DB] bg-white px-4 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-[#006782]">
-                <option value="">Select Category</option>
+              <select 
+                value={activeCategory} 
+                onChange={(e) => setActiveCategory(e.target.value)}
+                className="h-10 rounded-xl border border-[#D1D5DB] bg-white px-4 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-[#006782]"
+              >
+                <option value="All">Select Category</option>
                 <option value="Technology">Technology</option>
                 <option value="Music">Music</option>
                 <option value="Food">Food</option>

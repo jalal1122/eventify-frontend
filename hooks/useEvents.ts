@@ -9,6 +9,8 @@ export interface DiscoverFilters {
   category?: string;
   city?: string;
   sort?: "soonest" | "trending";
+  startDate?: string;
+  endDate?: string;
 }
 
 export function useEvents(initialFilters: DiscoverFilters = {}) {
@@ -23,9 +25,11 @@ export function useEvents(initialFilters: DiscoverFilters = {}) {
       setError(null);
       const res = await eventsApi.discover({
         q: currentFilters.q,
-        category: currentFilters.category !== "All" ? currentFilters.category : undefined,
-        city: currentFilters.city !== "All" ? currentFilters.city : undefined,
+        category: currentFilters.category && currentFilters.category !== "All" ? currentFilters.category : undefined,
+        city: currentFilters.city && currentFilters.city !== "All" ? currentFilters.city : undefined,
         sort: currentFilters.sort,
+        startDate: currentFilters.startDate,
+        endDate: currentFilters.endDate,
         limit: 20, // Example fixed limit
       });
       setEvents(res.data.events);
@@ -41,9 +45,9 @@ export function useEvents(initialFilters: DiscoverFilters = {}) {
     fetchEvents(filters);
   }, [filters, fetchEvents]);
 
-  const updateFilters = (newFilters: Partial<DiscoverFilters>) => {
+  const updateFilters = useCallback((newFilters: Partial<DiscoverFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
-  };
+  }, []);
 
   return { events, loading, error, filters, updateFilters, refetch: () => fetchEvents(filters) };
 }

@@ -39,6 +39,7 @@ const cities = [
 
 export default function Home() {
   const [loginToCreateOpen, setLoginToCreateOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const { isAuthenticated } = useAuth();
@@ -46,8 +47,29 @@ export default function Home() {
 
   useEffect(() => {
     const fetchEvents = async () => {
+      setLoading(true);
       try {
-        const res = await eventsApi.discover({});
+        let params: any = { sort: "trending" };
+        const now = new Date();
+        if (activeTab === "today") {
+          params.startDate = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+          params.endDate = new Date(now.setHours(23, 59, 59, 999)).toISOString();
+        } else if (activeTab === "week") {
+          const currentDay = now.getDay();
+          const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+          const firstDay = new Date(now.setDate(now.getDate() + distanceToMonday));
+          const lastDay = new Date(firstDay);
+          lastDay.setDate(lastDay.getDate() + 6);
+          params.startDate = new Date(firstDay.setHours(0, 0, 0, 0)).toISOString();
+          params.endDate = new Date(lastDay.setHours(23, 59, 59, 999)).toISOString();
+        } else if (activeTab === "month") {
+          const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+          const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+          params.startDate = new Date(firstDay.setHours(0, 0, 0, 0)).toISOString();
+          params.endDate = new Date(lastDay.setHours(23, 59, 59, 999)).toISOString();
+        }
+
+        const res = await eventsApi.discover(params);
         if (res.data.success) {
           // get top 4 events for the popular section
           setEvents(res.data.events.slice(0, 4));
@@ -59,7 +81,7 @@ export default function Home() {
       }
     };
     fetchEvents();
-  }, []);
+  }, [activeTab]);
 
   const handleCreateEventClick = () => {
     if (isAuthenticated) {
@@ -128,7 +150,7 @@ export default function Home() {
 
         {/* 3. Most Popular Upcoming Events */}
         <section className="max-w-[1280px] mx-auto px-8 mb-20">
-          <Tabs defaultValue="all" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
               <h2 className="text-2xl font-bold text-gray-900">Most Popular Upcoming Events</h2>
               <TabsList className="bg-transparent gap-2 h-auto">
@@ -139,34 +161,36 @@ export default function Home() {
               </TabsList>
             </div>
             
-            <TabsContent value="all" className="mt-0">
-              {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {[1, 2, 3, 4].map(i => <EventCardSkeleton key={i} />)}
-                </div>
-              ) : events.length === 0 ? (
-                <EmptyState 
-                  icon={CalendarX} 
-                  title="No events yet" 
-                  description="Be the first to create an amazing event for the community." 
-                  actionLabel="Create Event" 
-                  onAction={handleCreateEventClick} 
-                />
-              ) : (
-                <>
+            {["all", "today", "week", "month"].map(tabValue => (
+              <TabsContent key={tabValue} value={tabValue} className="mt-0">
+                {loading ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {events.map((event) => (
-                      <EventCard key={event._id} event={event} />
-                    ))}
+                    {[1, 2, 3, 4].map(i => <EventCardSkeleton key={i} />)}
                   </div>
-                  <div className="flex justify-center mt-10">
-                    <Button className="bg-[#006782] hover:bg-[#004E63] text-white rounded-full px-8 py-6 text-base shadow-md">
-                      View all Events
-                    </Button>
-                  </div>
-                </>
-              )}
-            </TabsContent>
+                ) : events.length === 0 ? (
+                  <EmptyState 
+                    icon={CalendarX} 
+                    title="No events yet" 
+                    description="Be the first to create an amazing event for the community." 
+                    actionLabel="Create Event" 
+                    onAction={handleCreateEventClick} 
+                  />
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {events.map((event) => (
+                        <EventCard key={event._id} event={event} />
+                      ))}
+                    </div>
+                    <div className="flex justify-center mt-10">
+                      <Button className="bg-[#006782] hover:bg-[#004E63] text-white rounded-full px-8 py-6 text-base shadow-md">
+                        View all Events
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </TabsContent>
+            ))}
           </Tabs>
         </section>
 

@@ -2,6 +2,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, GraduationCap, Monitor, Trophy, Gamepad2, Briefcase, Palette, Dumbbell, Utensils, Users, BriefcaseBusiness, Music, Code } from "lucide-react";
 
@@ -83,13 +84,15 @@ export default function CategoriesPage() {
               {categories.map((cat, i) => {
                 const Icon = cat.icon;
                 return (
-                  <div key={i} className="bg-white rounded-3xl p-8 flex flex-col items-center text-center shadow-sm border border-[#F3F4F6] hover:shadow-md hover:border-[#006782]/30 transition-all cursor-pointer">
-                    <div className="w-14 h-14 rounded-full bg-[#E6F0F3] text-[#006782] flex items-center justify-center mb-6">
-                      <Icon size={24} />
+                  <Link key={i} href={`/discover?category=${encodeURIComponent(cat.name)}`}>
+                    <div className="bg-white rounded-3xl p-8 flex flex-col items-center text-center shadow-sm border border-[#F3F4F6] hover:shadow-md hover:border-[#006782]/30 transition-all cursor-pointer h-full">
+                      <div className="w-14 h-14 rounded-full bg-[#E6F0F3] text-[#006782] flex items-center justify-center mb-6">
+                        <Icon size={24} />
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">{cat.name}</h3>
+                      <p className="text-sm text-gray-500">{cat.count}</p>
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">{cat.name}</h3>
-                    <p className="text-sm text-gray-500">{cat.count}</p>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
