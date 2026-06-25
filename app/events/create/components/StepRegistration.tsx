@@ -25,7 +25,7 @@ function SortableQuestionCard({ id, index, remove, duplicate }: { id: string; in
     transition,
   };
 
-  const questionType = watch(\`customQuestions.\${index}.type\`);
+  const questionType = watch(`customQuestions.${index}.type`);
 
   return (
     <div ref={setNodeRef} style={style} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex gap-4 items-start group">
@@ -40,7 +40,7 @@ function SortableQuestionCard({ id, index, remove, duplicate }: { id: string; in
           <div className="flex-1">
             <FormField
               control={control}
-              name={\`customQuestions.\${index}.label\`}
+              name={`customQuestions.${index}.label`}
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
@@ -56,7 +56,7 @@ function SortableQuestionCard({ id, index, remove, duplicate }: { id: string; in
           <div className="w-full md:w-48">
             <FormField
               control={control}
-              name={\`customQuestions.\${index}.type\`}
+              name={`customQuestions.${index}.type`}
               render={({ field }) => (
                 <FormItem>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
@@ -91,7 +91,7 @@ function SortableQuestionCard({ id, index, remove, duplicate }: { id: string; in
         <div className="pt-4 border-t border-gray-100 flex items-center justify-end gap-6">
            <FormField
               control={control}
-              name={\`customQuestions.\${index}.required\`}
+              name={`customQuestions.${index}.required`}
               render={({ field }) => (
                 <FormItem className="flex items-center space-x-2 space-y-0">
                   <FormLabel className="text-sm font-medium text-gray-600">Required</FormLabel>
@@ -184,21 +184,21 @@ export default function StepRegistration() {
           {/* Eventify Form Option */}
           <div 
             onClick={() => handleMethodClick("INTERNAL")}
-            className={\`p-5 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-4 \${
+            className={`p-5 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-4 ${
               registrationMethod === "INTERNAL" 
               ? "border-[#006782] bg-[#F0F8FA]" 
               : "border-gray-200 bg-white hover:border-gray-300"
-            }\`}
+            }`}
           >
-            <div className={\`p-2 rounded-lg \${registrationMethod === "INTERNAL" ? "bg-[#006782] text-white" : "bg-gray-100 text-gray-500"}\`}>
+            <div className={`p-2 rounded-lg ${registrationMethod === "INTERNAL" ? "bg-[#006782] text-white" : "bg-gray-100 text-gray-500"}`}>
               <FileText className="w-5 h-5" />
             </div>
             <div>
-              <h3 className={\`font-bold \${registrationMethod === "INTERNAL" ? "text-[#006782]" : "text-gray-700"}\`}>Eventify Form</h3>
+              <h3 className={`font-bold ${registrationMethod === "INTERNAL" ? "text-[#006782]" : "text-gray-700"}`}>Eventify Form</h3>
               <p className="text-xs text-gray-500 mt-1">Use our built-in form builder, ticketing, and attendee analytics.</p>
             </div>
             <div className="ml-auto mt-1">
-              <div className={\`w-5 h-5 rounded-full border-2 flex items-center justify-center \${registrationMethod === "INTERNAL" ? "border-[#006782]" : "border-gray-300"}\`}>
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${registrationMethod === "INTERNAL" ? "border-[#006782]" : "border-gray-300"}`}>
                 {registrationMethod === "INTERNAL" && <div className="w-2.5 h-2.5 rounded-full bg-[#006782]" />}
               </div>
             </div>
@@ -207,21 +207,21 @@ export default function StepRegistration() {
           {/* External Link Option */}
           <div 
             onClick={() => handleMethodClick("EXTERNAL")}
-            className={\`p-5 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-4 \${
+            className={`p-5 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-4 ${
               registrationMethod === "EXTERNAL" 
               ? "border-[#006782] bg-[#F0F8FA]" 
               : "border-gray-200 bg-white hover:border-gray-300"
-            }\`}
+            }`}
           >
-            <div className={\`p-2 rounded-lg \${registrationMethod === "EXTERNAL" ? "bg-[#006782] text-white" : "bg-gray-100 text-gray-500"}\`}>
+            <div className={`p-2 rounded-lg ${registrationMethod === "EXTERNAL" ? "bg-[#006782] text-white" : "bg-gray-100 text-gray-500"}`}>
               <LinkIcon className="w-5 h-5" />
             </div>
             <div>
-              <h3 className={\`font-bold \${registrationMethod === "EXTERNAL" ? "text-[#006782]" : "text-gray-700"}\`}>External Link</h3>
+              <h3 className={`font-bold ${registrationMethod === "EXTERNAL" ? "text-[#006782]" : "text-gray-700"}`}>External Link</h3>
               <p className="text-xs text-gray-500 mt-1">Redirect users to another platform like Eventbrite or Google Forms.</p>
             </div>
             <div className="ml-auto mt-1">
-              <div className={\`w-5 h-5 rounded-full border-2 flex items-center justify-center \${registrationMethod === "EXTERNAL" ? "border-[#006782]" : "border-gray-300"}\`}>
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${registrationMethod === "EXTERNAL" ? "border-[#006782]" : "border-gray-300"}`}>
                 {registrationMethod === "EXTERNAL" && <div className="w-2.5 h-2.5 rounded-full bg-[#006782]" />}
               </div>
             </div>
@@ -328,3 +328,4 @@ export default function StepRegistration() {
     </div>
   );
 }
+

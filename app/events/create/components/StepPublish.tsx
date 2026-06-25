@@ -27,8 +27,8 @@ export default function StepPublish() {
 
   const displayDate = startDate ? format(startDate, "EEEE, MMMM d, yyyy") : "Date TBD";
   const displayLocation = locationType === "VENUE" 
-    ? \`\${venueName || "Venue TBD"}\${city ? \`, \${city}\` : ""}\`
-    : \`\${platform || "Online Event"}\`;
+    ? `${venueName || "Venue TBD"}${city ? `, ${city}` : ""}`
+    : `${platform || "Online Event"}`;
 
   return (
     <div className="space-y-10 max-w-4xl">
@@ -168,3 +168,4 @@ export default function StepPublish() {
     </div>
   );
 }
+

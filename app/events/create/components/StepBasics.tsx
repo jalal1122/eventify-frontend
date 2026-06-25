@@ -229,7 +229,6 @@ export default function StepBasics() {
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>
@@ -276,7 +275,6 @@ export default function StepBasics() {
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>
@@ -325,3 +323,5 @@ export default function StepBasics() {
     </div>
   );
 }
+
+

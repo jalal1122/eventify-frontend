@@ -9,7 +9,7 @@ export default function LocationMap() {
   const city = watch("city") || "";
   const address = watch("address") || "";
 
-  const searchQuery = \`\${venueName} \${address} \${city}\`.trim();
+  const searchQuery = `${venueName} ${address} ${city}`.trim();
   
   if (!searchQuery) {
     return (
@@ -28,7 +28,7 @@ export default function LocationMap() {
          height="100%" 
          frameBorder="0" 
          scrolling="no" 
-         src={\`https://www.openstreetmap.org/export/embed.html?bbox=-180,-90,180,90&layer=mapnik&marker=&q=\${encodeURIComponent(searchQuery)}\`} 
+         src={`https://www.openstreetmap.org/export/embed.html?bbox=-180,-90,180,90&layer=mapnik&marker=&q=${encodeURIComponent(searchQuery)}`} 
          className="absolute inset-0"
        />
        {/* Note: OSM export embed doesn't auto-center perfectly without coordinates, but this works as a free placeholder */}
@@ -38,3 +38,4 @@ export default function LocationMap() {
     </div>
   );
 }
+

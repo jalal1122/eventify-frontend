@@ -17,9 +17,7 @@ export const eventFormSchema = z.object({
   virtualLink: z.string().optional(),
   
   // Dates
-  startDate: z.date({
-    required_error: "A date of birth is required.",
-  }).optional(),
+  startDate: z.date().optional(),
   startTime: z.string().optional(),
   endDate: z.date().optional(),
   endTime: z.string().optional(),
@@ -64,3 +62,4 @@ export const eventFormSchema = z.object({
 });
 
 export type EventFormValues = z.infer<typeof eventFormSchema>;
+

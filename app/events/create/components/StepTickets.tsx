@@ -122,10 +122,10 @@ export default function StepTickets() {
               <div>
                 <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Price</p>
                 <p className="text-xl font-bold text-[#001F29]">
-                  {ticket.type === "FREE" ? "Rs: 00" : \`Rs: \${ticket.price}\`}
+                  {ticket.type === "FREE" ? "Rs: 00" : `Rs: ${ticket.price}`}
                 </p>
               </div>
-              <div className={\`text-sm font-bold \${ticket.type === "FREE" ? "text-teal-600" : "text-[#006782]"}\`}>
+              <div className={`text-sm font-bold ${ticket.type === "FREE" ? "text-teal-600" : "text-[#006782]"}`}>
                 {ticket.type}
               </div>
             </div>
@@ -180,13 +180,13 @@ export default function StepTickets() {
               <div className="flex bg-slate-100 p-1 rounded-lg mb-8 max-w-xs">
                  <button 
                    onClick={() => setTicketType("PAID")}
-                   className={\`flex-1 py-2 text-sm font-semibold rounded-md transition-all \${ticketType === "PAID" ? "bg-white text-[#001F29] shadow-sm" : "text-gray-500"}\`}
+                   className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${ticketType === "PAID" ? "bg-white text-[#001F29] shadow-sm" : "text-gray-500"}`}
                  >
                    Paid
                  </button>
                  <button 
                    onClick={() => setTicketType("FREE")}
-                   className={\`flex-1 py-2 text-sm font-semibold rounded-md transition-all \${ticketType === "FREE" ? "bg-white text-[#001F29] shadow-sm" : "text-gray-500"}\`}
+                   className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${ticketType === "FREE" ? "bg-white text-[#001F29] shadow-sm" : "text-gray-500"}`}
                  >
                    Free
                  </button>
@@ -263,7 +263,7 @@ export default function StepTickets() {
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0 bg-white" align="start">
-                          <CalendarComponent mode="single" selected={salesStartDate} onSelect={setSalesStartDate} initialFocus />
+                          <CalendarComponent mode="single" selected={salesStartDate} onSelect={setSalesStartDate} />
                         </PopoverContent>
                       </Popover>
                     </div>
@@ -283,7 +283,7 @@ export default function StepTickets() {
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0 bg-white" align="start">
-                          <CalendarComponent mode="single" selected={salesEndDate} onSelect={setSalesEndDate} initialFocus />
+                          <CalendarComponent mode="single" selected={salesEndDate} onSelect={setSalesEndDate} />
                         </PopoverContent>
                       </Popover>
                     </div>
@@ -306,3 +306,5 @@ export default function StepTickets() {
     </div>
   );
 }
+
+

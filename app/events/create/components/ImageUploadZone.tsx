@@ -67,9 +67,9 @@ export default function ImageUploadZone() {
     <div className="w-full">
       {/* Upload Zone */}
       <div
-        className={\`relative w-full h-64 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center transition-colors cursor-pointer overflow-hidden \${
+        className={`relative w-full h-64 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center transition-colors cursor-pointer overflow-hidden ${
           isDragging ? "border-[#006782] bg-[#F0F8FA]" : "border-gray-300 bg-slate-50 hover:bg-slate-100"
-        }\`}
+        }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -129,3 +129,4 @@ export default function ImageUploadZone() {
     </div>
   );
 }
+

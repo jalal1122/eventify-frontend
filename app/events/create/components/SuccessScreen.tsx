@@ -10,7 +10,7 @@ export default function SuccessScreen() {
   const title = watch("title");
   
   // Dummy event ID for demo purposes
-  const eventUrl = \`https://eventify.com/e/preview-123\`;
+  const eventUrl = `https://eventify.com/e/preview-123`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(eventUrl);
@@ -87,3 +87,4 @@ export default function SuccessScreen() {
     </div>
   );
 }
+
