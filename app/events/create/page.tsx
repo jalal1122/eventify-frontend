@@ -138,6 +138,8 @@ function CreateEventForm() {
       const payload = {
         title: data.title,
         description: data.overview,
+        bannerUrl: data.bannerUrl,
+        cardImageUrl: data.cardImageUrl,
         category: data.categoryId,
         locationType: data.locationType,
         venueName: data.venueName,
@@ -255,6 +257,8 @@ function CreateEventForm() {
       const payload = {
         title: data.title,
         description: data.overview,
+        bannerUrl: data.bannerUrl,
+        cardImageUrl: data.cardImageUrl,
         category: data.categoryId,
         locationType: data.locationType,
         venueName: data.venueName,
