@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { eventFormSchema, type EventFormValues } from "./schema";
+import { eventsApi } from "@/lib/api";
 
 // We will build these step components next
 import StepBasics from "./components/StepBasics";
@@ -87,12 +88,55 @@ export default function CreateEventPage() {
     }
   };
 
-  const submitEvent = () => {
-    console.log("Submitting Event Data:", methods.getValues());
-    // Simulate API call
-    setTimeout(() => {
-      setIsSuccess(true);
-    }, 1000);
+  const submitEvent = async () => {
+    try {
+      const data = methods.getValues();
+      
+      // Combine date and time
+      let dateTime = new Date().toISOString();
+      if (data.startDate) {
+        const date = new Date(data.startDate);
+        if (data.startTime) {
+          const [hours, minutes] = data.startTime.split(":");
+          date.setHours(Number(hours), Number(minutes));
+        }
+        dateTime = date.toISOString();
+      }
+
+      const payload = {
+        title: data.title,
+        description: data.overview,
+        category: data.categoryId,
+        locationType: data.locationType,
+        venueName: data.venueName,
+        city: data.city,
+        platform: data.platform,
+        virtualLink: data.virtualLink,
+        dateTime,
+        registrationMethod: data.registrationMethod === "EXTERNAL" ? "external" : "native",
+        externalUrl: data.externalUrl,
+        customFormSchema: data.customQuestions,
+        tickets: data.tickets.map(t => ({
+           id: t.id,
+           type: t.type,
+           name: t.name,
+           quantity: t.quantity,
+           price: t.price || 0,
+           paymentAccountType: t.paymentAccountType,
+           paymentAccountNumber: t.paymentAccountNumber,
+        })),
+        organizerProfileId: data.organizerProfileId,
+        submitForReview: true,
+      };
+
+      const res = await eventsApi.create(payload);
+      if (res.data.success) {
+        setIsSuccess(true);
+      }
+    } catch (error: any) {
+      console.error("Failed to create event:", error);
+      alert(error.response?.data?.message || "Failed to create event. Please try again.");
+    }
   };
 
   if (isSuccess) {

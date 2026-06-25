@@ -5,23 +5,45 @@ import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, GraduationCap, Monitor, Trophy, Gamepad2, Briefcase, Palette, Dumbbell, Utensils, Users, BriefcaseBusiness, Music, Code } from "lucide-react";
 
-// Mock data based on the screenshot
-const categories = [
-  { name: "Education", count: "240+ Events", icon: GraduationCap },
-  { name: "Technology", count: "180+ Events", icon: Monitor },
-  { name: "Sports", count: "95+ Events", icon: Trophy },
-  { name: "Entertainment", count: "310+ Events", icon: Gamepad2 },
-  { name: "Corporate", count: "150+ Events", icon: Briefcase },
-  { name: "Culture & Arts", count: "120+ Events", icon: Palette },
-  { name: "Health & Wellness", count: "210+ Events", icon: Dumbbell },
-  { name: "Food & Drink", count: "430+ Events", icon: Utensils },
-  { name: "Community", count: "500+ Events", icon: Users },
-  { name: "Career Fairs", count: "60+ Events", icon: BriefcaseBusiness },
-  { name: "Music & Concerts", count: "620+ Events", icon: Music },
-  { name: "Hackathons", count: "45+ Events", icon: Code },
-];
+import { useEffect, useState } from "react";
+import { eventsApi } from "@/lib/api";
+
+const ICON_MAP: Record<string, any> = {
+  "Education": GraduationCap,
+  "Technology": Monitor,
+  "Sports": Trophy,
+  "Entertainment": Gamepad2,
+  "Corporate": Briefcase,
+  "Culture & Arts": Palette,
+  "Health & Wellness": Dumbbell,
+  "Food & Drink": Utensils,
+  "Community": Users,
+  "Career Fairs": BriefcaseBusiness,
+  "Music & Concerts": Music,
+  "Hackathons": Code,
+};
 
 export default function CategoriesPage() {
+  const [categories, setCategories] = useState<{name: string, count: string, icon: any}[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await eventsApi.getCategories();
+        if (res.data.success) {
+          const fetchedCategories = res.data.categories.map((cat: string) => ({
+            name: cat,
+            count: "10+ Events", // Real counts can be added in backend later
+            icon: ICON_MAP[cat] || GraduationCap
+          }));
+          setCategories(fetchedCategories);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       <Navbar />
