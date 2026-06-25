@@ -8,16 +8,16 @@ const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: {
-    default: "Nextt Event — Discover Events Near You",
-    template: "%s | Nextt Event",
+    default: "Eventify — Discover Events Near You",
+    template: "%s | Eventify",
   },
   description:
-    "Nextt Event helps you discover, register for, and attend the best events in your city. Browse music, tech, food, art and more.",
+    "Eventify helps you discover, register for, and attend the best events in your city. Browse music, tech, food, art and more.",
   keywords: ["events", "discover events", "local events", "tickets", "Peshawar events"],
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "Nextt Event",
+    siteName: "Eventify",
   },
 };
 

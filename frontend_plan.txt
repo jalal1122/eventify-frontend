@@ -1,8 +1,8 @@
-# Nextt Event — Frontend Implementation Plan (Phase 1)
+# Eventify — Frontend Implementation Plan (Phase 1)
 
 ## Overview
 
-Build the public-facing and authentication frontend for **Nextt Event** using Next.js 16 (App Router) + TypeScript + Tailwind CSS v4 + Shadcn/UI. The frontend will consume the existing Express/MongoDB backend running at `http://localhost:5000`.
+Build the public-facing and authentication frontend for **Eventify** using Next.js 16 (App Router) + TypeScript + Tailwind CSS v4 + Shadcn/UI. The frontend will consume the existing Express/MongoDB backend running at `http://localhost:5000`.
 
 **Phase 1 scope** covers the 12 Figma screens shared so far — all public and auth pages. Dashboard pages (attendee, organizer, admin) are deferred to Phase 2.
 
@@ -198,7 +198,7 @@ frontend/
 ### 1. Shared: `Navbar.tsx`
 
 **Design**: 83px height, white bg, `#F3F4F6` bottom border, padding `16px 32px`.
-- **Left**: Logo (Nextt Event brand)
+- **Left**: Logo (Eventify brand)
 - **Center**: Smart Search Bar (576px wide) — clicking opens `SearchModal`
 - **Right**: Nav links + "Sign In" / "Sign Up" buttons OR avatar dropdown when logged in
 

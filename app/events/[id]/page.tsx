@@ -276,7 +276,7 @@ export default function EventDetailPage() {
                     </Button>
                   )}
                   
-                  <p className="text-center text-xs text-gray-400 mt-4 font-medium">Secure checkout via Nextt Event</p>
+                  <p className="text-center text-xs text-gray-400 mt-4 font-medium">Secure checkout via Eventify</p>
                 </div>
 
                 {/* Organizer Info Summary Card */}

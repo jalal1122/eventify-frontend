@@ -12,6 +12,7 @@ import StepTickets from "./components/StepTickets";
 import StepPublish from "./components/StepPublish";
 import SuccessScreen from "./components/SuccessScreen";
 import { Check } from "lucide-react";
+import ProfileDropdown from "@/components/layout/ProfileDropdown";
 
 const STEPS = [
   { id: "basics", title: "Basic Info" },
@@ -25,7 +26,7 @@ export default function CreateEventPage() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   const methods = useForm<EventFormValues>({
-    resolver: zodResolver(eventFormSchema),
+    resolver: zodResolver(eventFormSchema) as any,
     defaultValues: {
       locationType: "VENUE",
       registrationMethod: "INTERNAL",
@@ -94,11 +95,12 @@ export default function CreateEventPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-      {/* Top Navigation Bar placeholder */}
+      {/* Top Navigation Bar */}
       <header className="h-[83px] bg-white border-b border-[#F3F4F6] flex items-center justify-between px-8">
-        <div className="font-bold text-xl text-[#006782]">Nextt Event</div>
-        {/* User profile dropdown placeholder */}
-        <div className="w-10 h-10 rounded-full bg-slate-200"></div>
+        <div className="font-bold text-xl text-[#006782]">Eventify</div>
+        <div className="flex items-center gap-4">
+          <ProfileDropdown />
+        </div>
       </header>
 
       <main className="max-w-[1152px] mx-auto pt-16 px-16 pb-32">
@@ -114,27 +116,27 @@ export default function CreateEventPage() {
               <div key={step.id} className="flex items-center flex-1 last:flex-none">
                 <div className="flex flex-col items-center relative z-10">
                   <div
-                    className={\`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors \${
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors ${
                       isCompleted || isActive
                         ? "bg-[#006782] border-[#006782] text-white"
                         : "bg-white border-gray-300 text-gray-400"
-                    }\`}
+                    }`}
                   >
                     {isCompleted ? <Check className="w-5 h-5" /> : index + 1}
                   </div>
                   <span
-                    className={\`absolute top-12 text-xs font-medium whitespace-nowrap \${
+                    className={`absolute top-12 text-xs font-medium whitespace-nowrap ${
                       isCompleted || isActive ? "text-[#006782]" : "text-gray-400"
-                    }\`}
+                    }`}
                   >
                     {step.title}
                   </span>
                 </div>
                 {index < activeSteps.length - 1 && (
                   <div
-                    className={\`flex-1 h-[2px] mx-4 \${
+                    className={`flex-1 h-[2px] mx-4 ${
                       isCompleted ? "bg-[#006782]" : "bg-gray-200"
-                    }\`}
+                    }`}
                   />
                 )}
               </div>
@@ -175,7 +177,7 @@ export default function CreateEventPage() {
               onClick={handleNext}
               className="bg-[#006782] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#004E63] transition-colors"
             >
-              {currentStep === activeSteps.length - 1 ? "🚀 Publish Event" : \`Continue to Step \${currentStep + 2}\`}
+              {currentStep === activeSteps.length - 1 ? "🚀 Publish Event" : `Continue to Step ${currentStep + 2}`}
             </button>
           </div>
         </div>
@@ -183,3 +185,5 @@ export default function CreateEventPage() {
     </div>
   );
 }
+
+

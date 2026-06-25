@@ -43,7 +43,7 @@ export function AuthLayout({ children, title, subtitle, type }: AuthLayoutProps)
             {type === "reset" && "Regain access and don't miss out on upcoming events."}
           </h2>
           <p className="text-gray-300">
-            Nextt Event brings the best local experiences directly to your fingertips.
+            Eventify brings the best local experiences directly to your fingertips.
           </p>
         </div>
       </div>
