@@ -4,7 +4,9 @@ export const eventFormSchema = z.object({
   // STEP 1: BASICS
   title: z.string().min(3, "Title must be at least 3 characters").max(100),
   categoryId: z.string().min(1, "Please select a category"),
-  coverImage: z.string().optional(), // Could be a File object or URL
+  bannerUrl: z.string().optional(),
+  cardImageUrl: z.string().optional(),
+  organizerProfileId: z.string().min(1, "Please select an organizer page"),
   locationType: z.enum(["VENUE", "ONLINE"]),
   
   // Venue fields

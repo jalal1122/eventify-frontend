@@ -9,7 +9,7 @@ interface ImageCropModalProps {
   isOpen: boolean;
   onClose: () => void;
   imageSrc: string;
-  onCropCompleteAction: (croppedImage: string) => void;
+  onCropCompleteAction: (croppedImage: string, originalImage: string) => void;
 }
 
 export default function ImageCropModal({
@@ -31,7 +31,7 @@ export default function ImageCropModal({
   const handleSave = async () => {
     try {
       const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
-      onCropCompleteAction(croppedImage);
+      onCropCompleteAction(croppedImage, imageSrc);
       onClose();
     } catch (e) {
       console.error(e);

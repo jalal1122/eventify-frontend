@@ -8,8 +8,8 @@ import { EventFormValues } from "../schema";
 
 export default function ImageUploadZone() {
   const { setValue, watch } = useFormContext<EventFormValues>();
-  const coverImage = watch("coverImage");
-  
+  const bannerUrl = watch("bannerUrl");
+  const cardImageUrl = watch("cardImageUrl");
   const [isDragging, setIsDragging] = useState(false);
   const [rawImageSrc, setRawImageSrc] = useState<string | null>(null);
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
@@ -52,15 +52,17 @@ export default function ImageUploadZone() {
     }
   };
 
-  const handleCropComplete = (croppedImageUrl: string) => {
+  const handleCropComplete = (croppedImageUrl: string, originalImageUrl: string) => {
     // Save the final cropped image to the form state
-    setValue("coverImage", croppedImageUrl, { shouldValidate: true, shouldDirty: true });
+    setValue("cardImageUrl", croppedImageUrl, { shouldValidate: true, shouldDirty: true });
+    setValue("bannerUrl", originalImageUrl, { shouldValidate: true, shouldDirty: true });
     setRawImageSrc(null); // Clear raw
   };
 
   const removeImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setValue("coverImage", undefined, { shouldValidate: true, shouldDirty: true });
+    setValue("bannerUrl", undefined, { shouldValidate: true, shouldDirty: true });
+    setValue("cardImageUrl", undefined, { shouldValidate: true, shouldDirty: true });
   };
 
   return (
@@ -73,7 +75,7 @@ export default function ImageUploadZone() {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={() => !coverImage && fileInputRef.current?.click()}
+        onClick={() => !bannerUrl && fileInputRef.current?.click()}
       >
         <input
           type="file"
@@ -83,9 +85,9 @@ export default function ImageUploadZone() {
           onChange={handleFileChange}
         />
 
-        {coverImage ? (
+        {bannerUrl ? (
           <div className="absolute inset-0 w-full h-full group">
-            <img src={coverImage} alt="Event Cover" className="w-full h-full object-cover" />
+            <img src={bannerUrl} alt="Event Cover" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                <button 
                 onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}

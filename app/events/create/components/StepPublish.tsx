@@ -13,7 +13,7 @@ export default function StepPublish() {
   const formValues = watch();
   const {
     title,
-    coverImage,
+    bannerUrl,
     startDate,
     locationType,
     venueName,
@@ -40,8 +40,8 @@ export default function StepPublish() {
           {/* Section 1: Basic Details */}
           <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-48 h-32 bg-slate-100 rounded-xl overflow-hidden shrink-0 border border-slate-200">
-              {coverImage ? (
-                <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
+              {bannerUrl ? (
+                <img src={bannerUrl} alt="Cover" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">No Image</div>
               )}
