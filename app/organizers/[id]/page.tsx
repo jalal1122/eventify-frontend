@@ -124,8 +124,10 @@ export default function OrganizerProfilePage() {
     );
   }
 
-  const upcomingEvents = events.filter(e => e.status === "posted" && new Date(e.dateTime) >= new Date());
-  const pastEvents = events.filter(e => e.status === "completed" || new Date(e.dateTime) < new Date());
+  const isOwner = isAuthenticated && user?._id === profile.ownerId;
+  const upcomingEvents = events.filter(e => (e.status === "posted" || e.status === "under_review") && new Date(e.dateTime) >= new Date());
+  const pastEvents = events.filter(e => e.status === "completed" || (e.status === "posted" && new Date(e.dateTime) < new Date()));
+  const draftEvents = events.filter(e => e.status === "draft");
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -239,6 +241,11 @@ export default function OrganizerProfilePage() {
                 <TabsTrigger value="past" className="rounded-lg px-6 py-2.5 font-bold data-[state=active]:bg-white data-[state=active]:text-[#006782] data-[state=active]:shadow-sm">
                   Past Events ({pastEvents.length})
                 </TabsTrigger>
+                {isOwner && (
+                  <TabsTrigger value="drafts" className="rounded-lg px-6 py-2.5 font-bold data-[state=active]:bg-white data-[state=active]:text-[#006782] data-[state=active]:shadow-sm">
+                    Drafts ({draftEvents.length})
+                  </TabsTrigger>
+                )}
               </TabsList>
             </div>
             
@@ -262,7 +269,7 @@ export default function OrganizerProfilePage() {
 
             <TabsContent value="past" className="mt-0">
               {pastEvents.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {pastEvents.map(event => (
                     <div key={event._id} className="opacity-80 hover:opacity-100 transition-opacity grayscale-[30%] hover:grayscale-0">
                       <EventCard event={event} />
@@ -279,6 +286,31 @@ export default function OrganizerProfilePage() {
                 </div>
               )}
             </TabsContent>
+
+            {isOwner && (
+              <TabsContent value="drafts" className="mt-0">
+                {draftEvents.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {draftEvents.map(event => (
+                      <div key={event._id} className="relative group cursor-pointer" onClick={() => window.location.href = `/events/create?id=${event._id}`}>
+                        <EventCard event={event} />
+                        <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl border-2 border-[#006782]">
+                           <span className="font-bold text-[#006782] bg-white px-4 py-2 rounded-full shadow-sm">Resume Draft</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-8">
+                    <EmptyState 
+                      icon={CalendarX} 
+                      title="No Drafts" 
+                      description="You don't have any event drafts saved." 
+                    />
+                  </div>
+                )}
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </main>

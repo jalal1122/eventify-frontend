@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useForm, FormProvider } from "react-hook-form";
+import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { eventFormSchema, type EventFormValues } from "./schema";
 import { eventsApi } from "@/lib/api";
@@ -23,11 +24,20 @@ const STEPS = [
   { id: "publish", title: "Publish" },
 ];
 
-export default function CreateEventPage() {
+function CreateEventForm() {
   const { user, isAuthenticated, isLoading, upgradeToOrganizer } = useAuth();
+  const searchParams = useSearchParams();
+  const draftId = searchParams?.get("id");
+  
   const [currentStep, setCurrentStep] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
+  const [eventId, setEventId] = useState<string | null>(draftId || null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  
+  // Track whether we are in initial load so we don't overwrite the loaded data
+  const isInitialLoad = useRef(!!draftId);
 
   const methods = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema) as any,
@@ -60,6 +70,130 @@ export default function CreateEventPage() {
         });
     }
   }, [isAuthenticated, user?.role, upgradeToOrganizer]);
+
+  // Load existing draft
+  useEffect(() => {
+    if (draftId && isAuthenticated) {
+      eventsApi.getById(draftId).then((res) => {
+        if (res.data.success && res.data.event) {
+          const ev = res.data.event;
+          
+          // Map backend fields to form fields
+          methods.reset({
+            title: ev.title || "",
+            categoryId: ev.category || "",
+            locationType: ev.locationType || "VENUE",
+            venueName: ev.venueName || "",
+            city: ev.city || "",
+            address: "", // Note: Backend does not store address separately right now
+            platform: ev.platform || "",
+            virtualLink: ev.virtualLink || "",
+            overview: ev.description || "",
+            registrationMethod: ev.registrationMethod === "external" ? "EXTERNAL" : "INTERNAL",
+            visibility: "PUBLIC",
+            externalUrl: ev.externalUrl || "",
+            customQuestions: ev.customFormSchema || [],
+            tickets: (ev.tickets || []).map((t: any) => ({
+              id: t.id,
+              type: t.type,
+              name: t.name,
+              quantity: t.quantity,
+              price: t.price,
+              paymentAccountType: t.paymentAccountType,
+              paymentAccountNumber: t.paymentAccountNumber,
+            })),
+            organizerProfileId: ev.organizerProfileId || "",
+            startDate: ev.dateTime ? new Date(ev.dateTime) : undefined,
+            startTime: ev.dateTime ? new Date(ev.dateTime).toISOString().split('T')[1].slice(0,5) : "",
+          });
+        }
+      }).catch(err => {
+        console.error("Failed to load draft:", err);
+      }).finally(() => {
+        isInitialLoad.current = false;
+      });
+    } else {
+      isInitialLoad.current = false;
+    }
+  }, [draftId, isAuthenticated, methods]);
+
+  // Auto-save logic
+  const saveDraft = useCallback(async (isManual = false) => {
+    const data = methods.getValues();
+    if (!data.organizerProfileId) return; // Cannot save without organizer
+
+    try {
+      if (isManual) setIsSaving(true);
+      
+      let dateTime = undefined;
+      if (data.startDate) {
+        const date = new Date(data.startDate);
+        if (data.startTime) {
+          const [hours, minutes] = data.startTime.split(":");
+          date.setHours(Number(hours), Number(minutes));
+        }
+        dateTime = date.toISOString();
+      }
+
+      const payload = {
+        title: data.title,
+        description: data.overview,
+        category: data.categoryId,
+        locationType: data.locationType,
+        venueName: data.venueName,
+        city: data.city,
+        platform: data.platform,
+        virtualLink: data.virtualLink,
+        dateTime,
+        registrationMethod: data.registrationMethod === "EXTERNAL" ? "external" : "native",
+        externalUrl: data.externalUrl,
+        customFormSchema: data.customQuestions,
+        tickets: data.tickets.map(t => ({
+           id: t.id,
+           type: t.type,
+           name: t.name,
+           quantity: t.quantity,
+           price: t.price || 0,
+           paymentAccountType: t.paymentAccountType,
+           paymentAccountNumber: t.paymentAccountNumber,
+        })),
+        organizerProfileId: data.organizerProfileId,
+        submitForReview: false,
+      };
+
+      if (eventId) {
+        await eventsApi.update(eventId, payload);
+      } else {
+        const res = await eventsApi.create(payload);
+        if (res.data.success && res.data.event?._id) {
+          setEventId(res.data.event._id);
+        }
+      }
+      setLastSaved(new Date());
+    } catch (error) {
+      console.error("Failed to auto-save draft:", error);
+    } finally {
+      if (isManual) setIsSaving(false);
+    }
+  }, [methods, eventId]);
+
+  useEffect(() => {
+    const subscription = methods.watch((value, { name, type }) => {
+      // Don't auto save on initial load setting default values
+      if (isInitialLoad.current) return;
+      
+      const { organizerProfileId } = methods.getValues();
+      if (!organizerProfileId) return;
+      
+      // Debounce logic
+      const handler = setTimeout(() => {
+        saveDraft();
+      }, 3000); // 3 second debounce
+      
+      return () => clearTimeout(handler);
+    });
+    return () => subscription.unsubscribe();
+  }, [methods, saveDraft]);
 
   const { watch, trigger } = methods;
   const registrationMethod = watch("registrationMethod");
@@ -144,7 +278,13 @@ export default function CreateEventPage() {
         submitForReview: true,
       };
 
-      const res = await eventsApi.create(payload);
+      let res;
+      if (eventId) {
+        res = await eventsApi.update(eventId, payload);
+      } else {
+        res = await eventsApi.create(payload);
+      }
+      
       if (res.data.success) {
         setIsSuccess(true);
       }
@@ -247,8 +387,18 @@ export default function CreateEventPage() {
           )}
           
           <div className="flex items-center gap-6">
-            <button className="text-[#006782] font-medium hover:underline">
-              Save Draft
+            <button 
+              onClick={() => saveDraft(true)}
+              disabled={isSaving}
+              className="text-[#006782] font-medium hover:underline flex items-center gap-2"
+            >
+              {isSaving ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+              ) : lastSaved ? (
+                <><Check className="w-4 h-4" /> Saved at {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</>
+              ) : (
+                "Save Draft"
+              )}
             </button>
             <button
               onClick={handleNext}
@@ -260,6 +410,18 @@ export default function CreateEventPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CreateEventPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center">
+        <Loader2 className="w-12 h-12 text-[#006782] animate-spin mb-4" />
+      </div>
+    }>
+      <CreateEventForm />
+    </Suspense>
   );
 }
 
