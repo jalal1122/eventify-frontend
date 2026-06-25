@@ -12,7 +12,8 @@ import { type Event } from "@/types/event";
 import LoginToCreateModal from "@/components/modals/LoginToCreateModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { eventsApi } from "@/lib/api";
 
 // Mock data to match the screenshot layout
 const categories = [
@@ -24,7 +25,6 @@ const categories = [
   { name: "Culture", icon: Palette },
 ];
 
-import { mockEvents } from "@/lib/dummyData";
 
 const cities = [
   { name: "Karachi", count: "120+ Events", img: "https://images.unsplash.com/photo-1620619741029-d576a92f03c0?w=800&q=80" },
@@ -36,8 +36,24 @@ const cities = [
 
 export default function Home() {
   const [loginToCreateOpen, setLoginToCreateOpen] = useState(false);
+  const [events, setEvents] = useState<Event[]>([]);
   const { isAuthenticated } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await eventsApi.discover({});
+        if (res.data.success) {
+          // get top 4 events for the popular section
+          setEvents(res.data.events.slice(0, 4));
+        }
+      } catch (err) {
+        console.error("Failed to fetch events:", err);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   const handleCreateEventClick = () => {
     if (isAuthenticated) {
@@ -119,7 +135,7 @@ export default function Home() {
             
             <TabsContent value="all" className="mt-0">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {mockEvents.map((event) => (
+                {events.map((event) => (
                   <EventCard key={event._id} event={event} />
                 ))}
               </div>

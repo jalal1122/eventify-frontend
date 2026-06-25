@@ -7,10 +7,10 @@ import { EventBannerCard } from "@/components/events/EventBannerCard";
 import { type Event } from "@/types/event";
 import { ChevronDown, Loader2 } from "lucide-react";
 
-import { mockEvents } from "@/lib/dummyData";
-
+import { useEvents } from "@/hooks/useEvents";
 export default function DiscoverPage() {
   const [activeFilter, setActiveFilter] = useState("all");
+  const { events, loading, error } = useEvents();
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -80,15 +80,22 @@ export default function DiscoverPage() {
         {/* Events Stack */}
         <div className="max-w-[1280px] mx-auto px-8 pb-12">
           <div className="flex flex-col gap-8 max-w-4xl mx-auto">
-            {mockEvents.map(event => (
+            {events.map(event => (
               <EventBannerCard key={event._id} event={event as Event} />
             ))}
           </div>
           
-          <div className="flex flex-col items-center justify-center py-16 gap-3 text-gray-500">
-            <Loader2 className="w-8 h-8 animate-spin text-[#006782]" />
-            <p className="text-sm font-medium">Loading more events...</p>
-          </div>
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-16 gap-3 text-gray-500">
+              <Loader2 className="w-8 h-8 animate-spin text-[#006782]" />
+              <p className="text-sm font-medium">Loading events...</p>
+            </div>
+          )}
+          {!loading && events.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+              <p className="text-sm font-medium">No events found.</p>
+            </div>
+          )}
         </div>
       </main>
 
