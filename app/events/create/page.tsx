@@ -28,7 +28,15 @@ export default function CreateEventPage() {
   const methods = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema) as any,
     defaultValues: {
+      title: "",
+      categoryId: "",
       locationType: "VENUE",
+      venueName: "",
+      city: "",
+      address: "",
+      platform: "",
+      virtualLink: "",
+      overview: "",
       registrationMethod: "INTERNAL",
       visibility: "PUBLIC",
       customQuestions: [],
@@ -88,7 +96,7 @@ export default function CreateEventPage() {
   };
 
   if (isSuccess) {
-    return <SuccessScreen />;
+    return <SuccessScreen title={methods.getValues("title")} />;
   }
 
   const currentStepId = activeSteps[currentStep].id;

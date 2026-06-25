@@ -5,10 +5,7 @@ import { EventFormValues } from "../schema";
 import { CheckCircle2, Copy, Users, ExternalLink, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function SuccessScreen() {
-  const { watch } = useFormContext<EventFormValues>();
-  const title = watch("title");
-  
+export default function SuccessScreen({ title }: { title?: string }) {
   // Dummy event ID for demo purposes
   const eventUrl = `https://eventify.com/e/preview-123`;
 

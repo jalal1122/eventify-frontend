@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
@@ -17,7 +17,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import CreateOrganizerModal from "./CreateOrganizerModal";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 const CATEGORIES = [
   { id: "1", name: "Music & Concerts" },
