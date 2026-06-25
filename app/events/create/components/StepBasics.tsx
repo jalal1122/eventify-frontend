@@ -85,7 +85,7 @@ export default function StepBasics() {
               <FormItem>
                 <FormLabel className="text-[#001F29] font-semibold">Event Title *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter the name of your event" {...field} className="h-12 border-gray-300 rounded-xl focus-visible:ring-[#006782]" />
+                  <Input placeholder="Enter the name of your event" {...field} value={field.value || ""} className="h-12 border-gray-300 rounded-xl focus-visible:ring-[#006782]" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -172,7 +172,7 @@ export default function StepBasics() {
                     <FormItem>
                       <FormLabel className="text-[#001F29] font-semibold">Venue Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Expo Center" {...field} className="h-12 border-gray-300 rounded-xl" />
+                        <Input placeholder="e.g. Expo Center" {...field} value={field.value || ""} className="h-12 border-gray-300 rounded-xl" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -185,7 +185,7 @@ export default function StepBasics() {
                     <FormItem>
                       <FormLabel className="text-[#001F29] font-semibold">City</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Lahore" {...field} className="h-12 border-gray-300 rounded-xl" />
+                        <Input placeholder="e.g. Lahore" {...field} value={field.value || ""} className="h-12 border-gray-300 rounded-xl" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -198,7 +198,7 @@ export default function StepBasics() {
                     <FormItem>
                       <FormLabel className="text-[#001F29] font-semibold">Address Line 1</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. 123 Main St" {...field} className="h-12 border-gray-300 rounded-xl" />
+                        <Input placeholder="e.g. 123 Main St" {...field} value={field.value || ""} className="h-12 border-gray-300 rounded-xl" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -219,7 +219,7 @@ export default function StepBasics() {
                   <FormItem>
                     <FormLabel className="text-[#001F29] font-semibold">Platform / Software</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Zoom, Google Meet" {...field} className="h-12 border-gray-300 rounded-xl" />
+                      <Input placeholder="e.g. Zoom, Google Meet" {...field} value={field.value || ""} className="h-12 border-gray-300 rounded-xl" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -232,7 +232,7 @@ export default function StepBasics() {
                   <FormItem>
                     <FormLabel className="text-[#001F29] font-semibold">Virtual Link (Optional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://" {...field} className="h-12 border-gray-300 rounded-xl" />
+                      <Input placeholder="https://" {...field} value={field.value || ""} className="h-12 border-gray-300 rounded-xl" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -287,7 +287,7 @@ export default function StepBasics() {
               <FormItem>
                 <FormLabel className="text-[#001F29] font-semibold">Start Time</FormLabel>
                 <FormControl>
-                  <Input type="time" {...field} className="h-12 border-gray-300 rounded-xl" />
+                  <Input type="time" {...field} value={field.value || ""} className="h-12 border-gray-300 rounded-xl" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -333,7 +333,7 @@ export default function StepBasics() {
               <FormItem>
                 <FormLabel className="text-[#001F29] font-semibold">End Time</FormLabel>
                 <FormControl>
-                  <Input type="time" {...field} className="h-12 border-gray-300 rounded-xl" />
+                  <Input type="time" {...field} value={field.value || ""} className="h-12 border-gray-300 rounded-xl" />
                 </FormControl>
                 <FormMessage />
               </FormItem>

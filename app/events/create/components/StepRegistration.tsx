@@ -44,7 +44,7 @@ function SortableQuestionCard({ id, index, remove, duplicate }: { id: string; in
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="Type your question here" {...field} className="h-11 bg-gray-50 border-transparent focus:border-[#006782] focus:bg-white" />
+                    <Input placeholder="Type your question here" {...field} value={field.value || ""} className="h-11 bg-gray-50 border-transparent focus:border-[#006782] focus:bg-white" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -247,7 +247,7 @@ export default function StepRegistration() {
               <FormItem>
                 <FormLabel className="text-[#001F29] font-semibold">External Registration URL *</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://example.com/register" {...field} className="h-12 border-gray-300 rounded-xl focus-visible:ring-[#006782]" />
+                  <Input placeholder="https://example.com/register" {...field} value={field.value || ""} className="h-12 border-gray-300 rounded-xl focus-visible:ring-[#006782]" />
                 </FormControl>
                 <FormDescription>Attendees will be sent to this link when they click "Register".</FormDescription>
                 <FormMessage />
