@@ -55,10 +55,11 @@ export default function StepBasics() {
       }
     };
 
-    if (user) {
+    if (user && !organizerProfiles.length) {
       fetchProfiles();
     }
-  }, [user, setValue, organizerProfileId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const handleOrganizerCreated = (newId: string) => {
     // Mock updating the list with the new organizer
