@@ -59,7 +59,7 @@ export default function StepBasics() {
       fetchProfiles();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?._id]);
 
   const handleOrganizerCreated = (newId: string) => {
     // Mock updating the list with the new organizer
