@@ -137,6 +137,14 @@ export const eventsApi = {
 
   updateStatus: (id: string, status: string) => api.patch(`/api/events/${id}/status`, { status }),
 
+  uploadImage: (file: File) => {
+    const formData = new FormData();
+    formData.append("image", file);
+    return api.post("/api/events/upload-image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+
   magicFillText: (text: string) => api.post("/api/events/magic-fill/text", { text }),
 
   magicFillImage: (file: File) => {

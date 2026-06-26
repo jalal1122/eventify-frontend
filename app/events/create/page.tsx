@@ -24,6 +24,22 @@ const STEPS = [
   { id: "publish", title: "Publish" },
 ];
 
+const uploadImageIfNeeded = async (urlOrData: string | undefined): Promise<string | undefined> => {
+  if (!urlOrData || (!urlOrData.startsWith("blob:") && !urlOrData.startsWith("data:"))) {
+    return urlOrData;
+  }
+  try {
+    const response = await fetch(urlOrData);
+    const blob = await response.blob();
+    const file = new File([blob], "image.jpg", { type: "image/jpeg" });
+    const res = await eventsApi.uploadImage(file);
+    return res.data.url;
+  } catch (error) {
+    console.error("Failed to upload image:", error);
+    return urlOrData; // fallback
+  }
+};
+
 function CreateEventForm() {
   const { user, isAuthenticated, isLoading, upgradeToOrganizer } = useAuth();
   const searchParams = useSearchParams();
@@ -135,11 +151,14 @@ function CreateEventForm() {
         dateTime = date.toISOString();
       }
 
+      const uploadedBannerUrl = await uploadImageIfNeeded(data.bannerUrl);
+      const uploadedCardImageUrl = await uploadImageIfNeeded(data.cardImageUrl);
+
       const payload = {
         title: data.title,
         description: data.overview,
-        bannerUrl: data.bannerUrl,
-        cardImageUrl: data.cardImageUrl,
+        bannerUrl: uploadedBannerUrl,
+        cardImageUrl: uploadedCardImageUrl,
         category: data.categoryId,
         locationType: data.locationType,
         venueName: data.venueName,
@@ -254,11 +273,14 @@ function CreateEventForm() {
         dateTime = date.toISOString();
       }
 
+      const uploadedBannerUrl = await uploadImageIfNeeded(data.bannerUrl);
+      const uploadedCardImageUrl = await uploadImageIfNeeded(data.cardImageUrl);
+
       const payload = {
         title: data.title,
         description: data.overview,
-        bannerUrl: data.bannerUrl,
-        cardImageUrl: data.cardImageUrl,
+        bannerUrl: uploadedBannerUrl,
+        cardImageUrl: uploadedCardImageUrl,
         category: data.categoryId,
         locationType: data.locationType,
         venueName: data.venueName,
