@@ -148,7 +148,7 @@ async function getCroppedImg(
 
   return new Promise((resolve, reject) => {
     try {
-      const dataUrl = canvas.toDataURL("image/jpeg");
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
       resolve(dataUrl);
     } catch (e) {
       reject(new Error("Failed to extract image"));

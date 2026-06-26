@@ -52,6 +52,13 @@ function CreateEventForm() {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   
+  const eventIdRef = useRef<string | null>(draftId || null);
+  const isSavingRef = useRef(false);
+
+  useEffect(() => {
+    eventIdRef.current = eventId;
+  }, [eventId]);
+
   // Track whether we are in initial load so we don't overwrite the loaded data
   const isInitialLoad = useRef(!!draftId);
 
@@ -135,10 +142,12 @@ function CreateEventForm() {
 
   // Auto-save logic
   const saveDraft = useCallback(async (isManual = false) => {
+    if (isSavingRef.current && !isManual) return; // Skip if already saving automatically
     const data = methods.getValues();
     if (!data.organizerProfileId) return; // Cannot save without organizer
 
     try {
+      isSavingRef.current = true;
       if (isManual) setIsSaving(true);
       
       let dateTime = undefined;
@@ -182,11 +191,13 @@ function CreateEventForm() {
         submitForReview: false,
       };
 
-      if (eventId) {
-        await eventsApi.update(eventId, payload);
+      const currentEventId = eventIdRef.current;
+      if (currentEventId) {
+        await eventsApi.update(currentEventId, payload);
       } else {
         const res = await eventsApi.create(payload);
         if (res.data.success && res.data.event?._id) {
+          eventIdRef.current = res.data.event._id; // Update ref synchronously
           setEventId(res.data.event._id);
         }
       }
@@ -194,9 +205,10 @@ function CreateEventForm() {
     } catch (error) {
       console.error("Failed to auto-save draft:", error);
     } finally {
+      isSavingRef.current = false;
       if (isManual) setIsSaving(false);
     }
-  }, [methods, eventId]);
+  }, [methods]);
 
   useEffect(() => {
     const subscription = methods.watch((value, { name, type }) => {
@@ -209,7 +221,7 @@ function CreateEventForm() {
       // Debounce logic
       const handler = setTimeout(() => {
         saveDraft();
-      }, 3000); // 3 second debounce
+      }, 5000); // 5 second debounce
       
       return () => clearTimeout(handler);
     });
@@ -305,8 +317,9 @@ function CreateEventForm() {
       };
 
       let res;
-      if (eventId) {
-        res = await eventsApi.update(eventId, payload);
+      const currentEventId = eventIdRef.current;
+      if (currentEventId) {
+        res = await eventsApi.update(currentEventId, payload);
       } else {
         res = await eventsApi.create(payload);
       }
