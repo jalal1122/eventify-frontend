@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+
 import { Button } from "@/components/ui/button";
 import { MapPin, Globe, Plus, Calendar, Users, Trophy } from "lucide-react";
 import { organizerApi, attendeeApi } from "@/lib/api";
@@ -77,7 +76,7 @@ export default function OrganizerProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-        <Navbar />
+
         <main className="flex-1 max-w-[1280px] w-full mx-auto px-8 py-12">
           {/* Header Skeleton */}
           <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-8 md:p-12 mb-12 flex flex-col md:flex-row items-center md:items-start gap-8 relative overflow-hidden animate-pulse">
@@ -106,21 +105,21 @@ export default function OrganizerProfilePage() {
             {[1, 2, 3, 4].map(i => <EventCardSkeleton key={i} />)}
           </div>
         </main>
-      </div>
+
     );
   }
 
   if (!profile) {
     return (
       <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-        <Navbar />
+
         <main className="flex-1 flex items-center justify-center">
            <div className="text-center">
              <h2 className="text-2xl font-bold mb-2">Organizer Not Found</h2>
              <p className="text-gray-500">This profile may have been deleted or doesn't exist.</p>
            </div>
         </main>
-      </div>
+
     );
   }
 
@@ -131,7 +130,7 @@ export default function OrganizerProfilePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-      <Navbar />
+
       
       <main className="flex-1 pb-20">
         
@@ -315,7 +314,7 @@ export default function OrganizerProfilePage() {
         </div>
       </main>
 
-      <Footer />
+
     </div>
   );
 }

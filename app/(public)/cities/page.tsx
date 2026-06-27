@@ -1,7 +1,6 @@
 "use client";
 
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { eventsApi } from "@/lib/api";
@@ -27,7 +26,7 @@ export default function CitiesPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-      <Navbar />
+
       
       <main className="flex-1 py-16 md:py-24">
         <div className="max-w-[1280px] mx-auto px-8">
@@ -73,7 +72,7 @@ export default function CitiesPage() {
         </div>
       </main>
 
-      <Footer />
+
     </div>
   );
 }

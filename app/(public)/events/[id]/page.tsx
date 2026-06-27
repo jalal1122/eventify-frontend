@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Share2, Heart, ExternalLink, CalendarPlus, UserCheck, Star, AlertCircle } from "lucide-react";
@@ -45,7 +44,7 @@ export default function EventDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-        <Navbar />
+
         <main className="flex-1 max-w-[1280px] w-full mx-auto px-8 py-12">
            <div className="h-[400px] bg-gray-200 rounded-3xl animate-pulse mb-12" />
            <div className="flex flex-col lg:flex-row gap-12">
@@ -57,7 +56,7 @@ export default function EventDetailPage() {
              <div className="w-full lg:w-[400px] h-[300px] bg-gray-200 rounded-3xl animate-pulse" />
            </div>
         </main>
-        <Footer />
+
       </div>
     );
   }
@@ -65,7 +64,7 @@ export default function EventDetailPage() {
   if (!event) {
     return (
       <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-        <Navbar />
+
         <main className="flex-1 flex items-center justify-center">
            <div className="text-center">
              <h2 className="text-2xl font-bold mb-2 text-gray-900">Event Not Found</h2>
@@ -91,7 +90,7 @@ export default function EventDetailPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-      <Navbar />
+
       
       <main className="flex-1 pb-20">
         {/* Banner Section */}
@@ -270,7 +269,7 @@ export default function EventDetailPage() {
         </div>
       </main>
 
-      <Footer />
+
     </div>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, GraduationCap, Monitor, Trophy, Gamepad2, Briefcase, Palette, Dumbbell, Utensils, Users, BriefcaseBusiness, Music, Code } from "lucide-react";
@@ -53,7 +52,7 @@ export default function CategoriesPage() {
   }, []);
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-      <Navbar />
+
       
       <main className="flex-1 pb-24">
         
@@ -151,7 +150,7 @@ export default function CategoriesPage() {
         </div>
       </section>
 
-      <Footer />
+
     </div>
   );
 }

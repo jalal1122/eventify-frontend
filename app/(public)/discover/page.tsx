@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+
 import { EventBannerCard } from "@/components/events/EventBannerCard";
 import { type Event } from "@/types/event";
 import { ChevronDown, Search } from "lucide-react";
@@ -16,7 +15,7 @@ export default function DiscoverPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-      <Navbar />
+
       
       <main className="flex-1">
         {/* Hero Section */}
@@ -129,7 +128,7 @@ export default function DiscoverPage() {
         </div>
       </section>
 
-      <Footer />
+
     </div>
   );
 }

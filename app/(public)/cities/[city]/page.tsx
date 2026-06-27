@@ -2,8 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+
 import { Button } from "@/components/ui/button";
 import { EventCard } from "@/components/events/EventCard";
 import { EventCardSkeleton } from "@/components/ui/skeletons";
@@ -56,7 +55,7 @@ export default function CityPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-      <Navbar />
+
 
       <main className="flex-1 py-12 px-8">
         <div className="max-w-[1280px] mx-auto">
@@ -144,7 +143,7 @@ export default function CityPage() {
         </div>
       </main>
 
-      <Footer />
+
     </div>
   );
 }

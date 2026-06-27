@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, BookOpen, Trophy, Monitor, Music, Briefcase, Palette, ChevronRight, Plus, Search, ChevronDown } from "lucide-react";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -93,7 +92,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-      <Navbar />
+
       
       <main className="flex-1 pb-16">
         
@@ -309,7 +308,7 @@ export default function Home() {
         </div>
       </section>
 
-      <Footer />
+
       <LoginToCreateModal open={loginToCreateOpen} onClose={() => setLoginToCreateOpen(false)} />
     </div>
   );
