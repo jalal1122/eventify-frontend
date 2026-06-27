@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { organizerApi, eventsApi } from "@/lib/api";
 import { type Event } from "@/types/event";
-import { Loader2, ArrowLeft, Search, Download, ExternalLink } from "lucide-react";
+import { Loader2, ArrowLeft, Search, Download, ExternalLink, Calendar } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
