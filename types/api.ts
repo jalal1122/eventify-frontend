@@ -27,6 +27,7 @@ export interface Registration {
     email: string;
   };
   customAnswers?: Record<string, unknown>;
+  ticketId?: string;
   ticketCode: string;
   scannedAt?: string;
   paymentStatus: PaymentStatus;

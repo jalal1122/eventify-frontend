@@ -160,6 +160,7 @@ export const eventsApi = {
 export const registrationsApi = {
   register: async (data: {
     eventId: string;
+    ticketId?: string;
     guestDetails?: { name: string; email: string };
     customAnswers?: Record<string, unknown>;
   }) => {
@@ -183,6 +184,9 @@ export const registrationsApi = {
     api.post(`/api/registrations/${registrationId}/confirmation-email`),
     
   verifyQr: (ticketCode: string) => api.post("/api/registrations/verify-qr", { ticketCode }),
+
+  reviewRegistration: (registrationId: string, data: { status: "approved" | "rejected"; rejectionReason?: string }) =>
+    api.post(`/api/registrations/${registrationId}/review`, data),
 };
 
 // ── Attendee ────────────────────────────────────────────────────────────────
@@ -224,4 +228,6 @@ export const organizerApi = {
   getProfiles: () => api.get("/api/organizer/profiles"),
 
   createProfile: (data: any) => api.post("/api/organizer/profile", data),
+
+  getEventAttendees: (eventId: string) => api.get(`/api/organizer/events/${eventId}/attendees`),
 };
