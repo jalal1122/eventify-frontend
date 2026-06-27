@@ -1,186 +1,212 @@
 "use client";
 
 import { useState } from "react";
-import { Upload, Camera, Save, Globe, Link as LinkIcon, Briefcase, MessageSquare, Image as ImageIcon } from "lucide-react";
+import { useOrganizer } from "@/context/OrganizerContext";
+import { Edit, Eye, Copy, AlertTriangle, Users } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { organizerApi } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 export default function OrganizerSettingsPage() {
-  const [loading, setLoading] = useState(false);
+  const { activeProfile, activeProfileId, refreshProfiles, setActiveProfileId, profiles } = useOrganizer();
+  const router = useRouter();
+  
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
+  if (activeProfileId === "all" || !activeProfile) {
+    return (
+      <div className="max-w-4xl mx-auto py-12 px-8 flex flex-col items-center text-center">
+        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+          <Users size={32} className="text-gray-400" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Organizer Settings</h2>
+        <p className="text-gray-500 max-w-md mb-8">
+          You are currently viewing aggregated data for all pages. Please select a specific organizer page from the sidebar to manage its settings.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl text-left">
+          {profiles.map(p => (
+            <button
+              key={p._id || p.id}
+              onClick={() => setActiveProfileId(p._id || p.id as string)}
+              className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-[#006782] hover:shadow-sm bg-white transition-all text-left"
+            >
+              <div className="w-12 h-12 rounded-lg bg-[#006782] text-white flex items-center justify-center font-bold shrink-0">
+                {p.brandName.charAt(0)}
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900">{p.brandName}</h3>
+                <p className="text-sm text-gray-500">{p.followers || 0} followers</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const handleDelete = async () => {
+    if (deleteConfirmText !== "DELETE") return;
+    
+    try {
+      setIsDeleting(true);
+      await organizerApi.deleteProfile(activeProfile._id || activeProfile.id as string);
+      await refreshProfiles();
+      setActiveProfileId("all");
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Failed to delete profile:", error);
+      alert("Failed to delete the organizer page.");
+      setIsDeleting(false);
+    }
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div className="mb-8">
+    <div className="max-w-5xl mx-auto py-10 px-8">
+      <div className="mb-10">
         <h1 className="text-3xl font-bold text-gray-900">Organizer Settings</h1>
-        <p className="text-gray-500 mt-2">Manage your public organizer profile and contact information.</p>
+        <p className="text-gray-500 mt-2">Manage your public profile, preferences, and account lifecycle.</p>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-8">
-        {/* Profile Image Section */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">Profile Image</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Left Column */}
+        <div className="space-y-6">
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
+            <div className="w-24 h-24 rounded-2xl bg-[#1E293B] text-white flex items-center justify-center text-3xl font-bold mb-4 overflow-hidden border-2 border-white shadow-sm">
+              {activeProfile.logoUrl ? (
+                <img src={activeProfile.logoUrl} alt={activeProfile.brandName} className="w-full h-full object-cover" />
+              ) : (
+                activeProfile.brandName.substring(0, 4).toUpperCase()
+              )}
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">{activeProfile.brandName}</h2>
+            <div className="flex items-center gap-2 text-gray-500 mt-1">
+              <Users size={16} />
+              <span className="text-sm">{activeProfile.followers || 0} followers</span>
+            </div>
+          </div>
+
+          <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-1">
+            <Link 
+              href="/dashboard/settings/edit" 
+              className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Edit size={18} className="text-gray-400" />
+                Edit page
+              </div>
+              <span className="text-gray-300">&gt;</span>
+            </Link>
+            <Link 
+              href={`/organizers/${activeProfile._id || activeProfile.id}`} 
+              target="_blank"
+              className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Eye size={18} className="text-gray-400" />
+                Preview
+              </div>
+              <span className="text-gray-300">&gt;</span>
+            </Link>
+            <button 
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/organizers/${activeProfile._id || activeProfile.id}`);
+                alert("URL Copied!");
+              }}
+              className="flex w-full items-center justify-between p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium transition-colors outline-none"
+            >
+              <div className="flex items-center gap-3">
+                <Copy size={18} className="text-gray-400" />
+                Copy URL
+              </div>
+              <span className="text-gray-300">&gt;</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Right Column */}
+        <div className="lg:col-span-2 space-y-8">
           
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <div className="relative w-32 h-32 rounded-full bg-gray-100 border-4 border-white shadow-md flex flex-col items-center justify-center overflow-hidden group cursor-pointer">
-              <Camera size={32} className="text-gray-400 mb-2 group-hover:scale-110 transition-transform" />
-              <span className="text-xs font-medium text-gray-500">Upload Logo</span>
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">General Information</h2>
+            
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Organizer Name</label>
+                <input 
+                  type="text" 
+                  disabled
+                  value={activeProfile.brandName}
+                  className="w-full px-4 py-3 bg-gray-50 text-gray-600 rounded-xl border border-gray-200"
+                />
+              </div>
               
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Upload className="text-white w-8 h-8" />
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Contact Email</label>
+                <input 
+                  type="email" 
+                  disabled
+                  value={activeProfile.contactEmail || "Not provided"}
+                  className="w-full px-4 py-3 bg-gray-50 text-gray-600 rounded-xl border border-gray-200"
+                />
               </div>
-            </div>
-            
-            <div className="flex-1">
-              <h3 className="font-medium text-gray-900 mb-1">Upload a new profile image</h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Recommended size is 512x512 pixels. Maximum file size is 5MB. Supported formats: JPG, PNG, WEBP.
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                <input 
+                  type="tel" 
+                  disabled
+                  value="Not provided" // Using placeholder as the API doesn't currently support phone number
+                  className="w-full px-4 py-3 bg-gray-50 text-gray-600 rounded-xl border border-gray-200"
+                />
+              </div>
+              
+              <p className="text-sm text-gray-500 italic mt-4">
+                Note: These fields can be updated via the "Edit page" functionality.
               </p>
-              <div className="flex gap-3">
-                <Button type="button" variant="outline" className="h-9 px-4 rounded-full font-medium">
-                  Choose File
-                </Button>
-                <Button type="button" variant="ghost" className="h-9 px-4 rounded-full font-medium text-red-500 hover:text-red-600 hover:bg-red-50">
-                  Remove
-                </Button>
+            </div>
+          </div>
+
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-red-100">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center shrink-0 text-red-600">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Delete Organizer Page</h2>
+                <p className="text-gray-600 mb-6">
+                  Permanently remove your organizer profile, all associated events, and analytics data. This action is irreversible and cannot be undone once confirmed.
+                </p>
+
+                <div className="bg-red-50 p-6 rounded-2xl border border-red-100">
+                  <label className="block text-sm font-bold text-gray-900 mb-3">
+                    To confirm, type <span className="text-red-600 font-black">"DELETE"</span> below
+                  </label>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input 
+                      type="text"
+                      value={deleteConfirmText}
+                      onChange={(e) => setDeleteConfirmText(e.target.value)}
+                      placeholder="Type DELETE to confirm"
+                      className="flex-1 px-4 py-3 rounded-xl border border-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white"
+                    />
+                    <Button 
+                      onClick={handleDelete}
+                      disabled={deleteConfirmText !== "DELETE" || isDeleting}
+                      className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 h-auto rounded-xl font-bold disabled:opacity-50"
+                    >
+                      {isDeleting ? "Deleting..." : "Delete this page"}
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
         </div>
-
-        {/* Basic Information */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">Basic Information</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="col-span-full">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Organizer Name</label>
-              <input 
-                type="text" 
-                defaultValue="Nextt Events"
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#006782] focus:border-transparent transition-all"
-                placeholder="Enter your organization name"
-              />
-            </div>
-            
-            <div className="col-span-full">
-              <label className="block text-sm font-medium text-gray-700 mb-2">About / Bio</label>
-              <textarea 
-                rows={4}
-                defaultValue="We create unforgettable tech conferences and networking events."
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#006782] focus:border-transparent transition-all resize-none"
-                placeholder="Tell attendees about what kind of events you organize..."
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-              <input 
-                type="email" 
-                defaultValue="contact@nexttevents.com"
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#006782] focus:border-transparent transition-all"
-                placeholder="hello@example.com"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-              <input 
-                type="tel" 
-                defaultValue="+1 (555) 123-4567"
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#006782] focus:border-transparent transition-all"
-                placeholder="+1 (555) 000-0000"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Social Links */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">Social & Links</h2>
-          
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center flex-shrink-0">
-                <Globe className="w-5 h-5 text-gray-500" />
-              </div>
-              <div className="flex-1">
-                <input 
-                  type="url" 
-                  defaultValue="https://nexttevents.com"
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#006782] focus:border-transparent transition-all"
-                  placeholder="Website URL"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                <MessageSquare className="w-5 h-5 text-blue-500" />
-              </div>
-              <div className="flex-1">
-                <input 
-                  type="url" 
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#006782] focus:border-transparent transition-all"
-                  placeholder="Twitter Profile URL"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center flex-shrink-0">
-                <ImageIcon className="w-5 h-5 text-pink-500" />
-              </div>
-              <div className="flex-1">
-                <input 
-                  type="url" 
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#006782] focus:border-transparent transition-all"
-                  placeholder="Instagram Profile URL"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                <Briefcase className="w-5 h-5 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <input 
-                  type="url" 
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#006782] focus:border-transparent transition-all"
-                  placeholder="LinkedIn Profile URL"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-4 pt-4">
-          <Button type="button" variant="ghost" className="px-6 rounded-full font-medium">
-            Cancel
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={loading}
-            className="bg-[#006782] hover:bg-[#004E63] text-white px-8 h-12 rounded-full font-bold flex items-center gap-2 transition-all"
-          >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Save size={18} />
-            )}
-            Save Changes
-          </Button>
-        </div>
-      </form>
+      </div>
     </div>
   );
 }
