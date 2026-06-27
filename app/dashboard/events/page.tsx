@@ -107,7 +107,7 @@ export default function EventsManagerPage() {
                             )}
                           </div>
                           <div>
-                            <Link href={\`/events/\${event._id}\`} className="font-bold text-gray-900 text-base hover:text-[#006782] transition-colors line-clamp-1">
+                            <Link href={`/events/${event._id}`} className="font-bold text-gray-900 text-base hover:text-[#006782] transition-colors line-clamp-1">
                               {event.title}
                             </Link>
                             <span className="text-xs text-gray-500 font-medium">ID: {event._id.slice(-6).toUpperCase()}</span>
@@ -115,11 +115,11 @@ export default function EventsManagerPage() {
                         </div>
                       </td>
                       <td className="p-6">
-                        <span className={\`px-3 py-1 text-xs font-bold rounded-lg border \${
-                          event.status === 'published' || event.status === 'posted' ? 'bg-green-50 text-green-600 border-green-100' :
+                        <span className={`px-3 py-1 text-xs font-bold rounded-lg border ${
+                          event.status === 'posted' ? 'bg-green-50 text-green-600 border-green-100' :
                           event.status === 'draft' ? 'bg-gray-100 text-gray-600 border-gray-200' :
                           'bg-orange-50 text-orange-600 border-orange-100'
-                        }\`}>
+                        }`}>
                           {event.status.toUpperCase()}
                         </span>
                       </td>
@@ -146,17 +146,17 @@ export default function EventsManagerPage() {
                           <DropdownMenu.Portal>
                             <DropdownMenu.Content align="end" className="w-48 bg-white rounded-xl shadow-lg border border-gray-100 p-2 z-50 text-sm">
                               <DropdownMenu.Item asChild>
-                                <Link href={\`/events/\${event._id}\`} className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none">
+                                <Link href={`/events/${event._id}`} className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none">
                                   <Eye size={16} className="text-gray-400" /> View Live
                                 </Link>
                               </DropdownMenu.Item>
                               <DropdownMenu.Item asChild>
-                                <Link href={\`/dashboard/events/\${event._id}/analytics\`} className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none">
+                                <Link href={`/dashboard/events/${event._id}/analytics`} className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none">
                                   <BarChart3 size={16} className="text-[#006782]" /> Analytics
                                 </Link>
                               </DropdownMenu.Item>
                               <DropdownMenu.Item asChild>
-                                <Link href={\`/events/create?edit=\${event._id}\`} className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none">
+                                <Link href={`/events/create?edit=${event._id}`} className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none">
                                   <Edit size={16} className="text-gray-400" /> Edit Event
                                 </Link>
                               </DropdownMenu.Item>

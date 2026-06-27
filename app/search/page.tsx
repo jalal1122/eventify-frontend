@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { eventsApi } from "@/lib/api";
 import { Event } from "@/types/event";
-import EventCard from "@/components/events/EventCard";
+import { EventCard } from "@/components/events/EventCard";
 import { Search, Loader2 } from "lucide-react";
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
   const locationType = searchParams.get("locationType") || "";
@@ -44,8 +44,8 @@ export default function SearchPage() {
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold mb-2">Search Results</h1>
           <p className="text-[#A3D3D9]">
-            {query ? \`Showing results for "\${query}"\` : "Showing all events"}
-            {locationType && \` • \${locationType.charAt(0).toUpperCase() + locationType.slice(1).toLowerCase()}\`}
+            {query ? `Showing results for "${query}"` : "Showing all events"}
+            {locationType && ` • ${locationType.charAt(0).toUpperCase() + locationType.slice(1).toLowerCase()}`}
           </p>
         </div>
       </div>
@@ -82,5 +82,17 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-[#006782]" />
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
   );
 }

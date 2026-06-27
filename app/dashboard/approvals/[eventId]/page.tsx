@@ -35,7 +35,7 @@ export default function EventApprovalsPage() {
           organizerApi.getEventAttendees(eventId)
         ]);
         setEvent(eventRes.data.event);
-        setRegistrations(attendeesRes.data.attendees.filter((r: Registration) => r.status === "pending"));
+        setRegistrations(attendeesRes.data.attendees.filter((r: Registration) => r.paymentStatus === "pending_review"));
       } catch (error) {
         console.error("Failed to fetch data", error);
       } finally {
@@ -205,12 +205,15 @@ export default function EventApprovalsPage() {
                     )}
 
                     {/* Payment Proof */}
-                    {selectedReg.paymentProofUrl && (
+                    {selectedReg.paymentScreenshotUrl && (
                       <div className="space-y-4">
                         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Payment Proof</h4>
                         <div className="rounded-2xl border border-gray-200 overflow-hidden">
-                          <img src={selectedReg.paymentProofUrl} alt="Payment Proof" className="w-full h-auto" />
-                        </div>
+                          <img 
+                            src={selectedReg.paymentScreenshotUrl} 
+                            alt="Payment Proof" 
+                            className="w-full h-auto"
+                          />  </div>
                       </div>
                     )}
 

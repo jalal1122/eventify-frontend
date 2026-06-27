@@ -24,11 +24,11 @@ interface SidebarItemProps {
 const SidebarItem = ({ href, icon: Icon, label, isActive }: SidebarItemProps) => (
   <Link 
     href={href}
-    className={\`flex items-center gap-3 px-4 py-3 rounded-2xl transition-colors font-semibold \${
+    className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-colors font-semibold ${
       isActive 
         ? "bg-[#006782] text-white" 
         : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-    }\`}
+    }`}
   >
     <Icon size={20} />
     <span>{label}</span>

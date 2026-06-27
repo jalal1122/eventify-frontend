@@ -2,7 +2,7 @@
 
 import { useEffect, useState, FormEvent, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { eventsApi, registrationsApi, api } from "@/lib/api";
+import api, { eventsApi, registrationsApi } from "@/lib/api";
 import { type Event, type CustomFormField } from "@/types/event";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -180,11 +180,11 @@ export default function RegisterPage() {
                     <div 
                       key={ticket.id}
                       onClick={() => setSelectedTicketId(ticket.id)}
-                      className={\`relative p-6 rounded-3xl border-2 cursor-pointer transition-all \${
+                      className={`relative p-6 rounded-3xl border-2 cursor-pointer transition-all ${
                         selectedTicketId === ticket.id 
                           ? "border-[#006782] bg-[#F0F7F9]" 
                           : "border-gray-100 hover:border-gray-200"
-                      }\`}
+                      }`}
                     >
                       <div className="flex justify-between items-start mb-2">
                         <span className="font-bold text-gray-900 text-lg">{ticket.name}</span>
@@ -195,7 +195,7 @@ export default function RegisterPage() {
                         )}
                       </div>
                       <p className="text-[#006782] font-black text-2xl mb-2">
-                        {ticket.type === "FREE" ? "Free" : \`PKR \${ticket.price}\`}
+                        {ticket.type === "FREE" ? "Free" : `PKR ${ticket.price}`}
                       </p>
                       <p className="text-sm text-gray-500 font-medium">
                         Capacity: {ticket.quantity}

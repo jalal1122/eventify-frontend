@@ -42,7 +42,7 @@ export default function AttendeesPage() {
         const res = await organizerApi.getEventAttendees(selectedEventId);
         if (res.data.success) {
           // Only show approved attendees for the guest list
-          setAttendees(res.data.attendees.filter((r: Registration) => r.status === "approved"));
+          setAttendees(res.data.attendees.filter((r: Registration) => ["approved", "free"].includes(r.paymentStatus)));
         }
       } catch (error) {
         console.error("Failed to fetch attendees", error);
@@ -74,7 +74,7 @@ export default function AttendeesPage() {
     return name.toLowerCase().includes(q) || email.toLowerCase().includes(q) || ticketCode.toLowerCase().includes(q);
   });
 
-  const checkedInCount = attendees.filter(a => a.checkedIn).length;
+  const checkedInCount = attendees.filter(a => !!a.scannedAt).length;
 
   if (loading) {
     return (
@@ -166,7 +166,7 @@ export default function AttendeesPage() {
                   filteredAttendees.map((attendee) => {
                     const name = attendee.guestDetails?.name || (attendee.userId as any)?.name || "Unknown";
                     const email = attendee.guestDetails?.email || (attendee.userId as any)?.email || "Unknown";
-                    const isCheckedIn = attendee.checkedIn;
+                    const isCheckedIn = !!attendee.scannedAt;
 
                     return (
                       <tr key={attendee._id} className="hover:bg-gray-50 transition-colors">
@@ -201,11 +201,11 @@ export default function AttendeesPage() {
                           <Button 
                             disabled={isCheckedIn || verifying === attendee.ticketCode}
                             onClick={() => handleManualCheckIn(attendee.ticketCode!)}
-                            className={\`rounded-xl px-6 h-10 \${
+                            className={`rounded-xl px-6 h-10 ${
                               isCheckedIn 
                                 ? "bg-gray-100 text-gray-400" 
                                 : "bg-[#006782] hover:bg-[#004E63] text-white shadow-md"
-                            }\`}
+                            }`}
                           >
                             {verifying === attendee.ticketCode ? (
                               <Loader2 className="animate-spin w-4 h-4" />

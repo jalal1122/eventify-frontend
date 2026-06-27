@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { eventsApi } from "@/lib/api";
 import { type Event } from "@/types/event";
-import { Loader2, TrendingUp, Users, Ticket, Eye, ArrowUpRight } from "lucide-react";
+import { Loader2, TrendingUp, Users, Ticket, Eye, ArrowUpRight, Calendar } from "lucide-react";
 import { formatShortDate } from "@/lib/utils";
 import Link from "next/link";
 
@@ -60,7 +60,7 @@ export default function DashboardOverview() {
         {metrics.map((metric, i) => (
           <div key={i} className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <div className={\`w-12 h-12 rounded-2xl flex items-center justify-center \${metric.bg} \${metric.color}\`}>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${metric.bg} ${metric.color}`}>
                 <metric.icon size={24} />
               </div>
               <span className="flex items-center text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-lg">

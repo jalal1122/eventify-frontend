@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { eventsApi } from "@/lib/api";
 import { type Event } from "@/types/event";
-import { Loader2, ArrowLeft, Download, TrendingUp, Users, Ticket, Activity, MapPin } from "lucide-react";
+import { Loader2, ArrowLeft, Download, TrendingUp, Users, Ticket, Activity, MapPin, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function EventAnalyticsPage() {
@@ -127,8 +127,8 @@ export default function EventAnalyticsPage() {
           <div className="h-[300px] w-full flex items-end justify-between gap-2 px-2 pb-6 border-b border-gray-100 relative">
             {/* Mock Chart Bars */}
             {[40, 25, 60, 45, 80, 55, 90, 70, 100, 85, 40, 65, 80, 50].map((h, i) => (
-              <div key={i} className="w-full bg-[#006782]/10 rounded-t-lg relative group transition-all hover:bg-[#006782]/20" style={{ height: \`\${h}%\` }}>
-                <div className="absolute top-0 w-full bg-[#006782] rounded-t-lg transition-all" style={{ height: \`\${h * 0.7}%\` }} />
+              <div key={i} className="w-full bg-[#006782]/10 rounded-t-lg relative group transition-all hover:bg-[#006782]/20" style={{ height: `${h}%` }}>
+                <div className="absolute top-0 w-full bg-[#006782] rounded-t-lg transition-all" style={{ height: `${h * 0.7}%` }} />
                 
                 {/* Tooltip on hover */}
                 <div className="opacity-0 group-hover:opacity-100 absolute -top-12 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 rounded-lg pointer-events-none transition-opacity whitespace-nowrap">
@@ -204,7 +204,7 @@ export default function EventAnalyticsPage() {
                   <span className="font-bold text-gray-900">{d.pct}%</span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-2">
-                  <div className="bg-[#006782] h-2 rounded-full" style={{ width: \`\${d.pct}%\` }} />
+                  <div className="bg-[#006782] h-2 rounded-full" style={{ width: `${d.pct}%` }} />
                 </div>
               </div>
             ))}

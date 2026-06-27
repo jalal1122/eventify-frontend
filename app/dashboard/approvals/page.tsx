@@ -46,7 +46,7 @@ export default function ApprovalsHubPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map((event) => (
-            <Link key={event._id} href={\`/dashboard/approvals/\${event._id}\`}>
+            <Link key={event._id} href={`/dashboard/approvals/${event._id}`}>
               <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer group">
                 <div className="w-full h-40 bg-gray-100 rounded-xl mb-4 overflow-hidden relative">
                   {event.cardImageUrl ? (
