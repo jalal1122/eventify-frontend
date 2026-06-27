@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, Suspense } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense, use } from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { eventFormSchema, type EventFormValues } from "../../create/schema";
 import { eventsApi } from "@/lib/api";
 
-// We will build these step components next
 import StepBasics from "../../create/components/StepBasics";
 import StepRegistration from "../../create/components/StepRegistration";
 import StepTickets from "../../create/components/StepTickets";
@@ -36,11 +34,11 @@ const uploadImageIfNeeded = async (urlOrData: string | undefined): Promise<strin
     return res.data.url;
   } catch (error) {
     console.error("Failed to upload image:", error);
-    return urlOrData; // fallback
+    return urlOrData;
   }
 };
 
-function EditEventForm({ draftId }: { draftId: string }) {
+function EditEventForm({ eventId: draftId }: { eventId: string }) {
   const { user, isAuthenticated, isLoading, upgradeToOrganizer } = useAuth();
   
   const [currentStep, setCurrentStep] = useState(0);
@@ -49,6 +47,7 @@ function EditEventForm({ draftId }: { draftId: string }) {
   const [eventId, setEventId] = useState<string | null>(draftId || null);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isLoadingEvent, setIsLoadingEvent] = useState(true);
   
   const eventIdRef = useRef<string | null>(draftId || null);
   const isSavingRef = useRef(false);
@@ -57,8 +56,7 @@ function EditEventForm({ draftId }: { draftId: string }) {
     eventIdRef.current = eventId;
   }, [eventId]);
 
-  // Track whether we are in initial load so we don't overwrite the loaded data
-  const isInitialLoad = useRef(!!draftId);
+  const isInitialLoad = useRef(true);
 
   const methods = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema) as any,
@@ -92,21 +90,26 @@ function EditEventForm({ draftId }: { draftId: string }) {
     }
   }, [isAuthenticated, user?.role, upgradeToOrganizer]);
 
-  // Load existing draft
+  // Load existing event data
   useEffect(() => {
     if (draftId && isAuthenticated) {
+      setIsLoadingEvent(true);
       eventsApi.getById(draftId).then((res) => {
         if (res.data.success && res.data.event) {
           const ev = res.data.event;
           
-          // Map backend fields to form fields
+          // organizerProfileId may be a populated object or a string
+          const orgProfileId = typeof ev.organizerProfileId === "object" && ev.organizerProfileId !== null
+            ? (ev.organizerProfileId._id || ev.organizerProfileId.id || "")
+            : (ev.organizerProfileId || "");
+
           methods.reset({
             title: ev.title || "",
             categoryId: ev.category || "",
             locationType: ev.locationType || "VENUE",
             venueName: ev.venueName || "",
             city: ev.city || "",
-            address: "", // Note: Backend does not store address separately right now
+            address: "",
             platform: ev.platform || "",
             virtualLink: ev.virtualLink || "",
             overview: ev.description || "",
@@ -123,26 +126,33 @@ function EditEventForm({ draftId }: { draftId: string }) {
               paymentAccountType: t.paymentAccountType,
               paymentAccountNumber: t.paymentAccountNumber,
             })),
-            organizerProfileId: ev.organizerProfileId || "",
+            organizerProfileId: orgProfileId,
             startDate: ev.dateTime ? new Date(ev.dateTime) : undefined,
             startTime: ev.dateTime ? new Date(ev.dateTime).toISOString().split('T')[1].slice(0,5) : "",
+            bannerUrl: ev.bannerUrl || "",
+            cardImageUrl: ev.cardImageUrl || "",
           });
         }
       }).catch(err => {
-        console.error("Failed to load draft:", err);
+        console.error("Failed to load event:", err);
       }).finally(() => {
-        isInitialLoad.current = false;
+        // Small delay so the form has time to populate before auto-save kicks in
+        setTimeout(() => {
+          isInitialLoad.current = false;
+          setIsLoadingEvent(false);
+        }, 500);
       });
     } else {
       isInitialLoad.current = false;
+      setIsLoadingEvent(false);
     }
   }, [draftId, isAuthenticated, methods]);
 
   // Auto-save logic
   const saveDraft = useCallback(async (isManual = false) => {
-    if (isSavingRef.current && !isManual) return; // Skip if already saving automatically
+    if (isSavingRef.current && !isManual) return;
     const data = methods.getValues();
-    if (!data.organizerProfileId) return; // Cannot save without organizer
+    if (!data.organizerProfileId) return;
 
     try {
       isSavingRef.current = true;
@@ -195,13 +205,13 @@ function EditEventForm({ draftId }: { draftId: string }) {
       } else {
         const res = await eventsApi.create(payload);
         if (res.data.success && res.data.event?._id) {
-          eventIdRef.current = res.data.event._id; // Update ref synchronously
+          eventIdRef.current = res.data.event._id;
           setEventId(res.data.event._id);
         }
       }
       setLastSaved(new Date());
     } catch (error) {
-      console.error("Failed to auto-save draft:", error);
+      console.error("Failed to save:", error);
     } finally {
       isSavingRef.current = false;
       if (isManual) setIsSaving(false);
@@ -210,16 +220,14 @@ function EditEventForm({ draftId }: { draftId: string }) {
 
   useEffect(() => {
     const subscription = methods.watch((value, { name, type }) => {
-      // Don't auto save on initial load setting default values
       if (isInitialLoad.current) return;
       
       const { organizerProfileId } = methods.getValues();
       if (!organizerProfileId) return;
       
-      // Debounce logic
       const handler = setTimeout(() => {
         saveDraft();
-      }, 5000); // 5 second debounce
+      }, 5000);
       
       return () => clearTimeout(handler);
     });
@@ -229,16 +237,14 @@ function EditEventForm({ draftId }: { draftId: string }) {
   const { watch, trigger } = methods;
   const registrationMethod = watch("registrationMethod");
 
-  // Determine active steps dynamically based on registration method
   const activeSteps = STEPS.filter((step) => {
     if (registrationMethod === "EXTERNAL" && step.id === "tickets") {
-      return false; // Skip tickets step if external link
+      return false;
     }
     return true;
   });
 
   const handleNext = async () => {
-    // Validate current step fields before proceeding
     let fieldsToValidate: any = [];
     const stepId = activeSteps[currentStep].id;
     
@@ -249,100 +255,98 @@ function EditEventForm({ draftId }: { draftId: string }) {
     } else if (stepId === "tickets") {
       fieldsToValidate = ["tickets"];
     }
-
-    const isStepValid = await trigger(fieldsToValidate);
     
-    if (isStepValid) {
-      if (currentStep < activeSteps.length - 1) {
-        setCurrentStep((prev) => prev + 1);
-      } else {
-        // Final submit
-        submitEvent();
+    const isValid = await trigger(fieldsToValidate);
+    
+    if (currentStep < activeSteps.length - 1) {
+      await saveDraft(true);
+      setCurrentStep(currentStep + 1);
+    } else {
+      // Final step - publish
+      try {
+        setIsSaving(true);
+        const data = methods.getValues();
+        
+        let dateTime = undefined;
+        if (data.startDate) {
+          const date = new Date(data.startDate);
+          if (data.startTime) {
+            const [hours, minutes] = data.startTime.split(":");
+            date.setHours(Number(hours), Number(minutes));
+          }
+          dateTime = date.toISOString();
+        }
+
+        const uploadedBannerUrl = await uploadImageIfNeeded(data.bannerUrl);
+        const uploadedCardImageUrl = await uploadImageIfNeeded(data.cardImageUrl);
+
+        const payload = {
+          title: data.title,
+          description: data.overview,
+          bannerUrl: uploadedBannerUrl,
+          cardImageUrl: uploadedCardImageUrl,
+          category: data.categoryId,
+          locationType: data.locationType,
+          venueName: data.venueName,
+          city: data.city,
+          platform: data.platform,
+          virtualLink: data.virtualLink,
+          dateTime,
+          registrationMethod: data.registrationMethod === "EXTERNAL" ? "external" : "native",
+          externalUrl: data.externalUrl,
+          customFormSchema: data.customQuestions,
+          tickets: data.tickets.map(t => ({
+             id: t.id,
+             type: t.type,
+             name: t.name,
+             quantity: t.quantity,
+             price: t.price || 0,
+             paymentAccountType: t.paymentAccountType,
+             paymentAccountNumber: t.paymentAccountNumber,
+          })),
+          organizerProfileId: data.organizerProfileId,
+          submitForReview: true,
+        };
+
+        const currentEventId = eventIdRef.current;
+        if (currentEventId) {
+          await eventsApi.update(currentEventId, payload);
+        } else {
+          const res = await eventsApi.create(payload);
+          if (res.data.success && res.data.event?._id) {
+            eventIdRef.current = res.data.event._id;
+            setEventId(res.data.event._id);
+          }
+        }
+        setIsSuccess(true);
+      } catch (error) {
+        console.error("Failed to publish event:", error);
+        alert("Failed to publish event. Please try again.");
+      } finally {
+        setIsSaving(false);
       }
     }
   };
 
   const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-    }
-  };
-
-  const submitEvent = async () => {
-    try {
-      const data = methods.getValues();
-      
-      // Combine date and time
-      let dateTime = new Date().toISOString();
-      if (data.startDate) {
-        const date = new Date(data.startDate);
-        if (data.startTime) {
-          const [hours, minutes] = data.startTime.split(":");
-          date.setHours(Number(hours), Number(minutes));
-        }
-        dateTime = date.toISOString();
-      }
-
-      const uploadedBannerUrl = await uploadImageIfNeeded(data.bannerUrl);
-      const uploadedCardImageUrl = await uploadImageIfNeeded(data.cardImageUrl);
-
-      const payload = {
-        title: data.title,
-        description: data.overview,
-        bannerUrl: uploadedBannerUrl,
-        cardImageUrl: uploadedCardImageUrl,
-        category: data.categoryId,
-        locationType: data.locationType,
-        venueName: data.venueName,
-        city: data.city,
-        platform: data.platform,
-        virtualLink: data.virtualLink,
-        dateTime,
-        registrationMethod: data.registrationMethod === "EXTERNAL" ? "external" : "native",
-        externalUrl: data.externalUrl,
-        customFormSchema: data.customQuestions,
-        tickets: data.tickets.map(t => ({
-           id: t.id,
-           type: t.type,
-           name: t.name,
-           quantity: t.quantity,
-           price: t.price || 0,
-           paymentAccountType: t.paymentAccountType,
-           paymentAccountNumber: t.paymentAccountNumber,
-        })),
-        organizerProfileId: data.organizerProfileId,
-        submitForReview: true,
-      };
-
-      let res;
-      const currentEventId = eventIdRef.current;
-      if (currentEventId) {
-        res = await eventsApi.update(currentEventId, payload);
-      } else {
-        res = await eventsApi.create(payload);
-      }
-      
-      if (res.data.success) {
-        if (!eventId && res.data.event?._id) {
-          setEventId(res.data.event._id);
-        }
-        setIsSuccess(true);
-      }
-    } catch (error: any) {
-      console.error("Failed to create event:", error);
-      alert(error.response?.data?.message || "Failed to create event. Please try again.");
-    }
+    if (currentStep > 0) setCurrentStep(currentStep - 1);
   };
 
   if (isSuccess) {
-    return <SuccessScreen 
-      title={methods.getValues("title")} 
-      eventId={eventId!} 
-      organizerProfileId={methods.getValues("organizerProfileId")}
-    />;
+    return <SuccessScreen eventId={eventId} />;
   }
 
-  if (isLoading || isUpgrading || (isAuthenticated && user?.role === "attendee")) {
+  if (isLoading || isLoadingEvent) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center">
+        <Loader2 className="w-12 h-12 text-[#006782] animate-spin mb-4" />
+        <h2 className="text-xl font-semibold text-[#001F29]">Loading event data...</h2>
+        <p className="text-gray-500 mt-2">Please wait while we fetch your event.</p>
+      </div>
+    );
+  }
+
+  if (isUpgrading) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center">
         <Loader2 className="w-12 h-12 text-[#006782] animate-spin mb-4" />
@@ -427,7 +431,7 @@ function EditEventForm({ draftId }: { draftId: string }) {
               &larr; Back to Step {currentStep}
             </button>
           ) : (
-            <div></div> // empty placeholder for alignment
+            <div></div>
           )}
           
           <div className="flex items-center gap-6">
@@ -441,14 +445,14 @@ function EditEventForm({ draftId }: { draftId: string }) {
               ) : lastSaved ? (
                 <><Check className="w-4 h-4" /> Saved at {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</>
               ) : (
-                "Save Draft"
+                "Save Changes"
               )}
             </button>
             <button
               onClick={handleNext}
               className="bg-[#006782] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#004E63] transition-colors"
             >
-              {currentStep === activeSteps.length - 1 ? "🚀 Publish Event" : `Continue to Step ${currentStep + 2}`}
+              {currentStep === activeSteps.length - 1 ? "🚀 Update Event" : `Continue to Step ${currentStep + 2}`}
             </button>
           </div>
         </div>
@@ -457,16 +461,15 @@ function EditEventForm({ draftId }: { draftId: string }) {
   );
 }
 
-export default function EditEventPage({ params }: { params: { id: string } }) {
+export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center">
         <Loader2 className="w-12 h-12 text-[#006782] animate-spin mb-4" />
       </div>
     }>
-      <EditEventForm draftId={params.id} />
+      <EditEventForm eventId={resolvedParams.id} />
     </Suspense>
   );
 }
-
-

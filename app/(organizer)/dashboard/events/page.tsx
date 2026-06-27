@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { organizerApi } from "@/lib/api";
+import { organizerApi, eventsApi } from "@/lib/api";
 import { type Event } from "@/types/event";
 import { Loader2, Calendar, MoreVertical, Search, Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { formatShortDate } from "@/lib/utils";
