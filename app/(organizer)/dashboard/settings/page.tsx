@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Upload, Camera, Save, Globe, Twitter, Instagram, Linkedin, Link as LinkIcon } from "lucide-react";
+import { Upload, Camera, Save, Globe, Link as LinkIcon, Briefcase, MessageSquare, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function OrganizerSettingsPage() {
@@ -123,7 +123,7 @@ export default function OrganizerSettingsPage() {
 
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                <Twitter className="w-5 h-5 text-blue-500" />
+                <MessageSquare className="w-5 h-5 text-blue-500" />
               </div>
               <div className="flex-1">
                 <input 
@@ -136,7 +136,7 @@ export default function OrganizerSettingsPage() {
 
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center flex-shrink-0">
-                <Instagram className="w-5 h-5 text-pink-500" />
+                <ImageIcon className="w-5 h-5 text-pink-500" />
               </div>
               <div className="flex-1">
                 <input 
@@ -149,7 +149,7 @@ export default function OrganizerSettingsPage() {
 
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                <Linkedin className="w-5 h-5 text-blue-600" />
+                <Briefcase className="w-5 h-5 text-blue-600" />
               </div>
               <div className="flex-1">
                 <input 
