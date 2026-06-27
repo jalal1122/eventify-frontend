@@ -8,6 +8,7 @@ import { formatShortDate } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useOrganizer } from "@/context/OrganizerContext";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
   Dialog,
@@ -32,10 +33,13 @@ export default function EventsManagerPage() {
   // Action State for Modals
   const [actionEvent, setActionEvent] = useState<{ id: string; title: string; action: "publish" | "delete" } | null>(null);
 
+  const { activeProfileId } = useOrganizer();
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await organizerApi.getMyEvents();
+        setLoading(true);
+        const res = await organizerApi.getMyEvents(activeProfileId || "all");
         if (res.data.success) {
           setEvents(res.data.events);
         }
@@ -45,8 +49,10 @@ export default function EventsManagerPage() {
         setLoading(false);
       }
     };
-    fetchEvents();
-  }, []);
+    if (activeProfileId) {
+      fetchEvents();
+    }
+  }, [activeProfileId]);
 
   const confirmAction = async () => {
     if (!actionEvent) return;

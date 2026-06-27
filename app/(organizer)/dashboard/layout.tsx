@@ -33,7 +33,7 @@ const SidebarItem = ({ href, icon: Icon, label, isActive }: SidebarItemProps) =>
     className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-colors font-semibold ${
       isActive 
         ? "bg-[#006782] text-white" 
-        : "text-gray-400 hover:bg-[#1E293B] hover:text-white"
+        : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
     }`}
   >
     <Icon size={20} />
@@ -44,7 +44,7 @@ const SidebarItem = ({ href, icon: Icon, label, isActive }: SidebarItemProps) =>
 function DashboardInner({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const { profiles, activeProfile, activeProfileId, setActiveProfileId, isLoadingProfiles } = useOrganizer();
+  const { profiles, activeProfile, activeProfileId, setActiveProfileId } = useOrganizer();
 
   const navItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
@@ -56,12 +56,12 @@ function DashboardInner({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex">
-      {/* Dark Sidebar */}
-      <aside className="w-72 bg-[#0B1120] border-r border-gray-800 flex flex-col fixed h-full z-10 text-white">
+      {/* Light Sidebar */}
+      <aside className="w-72 bg-[#F8FAFC] border-r border-gray-200 flex flex-col fixed h-full z-10">
         <div className="p-6">
           <Link href="/" className="inline-block">
-            <h1 className="text-2xl font-black tracking-tight text-white">
-              Nextt<span className="text-orange-500">Event</span>
+            <h1 className="text-3xl font-black tracking-tight text-orange-500">
+              Eventify
             </h1>
             <p className="text-xs text-gray-400 font-bold tracking-widest mt-1">ORGANIZER</p>
           </Link>
@@ -70,21 +70,21 @@ function DashboardInner({ children }: { children: ReactNode }) {
         <div className="px-4 py-2 mb-4">
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
-              <button className="flex w-full items-center justify-between gap-3 px-3 py-3 bg-[#1E293B] hover:bg-[#273549] transition-colors rounded-2xl border border-gray-700 outline-none">
+              <button className="flex w-full items-center justify-between gap-3 px-3 py-3 bg-white hover:bg-gray-50 transition-colors rounded-3xl border border-gray-200 outline-none shadow-sm">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="w-10 h-10 rounded-xl bg-[#006782] text-white flex items-center justify-center font-bold shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[#006782] text-white flex items-center justify-center font-bold shrink-0">
                     {activeProfile?.brandName?.charAt(0) || user?.name?.charAt(0) || "U"}
                   </div>
                   <div className="text-left overflow-hidden">
-                    <p className="font-bold text-white text-sm leading-tight truncate">
+                    <p className="font-bold text-gray-900 text-sm leading-tight truncate">
                       {activeProfileId === "all" ? "All Pages" : activeProfile?.brandName || "Select Page"}
                     </p>
-                    <p className="text-xs text-gray-400 truncate">
+                    <p className="text-xs text-gray-500 truncate">
                       {activeProfileId === "all" ? `${profiles.length} profiles` : `${activeProfile?.followers || 0} followers`}
                     </p>
                   </div>
                 </div>
-                <ChevronDown size={16} className="text-gray-400 shrink-0" />
+                <ChevronDown size={16} className="text-gray-400 shrink-0 mr-1" />
               </button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
@@ -112,36 +112,36 @@ function DashboardInner({ children }: { children: ReactNode }) {
           </DropdownMenu.Root>
 
           {activeProfileId !== "all" && activeProfile && (
-            <div className="flex items-center justify-between gap-2 mt-4 px-1">
-              <Link href={`/dashboard/settings/edit`} className="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors group">
-                <div className="w-10 h-10 rounded-full border border-gray-700 bg-[#1E293B] group-hover:bg-[#273549] flex items-center justify-center">
-                  <Edit size={16} />
+            <div className="flex items-center justify-around gap-2 mt-6 px-2">
+              <Link href={`/dashboard/settings/edit`} className="flex flex-col items-center gap-1 text-gray-500 hover:text-[#006782] transition-colors group">
+                <div className="w-12 h-12 rounded-full border border-gray-200 bg-white group-hover:border-[#006782] flex items-center justify-center shadow-sm">
+                  <Edit size={18} />
                 </div>
-                <span className="text-[10px] font-medium">Edit page</span>
+                <span className="text-[11px] font-medium mt-1">Edit page</span>
               </Link>
-              <Link href={`/organizers/${activeProfileId}`} target="_blank" className="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors group">
-                <div className="w-10 h-10 rounded-full border border-gray-700 bg-[#1E293B] group-hover:bg-[#273549] flex items-center justify-center">
-                  <Eye size={16} />
+              <Link href={`/organizers/${activeProfileId}`} target="_blank" className="flex flex-col items-center gap-1 text-gray-500 hover:text-[#006782] transition-colors group">
+                <div className="w-12 h-12 rounded-full border border-gray-200 bg-white group-hover:border-[#006782] flex items-center justify-center shadow-sm">
+                  <Eye size={18} />
                 </div>
-                <span className="text-[10px] font-medium">Preview</span>
+                <span className="text-[11px] font-medium mt-1">Preview</span>
               </Link>
               <button 
                 onClick={() => {
                   navigator.clipboard.writeText(`${window.location.origin}/organizers/${activeProfileId}`);
                   alert("URL Copied!");
                 }}
-                className="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors group"
+                className="flex flex-col items-center gap-1 text-gray-500 hover:text-[#006782] transition-colors group"
               >
-                <div className="w-10 h-10 rounded-full border border-gray-700 bg-[#1E293B] group-hover:bg-[#273549] flex items-center justify-center">
-                  <Copy size={16} />
+                <div className="w-12 h-12 rounded-full border border-gray-200 bg-white group-hover:border-[#006782] flex items-center justify-center shadow-sm">
+                  <Copy size={18} />
                 </div>
-                <span className="text-[10px] font-medium">Copy URL</span>
+                <span className="text-[11px] font-medium mt-1">Copy URL</span>
               </button>
             </div>
           )}
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
           {navItems.map((item) => (
             <SidebarItem 
               key={item.href}
@@ -153,7 +153,7 @@ function DashboardInner({ children }: { children: ReactNode }) {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-gray-800 space-y-2">
+        <div className="p-4 border-t border-gray-200 space-y-2 bg-[#F8FAFC]">
           <SidebarItem 
             href="/dashboard/settings"
             icon={Settings}
@@ -162,20 +162,20 @@ function DashboardInner({ children }: { children: ReactNode }) {
           />
           <button 
             onClick={logout}
-            className="flex w-full items-center gap-3 px-4 py-3 rounded-2xl transition-colors font-semibold text-gray-400 hover:text-white hover:bg-[#1E293B]"
+            className="flex w-full items-center gap-3 px-4 py-3 rounded-2xl transition-colors font-semibold text-gray-500 hover:text-gray-900 hover:bg-gray-100"
           >
-            <div className="w-8 h-8 rounded-full bg-[#1E293B] flex items-center justify-center shrink-0 border border-gray-700 overflow-hidden">
+            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center shrink-0 border border-gray-300 overflow-hidden">
                {user?.avatarUrl ? (
                  <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
                ) : (
-                 <UserCheck size={14} className="text-gray-400" />
+                 <UserCheck size={14} className="text-gray-500" />
                )}
             </div>
             <div className="flex flex-col text-left truncate flex-1">
-               <span className="text-sm text-white truncate">{user?.name || "User"}</span>
+               <span className="text-sm text-gray-900 truncate">{user?.name || "User"}</span>
                <span className="text-xs text-gray-500">Logout</span>
             </div>
-            <LogOut size={16} className="text-gray-500 shrink-0" />
+            <LogOut size={16} className="text-gray-400 shrink-0" />
           </button>
         </div>
       </aside>

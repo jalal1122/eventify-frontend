@@ -1,27 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { eventsApi } from "@/lib/api";
+import { organizerApi } from "@/lib/api";
 import { type Event } from "@/types/event";
 import { Loader2, TrendingUp, Users, Ticket, Eye, ArrowUpRight, Calendar } from "lucide-react";
 import { formatShortDate } from "@/lib/utils";
 import Link from "next/link";
+import { useOrganizer } from "@/context/OrganizerContext";
 
 export default function DashboardOverview() {
+  const { activeProfileId, activeProfile } = useOrganizer();
   const [events, setEvents] = useState<Event[]>([]);
+  const [metricsData, setMetricsData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Ideally, we'd have a specific /api/organizer/dashboard endpoint
-    // For now, we'll fetch the organizer's events. Assuming /api/events/discover with a filter works
-    // or we fetch all and calculate. In a real scenario, the backend should aggregate these metrics.
     const fetchDashboardData = async () => {
       try {
-        // Mocking dashboard data fetch by just getting recent events for now
-        // In real impl, we need an endpoint that returns exactly the organizer's events
-        const res = await eventsApi.discover({ limit: 5 }); 
-        if (res.data.success) {
-          setEvents(res.data.events);
+        setLoading(true);
+        // Fetch dashboard metrics and recent events for the active profile
+        const [metricsRes, eventsRes] = await Promise.all([
+          organizerApi.getDashboardMetrics(activeProfileId || "all"),
+          organizerApi.getMyEvents(activeProfileId || "all")
+        ]);
+
+        if (metricsRes.data.success) {
+          setMetricsData(metricsRes.data.metrics);
+        }
+        if (eventsRes.data.success) {
+          setEvents(eventsRes.data.events.slice(0, 5)); // Just take top 5
         }
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);
@@ -29,10 +36,13 @@ export default function DashboardOverview() {
         setLoading(false);
       }
     };
-    fetchDashboardData();
-  }, []);
 
-  if (loading) {
+    if (activeProfileId) {
+      fetchDashboardData();
+    }
+  }, [activeProfileId]);
+
+  if (loading || !metricsData) {
     return (
       <div className="flex h-full items-center justify-center py-20">
         <Loader2 className="w-8 h-8 animate-spin text-[#006782]" />
@@ -40,12 +50,12 @@ export default function DashboardOverview() {
     );
   }
 
-  // Mock aggregated metrics
+  // Use the fetched metrics
   const metrics = [
-    { label: "Total Revenue", value: "PKR 124,500", increase: "+14.5%", icon: TrendingUp, color: "text-green-600", bg: "bg-green-50" },
-    { label: "Tickets Sold", value: "842", increase: "+5.2%", icon: Ticket, color: "text-blue-600", bg: "bg-blue-50" },
-    { label: "Total Views", value: "12.5k", increase: "+22.1%", icon: Eye, color: "text-purple-600", bg: "bg-purple-50" },
-    { label: "Active Attendees", value: "1,204", increase: "+8.4%", icon: Users, color: "text-orange-600", bg: "bg-orange-50" },
+    { label: "Total Events", value: metricsData.totalEvents, increase: "+0%", icon: Calendar, color: "text-green-600", bg: "bg-green-50" },
+    { label: "Registrations", value: metricsData.totalRegistrations, increase: "+0%", icon: Ticket, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: "Total Views", value: metricsData.totalViews, increase: "+0%", icon: Eye, color: "text-purple-600", bg: "bg-purple-50" },
+    { label: "Interested", value: metricsData.totalInterested, increase: "+0%", icon: Users, color: "text-orange-600", bg: "bg-orange-50" },
   ];
 
   return (

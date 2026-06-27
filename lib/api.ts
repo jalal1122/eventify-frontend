@@ -216,14 +216,19 @@ export const organizerApi = {
   getPublicProfile: (organizerId: string) =>
     api.get(`/api/organizer/public/${organizerId}`),
 
-  getDashboardMetrics: () => api.get("/api/organizer/dashboard/metrics"),
+  getDashboardMetrics: (profileId?: string | "all") => 
+    api.get("/api/organizer/dashboard/metrics", { params: { profileId } }),
 
-  getMyEvents: () => api.get("/api/organizer/events"),
+  getMyEvents: (profileId?: string | "all") => 
+    api.get("/api/organizer/events", { params: { profileId } }),
 
   getProfile: () => api.get("/api/organizer/profile"),
 
-  updateProfile: (data: Record<string, unknown>) =>
-    api.put("/api/organizer/profile", data),
+  updateProfile: (id: string, data: Record<string, unknown>) =>
+    api.put(`/api/organizer/profile/${id}`, data),
+
+  deleteProfile: (id: string) =>
+    api.delete(`/api/organizer/profile/${id}`),
 
   getProfiles: () => api.get("/api/organizer/profiles"),
 
