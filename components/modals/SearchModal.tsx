@@ -211,7 +211,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                         className="flex items-center gap-4 group cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors -ml-2"
                       >
                         <div className="w-12 h-12 rounded-xl bg-gray-100 shrink-0 overflow-hidden">
-                          <img src={event.coverImage || "/placeholder-event.jpg"} alt={event.title} className="w-full h-full object-cover" />
+                          <img src={event.cardImageUrl || "/placeholder-event.jpg"} alt={event.title} className="w-full h-full object-cover" />
                         </div>
                         <div>
                           <h5 className="text-sm font-bold text-gray-900 mb-0.5 group-hover:text-[#006782] transition-colors line-clamp-1">{event.title}</h5>
