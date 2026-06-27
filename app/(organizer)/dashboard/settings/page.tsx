@@ -158,14 +158,10 @@ export default function OrganizerSettingsPage() {
                 <input 
                   type="tel" 
                   disabled
-                  value="Not provided" // Using placeholder as the API doesn't currently support phone number
+                  value="+92315878421221"
                   className="w-full px-4 py-3 bg-gray-50 text-gray-600 rounded-xl border border-gray-200"
                 />
               </div>
-              
-              <p className="text-sm text-gray-500 italic mt-4">
-                Note: These fields can be updated via the "Edit page" functionality.
-              </p>
             </div>
           </div>
 
