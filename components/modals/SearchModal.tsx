@@ -4,7 +4,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, MapPin, X, History, Flame, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 
 interface SearchModalProps {
   open: boolean;
@@ -12,6 +13,7 @@ interface SearchModalProps {
 }
 
 export default function SearchModal({ open, onClose }: SearchModalProps) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [format, setFormat] = useState<"online" | "offline" | null>("online");
   const [date, setDate] = useState<"today" | "tomorrow" | "weekend" | "month" | null>("today");
@@ -23,6 +25,16 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     { title: "Millions of modern", interested: "Trending Now", icon: "bg-gray-800" },
     { title: "AI Workshop Series", interested: "120+ interested", icon: "bg-gray-900" }
   ];
+
+  const handleSearch = (e?: FormEvent) => {
+    if (e) e.preventDefault();
+    const searchParams = new URLSearchParams();
+    if (query) searchParams.set("q", query);
+    if (format) searchParams.set("locationType", format === "online" ? "ONLINE" : "VENUE");
+    // Date filter could also be added here if backend supports it
+    router.push(`/search?${searchParams.toString()}`);
+    onClose();
+  };
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -40,7 +52,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
 
         {/* Header Search Input */}
         <div className="p-6 px-8 border-b border-[#F3F4F6] relative">
-          <div className="relative">
+          <form className="relative" onSubmit={handleSearch}>
             <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 shrink-0" />
             <Input
               autoFocus
@@ -49,7 +61,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-          </div>
+          </form>
         </div>
 
         <div className="p-6">
@@ -165,8 +177,8 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
           >
             Clear Filters
           </button>
-          <Button onClick={onClose} className="bg-[#006782] hover:bg-[#004E63] text-white rounded-full px-6 shadow-md">
-            Show 24 Results
+          <Button onClick={() => handleSearch()} className="bg-[#006782] hover:bg-[#004E63] text-white rounded-full px-6 shadow-md">
+            Show Results
           </Button>
         </div>
 
