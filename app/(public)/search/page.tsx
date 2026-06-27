@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { eventsApi } from "@/lib/api";
 import { Event } from "@/types/event";
 import { EventCard } from "@/components/events/EventCard";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, X, Plus, LayoutGrid, List, ChevronDown, Home, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 function SearchContent() {
   const searchParams = useSearchParams();
@@ -15,6 +16,7 @@ function SearchContent() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeDateTab, setActiveDateTab] = useState("All");
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -37,45 +39,119 @@ function SearchContent() {
     fetchResults();
   }, [query, locationType]);
 
+  const dateTabs = ["All", "Today", "Tomorrow", "This Weekend"];
+
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Header section */}
-      <div className="bg-[#004E63] text-white py-12 px-6">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold mb-2">Search Results</h1>
-          <p className="text-[#A3D3D9]">
-            {query ? `Showing results for "${query}"` : "Showing all events"}
-            {locationType && ` • ${locationType.charAt(0).toUpperCase() + locationType.slice(1).toLowerCase()}`}
-          </p>
+      <div className="bg-[#111827] text-white py-16 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
+          <div className="bg-white/10 text-white/80 text-xs font-bold px-4 py-1.5 rounded-full mb-6 tracking-widest uppercase">
+            Showing results for
+          </div>
+          
+          <h1 className="text-4xl sm:text-5xl font-bold mb-8 text-white">
+            "{query || "All Events"}" <span className="font-normal text-white/90">in {locationType || "All Locations"}</span>
+          </h1>
+
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {query && (
+              <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 rounded-full text-sm font-medium cursor-pointer border border-white/5">
+                <Home size={14} className="text-white/70" />
+                <span>Category: {query}</span>
+                <X size={14} className="ml-1 text-white/70 hover:text-white" />
+              </div>
+            )}
+            {locationType && (
+              <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 rounded-full text-sm font-medium cursor-pointer border border-white/5">
+                <MapPin size={14} className="text-white/70" />
+                <span>City: {locationType.charAt(0).toUpperCase() + locationType.slice(1).toLowerCase()}</span>
+                <X size={14} className="ml-1 text-white/70 hover:text-white" />
+              </div>
+            )}
+            <button className="flex items-center gap-2 bg-white/5 hover:bg-white/10 transition-colors px-4 py-2 rounded-full text-sm font-medium border border-white/10 text-white/90">
+              <Plus size={16} />
+              <span>Add Filter</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        
+        {/* Results Toolbar */}
+        <div className="flex flex-col md:flex-row items-center justify-between bg-white p-2 rounded-2xl shadow-sm mb-8 gap-4 border border-gray-100">
+          
+          <div className="px-4">
+            <span className="text-[#006782] font-bold text-xl mr-2">{events.length}</span>
+            <span className="text-gray-500 font-medium">Events Found</span>
+          </div>
+
+          <div className="flex items-center gap-1 bg-gray-50/50 p-1 rounded-xl">
+            {dateTabs.map(tab => (
+              <button 
+                key={tab}
+                onClick={() => setActiveDateTab(tab)}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                  activeDateTab === tab 
+                  ? "bg-white text-[#006782] shadow-sm" 
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3 px-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700 bg-gray-50 px-4 py-2 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+              Sort by: Relevance
+              <ChevronDown size={16} className="text-gray-400" />
+            </div>
+            
+            <div className="flex items-center gap-1 border border-gray-200 rounded-xl p-1">
+              <button className="p-1.5 rounded-lg bg-gray-100 text-[#006782]">
+                <LayoutGrid size={18} />
+              </button>
+              <button className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50">
+                <List size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Results Grid */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-            <Loader2 className="w-10 h-10 animate-spin mb-4" />
-            <p>Searching for events...</p>
+          <div className="flex flex-col items-center justify-center py-32 text-[#006782]">
+            <Loader2 className="w-12 h-12 animate-spin mb-4" />
+            <p className="font-medium text-gray-500">Discovering events...</p>
           </div>
         ) : error ? (
-          <div className="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-100 flex items-center justify-center">
-            <p className="font-medium">{error}</p>
+          <div className="bg-red-50 text-red-600 p-8 rounded-3xl border border-red-100 flex flex-col items-center justify-center text-center">
+            <Search className="w-12 h-12 text-red-300 mb-4" />
+            <p className="font-bold text-lg mb-1">Oops! Something went wrong</p>
+            <p className="text-red-500">{error}</p>
           </div>
         ) : events.length > 0 ? (
-          <div>
-            <p className="text-gray-600 font-medium mb-6">{events.length} event{events.length === 1 ? '' : 's'} found</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
               {events.map((event) => (
                 <EventCard key={event._id} event={event} />
               ))}
             </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="bg-white p-6 rounded-full shadow-sm mb-6 border border-gray-100">
-              <Search className="w-10 h-10 text-gray-300" />
+            <div className="flex justify-center">
+              <Button className="bg-[#006782] hover:bg-[#004E63] text-white px-8 h-12 rounded-full font-bold">
+                View all Events
+              </Button>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No events found</h3>
-            <p className="text-gray-500 max-w-md">
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-32 text-center bg-white rounded-3xl border border-gray-100 shadow-sm">
+            <div className="bg-gray-50 p-6 rounded-full mb-6 border border-gray-100">
+              <Search className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-2xl font-black text-gray-900 mb-2">No events found</h3>
+            <p className="text-gray-500 max-w-md font-medium">
               We couldn't find any events matching your current search criteria. Try adjusting your filters or search terms.
             </p>
           </div>
@@ -88,8 +164,9 @@ function SearchContent() {
 export default function SearchPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-[#006782]" />
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center">
+        <Loader2 className="w-12 h-12 animate-spin text-[#006782] mb-4" />
+        <p className="font-medium text-gray-500">Loading Search...</p>
       </div>
     }>
       <SearchContent />
