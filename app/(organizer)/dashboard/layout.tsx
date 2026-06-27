@@ -85,7 +85,7 @@ function DashboardInner({ children }: { children: ReactNode }) {
               <DropdownMenu.Content align="start" className="w-[240px] bg-[#111827] border border-gray-800 rounded-xl shadow-xl p-2 z-50 text-white">
                 <DropdownMenu.Item 
                   className={`flex flex-col px-3 py-2 outline-none cursor-pointer rounded-lg hover:bg-[#1f2937] ${activeProfileId === "all" ? "bg-[#1E293B] text-white" : "text-gray-300"}`}
-                  onClick={() => setActiveProfileId("all")}
+                  onSelect={() => setActiveProfileId("all")}
                 >
                   <span className="font-medium text-sm">All Pages</span>
                   <span className="text-xs text-gray-500">View aggregate data</span>
@@ -95,7 +95,7 @@ function DashboardInner({ children }: { children: ReactNode }) {
                   <DropdownMenu.Item 
                     key={p._id || p.id}
                     className={`flex flex-col px-3 py-2 outline-none cursor-pointer rounded-lg hover:bg-[#1f2937] ${(p._id || p.id) === activeProfileId ? "bg-[#1E293B] text-white" : "text-gray-300"}`}
-                    onClick={() => setActiveProfileId(p._id || p.id as string)}
+                    onSelect={() => setActiveProfileId(p._id || p.id as string)}
                   >
                     <span className="font-medium text-sm">{p.brandName}</span>
                     <span className="text-xs text-gray-500">{p.followers || 0} followers</span>
