@@ -102,7 +102,7 @@ export default function StepBasics() {
                   </FormControl>
                   <SelectContent className="bg-white">
                     {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
+                      <SelectItem key={cat.id} value={cat.name}>
                         {cat.name}
                       </SelectItem>
                     ))}
