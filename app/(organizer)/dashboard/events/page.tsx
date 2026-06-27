@@ -58,9 +58,9 @@ export default function EventsManagerPage() {
         await eventsApi.updateStatus(actionEvent.id, "posted");
         setEvents(prev => prev.map(e => e._id === actionEvent.id ? { ...e, status: "posted" } : e));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Failed to ${actionEvent.action} event:`, error);
-      alert(`Failed to ${actionEvent.action} event. Please try again.`);
+      alert(error?.response?.data?.message || `Failed to ${actionEvent.action} event. Please try again.`);
     } finally {
       setActionEvent(null);
     }
@@ -277,14 +277,14 @@ export default function EventsManagerPage() {
                               </DropdownMenu.Item>
                               {event.status === "draft" && (
                                 <DropdownMenu.Item asChild>
-                                  <button onClick={() => setActionEvent({ id: event._id, title: event.title, action: "publish" })} className="w-full flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none">
+                                  <button onClick={() => setActionEvent({ id: event._id, title: event.title || "Untitled Event", action: "publish" })} className="w-full flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none">
                                     <span className="text-[#006782]">🚀</span> Publish Event
                                   </button>
                                 </DropdownMenu.Item>
                               )}
                               <DropdownMenu.Separator className="h-px bg-gray-100 my-1" />
                               <DropdownMenu.Item asChild>
-                                <button onClick={() => setActionEvent({ id: event._id, title: event.title, action: "delete" })} className="w-full flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer outline-none">
+                                <button onClick={() => setActionEvent({ id: event._id, title: event.title || "Untitled Event", action: "delete" })} className="w-full flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer outline-none">
                                   <Trash2 size={16} className="text-red-500" /> Delete
                                 </button>
                               </DropdownMenu.Item>
