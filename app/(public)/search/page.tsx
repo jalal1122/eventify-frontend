@@ -5,8 +5,30 @@ import { useSearchParams } from "next/navigation";
 import { eventsApi } from "@/lib/api";
 import { Event } from "@/types/event";
 import { EventCard } from "@/components/events/EventCard";
-import { Search, Loader2, X, Plus, LayoutGrid, List, ChevronDown, Home, MapPin } from "lucide-react";
+import { Search, Loader2, X, Plus, LayoutGrid, List, ChevronDown, Home, MapPin, Calendar, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+function getStartAndEndDate(tab: string) {
+  const now = new Date();
+  if (tab === "Today") {
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    return { startDate: start.toISOString(), endDate: end.toISOString() };
+  }
+  if (tab === "Tomorrow") {
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 23, 59, 59, 999);
+    return { startDate: start.toISOString(), endDate: end.toISOString() };
+  }
+  if (tab === "This Weekend") {
+    const day = now.getDay();
+    const diffToSat = day === 0 ? -1 : 6 - day; // If sunday (0), go back to saturday (-1), else forward to saturday
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToSat);
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToSat + 1, 23, 59, 59, 999);
+    return { startDate: start.toISOString(), endDate: end.toISOString() };
+  }
+  return {};
+}
 
 function SearchContent() {
   const searchParams = useSearchParams();
@@ -16,14 +38,25 @@ function SearchContent() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
   const [activeDateTab, setActiveDateTab] = useState("All");
+  const [sort, setSort] = useState<"relevance" | "soonest" | "trending">("relevance");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
   useEffect(() => {
     const fetchResults = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await eventsApi.discover({ search: query, ...(locationType && { locationType }) });
+        const { startDate, endDate } = getStartAndEndDate(activeDateTab);
+        const response = await eventsApi.discover({ 
+          search: query, 
+          ...(locationType && { locationType }),
+          ...(startDate && { startDate }),
+          ...(endDate && { endDate }),
+          sort
+        } as any);
         if (response.data.success) {
           setEvents(response.data.events);
         } else {
@@ -37,7 +70,7 @@ function SearchContent() {
     };
 
     fetchResults();
-  }, [query, locationType]);
+  }, [query, locationType, activeDateTab, sort]);
 
   const dateTabs = ["All", "Today", "Tomorrow", "This Weekend"];
 
@@ -51,28 +84,22 @@ function SearchContent() {
           </div>
           
           <h1 className="text-4xl sm:text-5xl font-bold mb-8 text-white">
-            "{query || "All Events"}" <span className="font-normal text-white/90">in {locationType || "All Locations"}</span>
+            "{query || "All Events"}" <span className="font-normal text-white/90">in {locationType || "All Formats"}</span>
           </h1>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             {query && (
               <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 rounded-full text-sm font-medium cursor-pointer border border-white/5">
-                <Home size={14} className="text-white/70" />
-                <span>Category: {query}</span>
-                <X size={14} className="ml-1 text-white/70 hover:text-white" />
+                <Search size={14} className="text-white/70" />
+                <span>Search: {query}</span>
               </div>
             )}
             {locationType && (
               <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 rounded-full text-sm font-medium cursor-pointer border border-white/5">
                 <MapPin size={14} className="text-white/70" />
-                <span>City: {locationType.charAt(0).toUpperCase() + locationType.slice(1).toLowerCase()}</span>
-                <X size={14} className="ml-1 text-white/70 hover:text-white" />
+                <span>Format: {locationType.charAt(0).toUpperCase() + locationType.slice(1).toLowerCase()}</span>
               </div>
             )}
-            <button className="flex items-center gap-2 bg-white/5 hover:bg-white/10 transition-colors px-4 py-2 rounded-full text-sm font-medium border border-white/10 text-white/90">
-              <Plus size={16} />
-              <span>Add Filter</span>
-            </button>
           </div>
         </div>
       </div>
@@ -104,23 +131,59 @@ function SearchContent() {
           </div>
 
           <div className="flex items-center gap-3 px-2">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-700 bg-gray-50 px-4 py-2 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
-              Sort by: Relevance
-              <ChevronDown size={16} className="text-gray-400" />
+            <div className="relative">
+              <div 
+                onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
+                className="flex items-center gap-2 text-sm font-medium text-gray-700 bg-gray-50 px-4 py-2 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors"
+              >
+                Sort by: {sort.charAt(0).toUpperCase() + sort.slice(1)}
+                <ChevronDown size={16} className="text-gray-400" />
+              </div>
+              
+              {sortDropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10">
+                  <div className="py-1">
+                    <button 
+                      onClick={() => { setSort("relevance"); setSortDropdownOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${sort === "relevance" ? "text-[#006782] font-semibold bg-blue-50/50" : "text-gray-700"}`}
+                    >
+                      Relevance
+                    </button>
+                    <button 
+                      onClick={() => { setSort("soonest"); setSortDropdownOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${sort === "soonest" ? "text-[#006782] font-semibold bg-blue-50/50" : "text-gray-700"}`}
+                    >
+                      Soonest
+                    </button>
+                    <button 
+                      onClick={() => { setSort("trending"); setSortDropdownOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${sort === "trending" ? "text-[#006782] font-semibold bg-blue-50/50" : "text-gray-700"}`}
+                    >
+                      Trending <Flame size={14} className={sort === "trending" ? "text-orange-500" : "text-gray-400"} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
             
             <div className="flex items-center gap-1 border border-gray-200 rounded-xl p-1">
-              <button className="p-1.5 rounded-lg bg-gray-100 text-[#006782]">
+              <button 
+                onClick={() => setViewMode("grid")}
+                className={`p-1.5 rounded-lg transition-colors ${viewMode === "grid" ? "bg-gray-100 text-[#006782]" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"}`}
+              >
                 <LayoutGrid size={18} />
               </button>
-              <button className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50">
+              <button 
+                onClick={() => setViewMode("list")}
+                className={`p-1.5 rounded-lg transition-colors ${viewMode === "list" ? "bg-gray-100 text-[#006782]" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"}`}
+              >
                 <List size={18} />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Results Grid */}
+        {/* Results Grid / List */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 text-[#006782]">
             <Loader2 className="w-12 h-12 animate-spin mb-4" />
@@ -134,14 +197,14 @@ function SearchContent() {
           </div>
         ) : events.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+            <div className={`grid ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "grid-cols-1 md:grid-cols-2 gap-4"} mb-12`}>
               {events.map((event) => (
                 <EventCard key={event._id} event={event} />
               ))}
             </div>
             <div className="flex justify-center">
               <Button className="bg-[#006782] hover:bg-[#004E63] text-white px-8 h-12 rounded-full font-bold">
-                View all Events
+                Load More Events
               </Button>
             </div>
           </>
