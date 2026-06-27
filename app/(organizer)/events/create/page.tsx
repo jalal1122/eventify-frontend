@@ -43,7 +43,7 @@ const uploadImageIfNeeded = async (urlOrData: string | undefined): Promise<strin
 function CreateEventForm() {
   const { user, isAuthenticated, isLoading, upgradeToOrganizer } = useAuth();
   const searchParams = useSearchParams();
-  const draftId = searchParams?.get("id");
+  const draftId = searchParams?.get("id") || searchParams?.get("edit");
   
   const [currentStep, setCurrentStep] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
