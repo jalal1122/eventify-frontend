@@ -105,7 +105,7 @@ export default function OrganizerProfilePage() {
             {[1, 2, 3, 4].map(i => <EventCardSkeleton key={i} />)}
           </div>
         </main>
-
+      </div>
     );
   }
 
@@ -119,7 +119,7 @@ export default function OrganizerProfilePage() {
              <p className="text-gray-500">This profile may have been deleted or doesn't exist.</p>
            </div>
         </main>
-
+      </div>
     );
   }
 
