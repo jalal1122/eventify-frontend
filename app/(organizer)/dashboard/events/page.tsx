@@ -9,6 +9,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function EventsManagerPage() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -20,6 +28,9 @@ export default function EventsManagerPage() {
   const [filterLocationType, setFilterLocationType] = useState("All");
   const [filterTicketType, setFilterTicketType] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
+
+  // Action State for Modals
+  const [actionEvent, setActionEvent] = useState<{ id: string; title: string; action: "publish" | "delete" } | null>(null);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -36,6 +47,24 @@ export default function EventsManagerPage() {
     };
     fetchEvents();
   }, []);
+
+  const confirmAction = async () => {
+    if (!actionEvent) return;
+    try {
+      if (actionEvent.action === "delete") {
+        await eventsApi.delete(actionEvent.id);
+        setEvents(prev => prev.filter(e => e._id !== actionEvent.id));
+      } else if (actionEvent.action === "publish") {
+        await eventsApi.updateStatus(actionEvent.id, "posted");
+        setEvents(prev => prev.map(e => e._id === actionEvent.id ? { ...e, status: "posted" } : e));
+      }
+    } catch (error) {
+      console.error(`Failed to ${actionEvent.action} event:`, error);
+      alert(`Failed to ${actionEvent.action} event. Please try again.`);
+    } finally {
+      setActionEvent(null);
+    }
+  };
 
   const filteredEvents = events.filter(e => {
     // Search Query
@@ -246,9 +275,16 @@ export default function EventsManagerPage() {
                                   <Edit size={16} className="text-gray-400" /> Edit Event
                                 </Link>
                               </DropdownMenu.Item>
+                              {event.status === "draft" && (
+                                <DropdownMenu.Item asChild>
+                                  <button onClick={() => setActionEvent({ id: event._id, title: event.title, action: "publish" })} className="w-full flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none">
+                                    <span className="text-[#006782]">🚀</span> Publish Event
+                                  </button>
+                                </DropdownMenu.Item>
+                              )}
                               <DropdownMenu.Separator className="h-px bg-gray-100 my-1" />
                               <DropdownMenu.Item asChild>
-                                <button className="w-full flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer outline-none">
+                                <button onClick={() => setActionEvent({ id: event._id, title: event.title, action: "delete" })} className="w-full flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer outline-none">
                                   <Trash2 size={16} className="text-red-500" /> Delete
                                 </button>
                               </DropdownMenu.Item>
@@ -264,6 +300,32 @@ export default function EventsManagerPage() {
           )}
         </div>
       </div>
+
+      <Dialog open={!!actionEvent} onOpenChange={(open) => !open && setActionEvent(null)}>
+        <DialogContent className="bg-white rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-[#001F29] text-xl">
+              {actionEvent?.action === "publish" ? "Publish Event" : "Delete Event"}
+            </DialogTitle>
+            <DialogDescription className="pt-2 text-gray-600">
+              {actionEvent?.action === "publish"
+                ? `Are you sure you want to publish "${actionEvent?.title}"? It will become visible to the public.`
+                : `Are you sure you want to delete "${actionEvent?.title}"? This action cannot be undone and all data will be permanently lost.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-6 flex gap-3 sm:justify-end">
+            <Button variant="outline" className="rounded-xl border-gray-300" onClick={() => setActionEvent(null)}>
+              Cancel
+            </Button>
+            <Button 
+              className={`rounded-xl text-white ${actionEvent?.action === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-[#006782] hover:bg-[#004E63]'}`}
+              onClick={confirmAction}
+            >
+              {actionEvent?.action === "publish" ? "Publish Event" : "Delete Event"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
