@@ -271,7 +271,7 @@ export default function EventsManagerPage() {
                                 </Link>
                               </DropdownMenu.Item>
                               <DropdownMenu.Item asChild>
-                                <Link href={`/events/create?id=${event._id}`} className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none">
+                                <Link href={`/events/${event._id}/edit`} className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none">
                                   <Edit size={16} className="text-gray-400" /> Edit Event
                                 </Link>
                               </DropdownMenu.Item>
