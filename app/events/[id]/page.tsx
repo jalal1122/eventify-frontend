@@ -11,9 +11,6 @@ import { eventsApi, registrationsApi } from "@/lib/api";
 import { type Event } from "@/types/event";
 import { formatShortDate } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-import { RegisterModal } from "@/components/modals/RegisterModal";
-import { GuestCheckoutModal } from "@/components/modals/GuestCheckoutModal";
-import AuthPromptModal from "@/components/modals/AuthPromptModal";
 
 export default function EventDetailPage() {
   const params = useParams();
@@ -23,13 +20,6 @@ export default function EventDetailPage() {
 
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  // Modals state
-  const [authPromptOpen, setAuthPromptOpen] = useState(false);
-  const [registerModalOpen, setRegisterModalOpen] = useState(false);
-  const [guestModalOpen, setGuestModalOpen] = useState(false);
-  
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   
   const isOrganizer = (event?.organizerProfileId as any)?._id === user?._id || (event?.organizerProfileId as any)?.ownerId === user?._id;
@@ -49,31 +39,7 @@ export default function EventDetailPage() {
   }, [eventId]);
 
   const handleRegisterClick = () => {
-    if (isAuthenticated) {
-      // If authenticated, we could either directly register or show the final confirmation modal
-      setRegisterModalOpen(true);
-    } else {
-      // Open auth prompt
-      setAuthPromptOpen(true);
-    }
-  };
-
-  const handleDirectRegistration = async () => {
-    try {
-      setIsRegistering(true);
-      await registrationsApi.register({ eventId });
-      setRegistrationSuccess(true);
-      setRegisterModalOpen(false);
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Registration failed");
-    } finally {
-      setIsRegistering(false);
-    }
-  };
-
-  const handleGuestSuccess = () => {
-    setGuestModalOpen(false);
-    setRegistrationSuccess(true);
+    router.push(`/events/${eventId}/register`);
   };
 
   if (loading) {
@@ -250,18 +216,7 @@ export default function EventDetailPage() {
                     )}
                   </div>
 
-                  {registrationSuccess ? (
-                    <div className="bg-green-50 border border-green-100 rounded-2xl p-6 text-center">
-                      <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <UserCheck size={24} />
-                      </div>
-                      <h4 className="font-bold text-green-900 mb-1">You're Registered!</h4>
-                      <p className="text-sm text-green-700">Check your email for tickets.</p>
-                      <Button className="w-full mt-4 bg-green-600 hover:bg-green-700" onClick={() => router.push("/profile?tab=tickets")}>
-                        View My Tickets
-                      </Button>
-                    </div>
-                  ) : event.status === "completed" || event.status === "cancelled" ? (
+                  {event.status === "completed" || event.status === "cancelled" ? (
                     <Button disabled className="w-full h-14 text-base font-bold rounded-xl bg-gray-200 text-gray-500">
                       Event {event.status === "completed" ? "Ended" : "Cancelled"}
                     </Button>
@@ -316,40 +271,6 @@ export default function EventDetailPage() {
       </main>
 
       <Footer />
-
-      {/* Modals */}
-      
-      {/* 1. Auth Prompt Modal (For Unauthenticated Users) */}
-      <AuthPromptModal 
-        open={authPromptOpen}
-        onClose={() => setAuthPromptOpen(false)}
-        onSelectGuest={() => {
-          setAuthPromptOpen(false);
-          setGuestModalOpen(true);
-        }}
-      />
-
-      {/* 2. Authenticated Confirmation Modal */}
-      <RegisterModal 
-        open={registerModalOpen} 
-        onClose={() => setRegisterModalOpen(false)}
-        onContinueAsGuest={() => {
-          // Should not happen here normally, but just in case
-          setRegisterModalOpen(false);
-          setGuestModalOpen(true);
-        }}
-        eventName={event.title}
-        onConfirm={handleDirectRegistration}
-      />
-
-      {/* 3. Guest Details Modal */}
-      <GuestCheckoutModal 
-        open={guestModalOpen} 
-        onClose={() => setGuestModalOpen(false)}
-        eventId={event._id}
-        eventName={event.title}
-        onSuccess={handleGuestSuccess}
-      />
     </div>
   );
 }
