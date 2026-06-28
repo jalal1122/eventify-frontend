@@ -57,8 +57,7 @@ export default function RegisterPage() {
     if (isAuthenticated && user) {
       setGuestDetails({
         name: user.name || "",
-        email: user.email || "",
-        phone: ""
+        email: user.email || ""
       });
     }
   }, [isAuthenticated, user]);
@@ -66,10 +65,11 @@ export default function RegisterPage() {
   const selectedTicket = event?.tickets?.find((t) => t.id === selectedTicketId);
 
   const handleCustomAnswerChange = async (field: CustomFormField, value: any) => {
+    const id = field.fieldId || (field as any)._id || field.label;
     if (field.type === "file" && value instanceof File) {
-      setCustomAnswers((prev) => ({ ...prev, [field.fieldId]: value.name }));
+      setCustomAnswers((prev) => ({ ...prev, [id]: value.name }));
     } else {
-      setCustomAnswers((prev) => ({ ...prev, [field.fieldId]: value }));
+      setCustomAnswers((prev) => ({ ...prev, [id]: value }));
     }
   };
 
@@ -99,7 +99,7 @@ export default function RegisterPage() {
       };
 
       const res = await registrationsApi.register(payload);
-      
+
       if (res.data.success && paymentProof) {
         await registrationsApi.uploadPaymentProof(res.data.registration._id, paymentProof);
       }
@@ -144,7 +144,7 @@ export default function RegisterPage() {
             Your registration for <strong>{event.title}</strong> has been submitted.
             {selectedTicket?.type === "PAID" ? " We will review your payment and send your ticket shortly." : " Check your email for your ticket."}
           </p>
-          <Button 
+          <Button
             className="w-full h-14 text-lg font-bold rounded-xl bg-[#006782] hover:bg-[#004E63] text-white"
             onClick={() => isAuthenticated ? router.push("/profile?tab=tickets") : router.push("/")}
           >
@@ -162,8 +162,8 @@ export default function RegisterPage() {
         <div>
           <div className="flex items-center justify-between mb-12">
             <h2 className="text-2xl font-black tracking-tight text-white">Eventify</h2>
-            <button 
-              onClick={() => router.back()} 
+            <button
+              onClick={() => router.back()}
               className="flex items-center gap-2 text-gray-400 hover:text-white font-medium transition-colors text-sm"
             >
               <ArrowLeft size={16} /> Back
@@ -178,7 +178,7 @@ export default function RegisterPage() {
               </div>
             ) : null}
             <h3 className="text-3xl font-bold mb-4 leading-tight">{event.title}</h3>
-            
+
             <div className="space-y-4 mt-6">
               <div className="flex items-start gap-3 text-gray-300">
                 <Calendar size={18} className="mt-0.5 text-[#00B4D8]" />
@@ -222,7 +222,7 @@ export default function RegisterPage() {
       <div className="w-full md:w-[65%] lg:w-[70%] p-8 md:p-12 lg:p-16 overflow-y-auto">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-4xl font-black text-gray-900 mb-8">Complete Registration</h1>
-          
+
           {error && (
             <div className="bg-red-50 text-red-600 p-4 rounded-2xl mb-8 border border-red-100 text-sm font-medium flex items-start gap-3">
               <ShieldCheck className="shrink-0 mt-0.5" size={18} />
@@ -242,14 +242,13 @@ export default function RegisterPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {event.tickets.map((ticket) => (
-                    <div 
+                    <div
                       key={ticket.id}
                       onClick={() => setSelectedTicketId(ticket.id)}
-                      className={`relative p-5 rounded-2xl border-2 cursor-pointer transition-all ${
-                        selectedTicketId === ticket.id 
-                          ? "border-[#006782] bg-[#F0F7F9]" 
+                      className={`relative p-5 rounded-2xl border-2 cursor-pointer transition-all ${selectedTicketId === ticket.id
+                          ? "border-[#006782] bg-[#F0F7F9]"
                           : "border-gray-100 hover:border-gray-200 hover:bg-gray-50"
-                      }`}
+                        }`}
                     >
                       <div className="flex justify-between items-start mb-1">
                         <span className="font-bold text-gray-900">{ticket.name}</span>
@@ -278,8 +277,8 @@ export default function RegisterPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label className="text-gray-700 font-bold">Full Name <span className="text-red-500">*</span></Label>
-                  <Input 
-                    required 
+                  <Input
+                    required
                     readOnly={isAuthenticated}
                     className={`h-12 rounded-xl ${isAuthenticated ? 'bg-gray-100 border-transparent text-gray-600' : 'bg-gray-50 border-gray-200'}`}
                     value={guestDetails.name}
@@ -289,9 +288,9 @@ export default function RegisterPage() {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-gray-700 font-bold">Email Address <span className="text-red-500">*</span></Label>
-                  <Input 
+                  <Input
                     type="email"
-                    required 
+                    required
                     readOnly={isAuthenticated}
                     className={`h-12 rounded-xl ${isAuthenticated ? 'bg-gray-100 border-transparent text-gray-600' : 'bg-gray-50 border-gray-200'}`}
                     value={guestDetails.email}
@@ -312,26 +311,28 @@ export default function RegisterPage() {
                   <h3 className="text-xl font-bold text-gray-900">2. Event Requirements</h3>
                 </div>
                 <div className="space-y-6">
-                  {event.customFormSchema.map((field) => (
-                    <div key={field.fieldId} className="space-y-2">
+                  {event.customFormSchema.map((field) => {
+                    const id = field.fieldId || (field as any)._id || field.label;
+                    return (
+                    <div key={id} className="space-y-2">
                       <Label className="text-gray-700 font-bold">
                         {field.label} {field.isRequired && <span className="text-red-500">*</span>}
                       </Label>
-                      
+
                       {(field.type === "SHORT_ANSWER" || field.type === "text") && (
-                        <Input 
+                        <Input
                           required={field.isRequired}
                           className="h-12 rounded-xl bg-gray-50 border-gray-200"
-                          value={(customAnswers[field.fieldId] as string) || ""}
+                          value={(customAnswers[id] as string) || ""}
                           onChange={(e) => handleCustomAnswerChange(field, e.target.value)}
                         />
                       )}
 
                       {field.type === "LONG_ANSWER" && (
-                        <Textarea 
+                        <Textarea
                           required={field.isRequired}
                           className="min-h-[100px] rounded-xl bg-gray-50 border-gray-200 resize-y p-3"
-                          value={(customAnswers[field.fieldId] as string) || ""}
+                          value={(customAnswers[id] as string) || ""}
                           onChange={(e) => handleCustomAnswerChange(field, e.target.value)}
                         />
                       )}
@@ -340,7 +341,7 @@ export default function RegisterPage() {
                         <select
                           required={field.isRequired}
                           className="w-full h-12 rounded-xl border-gray-200 bg-gray-50 px-4 text-sm outline-none focus:ring-2 focus:ring-[#006782]"
-                          value={(customAnswers[field.fieldId] as string) || ""}
+                          value={(customAnswers[id] as string) || ""}
                           onChange={(e) => handleCustomAnswerChange(field, e.target.value)}
                         >
                           <option value="" disabled>Select an option</option>
@@ -352,8 +353,8 @@ export default function RegisterPage() {
 
                       {(field.type === "FILE_UPLOAD" || field.type === "file") && (
                         <div className="mt-2 relative">
-                          <Input 
-                            type="file" 
+                          <Input
+                            type="file"
                             required={field.isRequired}
                             className="file:bg-[#006782] file:text-white file:border-0 file:rounded-lg file:px-4 file:py-1.5 file:mr-4 file:font-semibold file:text-xs text-sm h-auto py-2.5 rounded-xl border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
                             onChange={(e) => {
@@ -365,7 +366,7 @@ export default function RegisterPage() {
                         </div>
                       )}
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
             )}
@@ -381,7 +382,7 @@ export default function RegisterPage() {
                     {event.customFormSchema && event.customFormSchema.length > 0 ? "3" : "2"}. Payment Verification
                   </h3>
                 </div>
-                
+
                 <div className="bg-gray-50 rounded-2xl p-6 mb-6 border border-gray-200">
                   <div className="flex justify-between items-center pb-4 border-b border-gray-200 mb-4">
                     <span className="text-gray-600 font-medium">Amount Due</span>
@@ -400,16 +401,15 @@ export default function RegisterPage() {
 
                 <div className="space-y-3">
                   <Label className="text-gray-700 font-bold">Upload Payment Screenshot <span className="text-red-500">*</span></Label>
-                  <div 
+                  <div
                     onClick={() => fileInputRef.current?.click()}
-                    className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-colors ${
-                      paymentProof ? 'border-green-400 bg-green-50' : 'border-gray-300 hover:bg-gray-50'
-                    }`}
+                    className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-colors ${paymentProof ? 'border-green-400 bg-green-50' : 'border-gray-300 hover:bg-gray-50'
+                      }`}
                   >
-                    <input 
-                      type="file" 
-                      ref={fileInputRef} 
-                      className="hidden" 
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
                       accept="image/*"
                       onChange={(e) => {
                         if (e.target.files?.[0]) {
@@ -442,9 +442,9 @@ export default function RegisterPage() {
             {/* Footer / Actions */}
             <div className="pt-8">
               <div className="flex items-start space-x-3 mb-8">
-                <Checkbox 
-                  id="terms" 
-                  checked={tosAccepted} 
+                <Checkbox
+                  id="terms"
+                  checked={tosAccepted}
                   onCheckedChange={(checked) => setTosAccepted(checked as boolean)}
                   className="mt-1"
                 />
@@ -461,8 +461,8 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isSubmitting || !tosAccepted}
                 className="w-full h-16 text-lg font-bold rounded-2xl bg-[#006782] hover:bg-[#004E63] text-white shadow-xl shadow-[#006782]/20 transition-all active:scale-[0.98]"
               >
