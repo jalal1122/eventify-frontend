@@ -30,8 +30,7 @@ export function AuthLayout({ children, title, subtitle, type }: AuthLayoutProps)
             <span className="text-sm font-semibold">Back to website</span>
           </Link>
           <Link href="/" className="flex items-center gap-2 mt-8">
-            <span className="text-3xl font-bold text-white">Nextt</span>
-            <span className="text-3xl font-bold text-[#BAEAFF]">Event</span>
+            <span className="text-3xl font-bold text-white">Eventify</span>
           </Link>
         </div>
 
@@ -58,8 +57,7 @@ export function AuthLayout({ children, title, subtitle, type }: AuthLayoutProps)
               <span className="text-sm font-semibold">Back</span>
             </Link>
             <Link href="/" className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-gray-900">Nextt</span>
-              <span className="text-2xl font-bold text-[#006782]">Event</span>
+              <span className="text-2xl font-bold text-gray-900">Eventify</span>
             </Link>
           </div>
 
