@@ -68,10 +68,13 @@ export interface Event {
   externalUrl?: string;
   externalVerificationCode?: string;
   customFormSchema: CustomFormField[];
+  isFeatured: boolean;
+  publishedAt?: string;
   speakers: string[];
   agenda: AgendaItem[];
   createdAt: string;
   updatedAt: string;
+  pendingApprovalsCount?: number;
 }
 
 export interface EventsResponse {
