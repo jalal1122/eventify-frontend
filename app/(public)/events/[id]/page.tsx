@@ -10,6 +10,9 @@ import { eventsApi, registrationsApi } from "@/lib/api";
 import { type Event } from "@/types/event";
 import { formatShortDate } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import Link from "next/link";
+import { ShareEventModal } from "@/components/ShareEventModal";
+import { GuestRegistrationModal } from "@/components/GuestRegistrationModal";
 
 export default function EventDetailPage() {
   const params = useParams();
@@ -20,8 +23,43 @@ export default function EventDetailPage() {
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isInterested, setIsInterested] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
   
-  const isOrganizer = (event?.organizerProfileId as any)?._id === user?._id || (event?.organizerProfileId as any)?.ownerId === user?._id;
+  const isOrganizer = !!user && (
+    (event?.organizerProfileId as any)?._id === user?._id || 
+    (event?.organizerProfileId as any)?.ownerId === user?._id
+  );
+
+  const handleInterestClick = async () => {
+    if (!isAuthenticated) {
+      router.push(`/auth/signin?callbackUrl=/events/${eventId}`);
+      return;
+    }
+    
+    try {
+      setIsInterested(!isInterested);
+      await eventsApi.toggleInterest(eventId);
+    } catch (error) {
+      console.error("Failed to toggle interest", error);
+      setIsInterested(prev => !prev);
+    }
+  };
+
+  const handleAddToCalendarClick = () => {
+    if (!event) return;
+    
+    const startDate = new Date(event.dateTime).toISOString().replace(/-|:|\.\d\d\d/g, "");
+    
+    const endDateObj = new Date(event.dateTime);
+    endDateObj.setHours(endDateObj.getHours() + 1);
+    const endDate = endDateObj.toISOString().replace(/-|:|\.\d\d\d/g, "");
+
+    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(event.description || '')}&location=${encodeURIComponent(event.venueName || '')}`;
+    
+    window.open(googleCalendarUrl, "_blank");
+  };
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -38,7 +76,11 @@ export default function EventDetailPage() {
   }, [eventId]);
 
   const handleRegisterClick = () => {
-    router.push(`/events/${eventId}/register`);
+    if (!isAuthenticated) {
+      setIsGuestModalOpen(true);
+    } else {
+      router.push(`/events/${eventId}/register`);
+    }
   };
 
   if (loading) {
@@ -135,7 +177,7 @@ export default function EventDetailPage() {
                 </h1>
                 
                 <div className="flex items-center gap-4 mt-2">
-                  <div className="flex items-center gap-3 p-1.5 pr-4 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                  <Link href={`/organizers/${(event.organizerProfileId as any)?._id || ''}`} className="flex items-center gap-3 p-1.5 pr-4 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                     <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
                       {(event.organizerProfileId as any)?.logoUrl ? (
                          <img src={(event.organizerProfileId as any).logoUrl} alt="Organizer" className="w-full h-full object-cover" />
@@ -149,19 +191,31 @@ export default function EventDetailPage() {
                         {(event.organizerProfileId as any)?.brandName || "Unknown Organizer"}
                       </span>
                     </div>
-                  </div>
+                  </Link>
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-3 py-4 border-y border-gray-200">
-                <Button variant="outline" className="rounded-xl border-gray-300 text-gray-700 hover:bg-gray-50 h-12 px-6">
-                  <Star size={18} className="mr-2 text-gray-500" /> I am interested
+                <Button 
+                  variant="outline" 
+                  className={`rounded-xl border-gray-300 h-12 px-6 ${isInterested ? 'text-yellow-600 bg-yellow-50 hover:bg-yellow-100 border-yellow-200' : 'text-gray-700 hover:bg-gray-50'}`}
+                  onClick={handleInterestClick}
+                >
+                  <Star size={18} className={`mr-2 ${isInterested ? 'fill-yellow-500 text-yellow-500' : 'text-gray-500'}`} /> I am interested
                 </Button>
-                <Button variant="outline" className="rounded-xl border-gray-300 text-gray-700 hover:bg-gray-50 h-12 px-6">
+                <Button 
+                  variant="outline" 
+                  className="rounded-xl border-gray-300 text-gray-700 hover:bg-gray-50 h-12 px-6"
+                  onClick={handleAddToCalendarClick}
+                >
                   <CalendarPlus size={18} className="mr-2 text-gray-500" /> Add to Calendar
                 </Button>
-                <Button variant="outline" className="rounded-xl border-gray-300 text-gray-700 hover:bg-gray-50 h-12 px-6">
+                <Button 
+                  variant="outline" 
+                  className="rounded-xl border-gray-300 text-gray-700 hover:bg-gray-50 h-12 px-6"
+                  onClick={() => setIsShareModalOpen(true)}
+                >
                   <Share2 size={18} className="mr-2 text-gray-500" /> Share Event
                 </Button>
               </div>
@@ -239,7 +293,7 @@ export default function EventDetailPage() {
                 {/* Organizer Info Summary Card */}
                 <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-sm">
                   <h3 className="font-bold text-gray-900 mb-4">Organizer</h3>
-                  <div className="flex items-center gap-4 mb-4">
+                  <Link href={`/organizers/${(event.organizerProfileId as any)?._id || ''}`} className="flex items-center gap-4 mb-4 hover:opacity-80 transition-opacity">
                     <div className="w-14 h-14 rounded-2xl bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
                       {(event.organizerProfileId as any)?.logoUrl ? (
                          <img src={(event.organizerProfileId as any).logoUrl} alt="Organizer" className="w-full h-full object-cover" />
@@ -253,7 +307,7 @@ export default function EventDetailPage() {
                       </p>
                       <p className="text-xs text-gray-500 font-medium">12.5k Followers • 42 Events</p>
                     </div>
-                  </div>
+                  </Link>
                   <Button variant="outline" className="w-full rounded-xl border-[#006782] text-[#006782] hover:bg-[#006782]/5 font-semibold">
                     Follow
                   </Button>
@@ -269,7 +323,17 @@ export default function EventDetailPage() {
         </div>
       </main>
 
-
+      <ShareEventModal 
+        isOpen={isShareModalOpen} 
+        onClose={() => setIsShareModalOpen(false)} 
+        eventTitle={event?.title || ''} 
+        eventUrl={typeof window !== 'undefined' ? window.location.href : ''} 
+      />
+      <GuestRegistrationModal
+        isOpen={isGuestModalOpen}
+        onClose={() => setIsGuestModalOpen(false)}
+        eventId={eventId}
+      />
     </div>
   );
 }

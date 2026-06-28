@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MapPin, CheckCircle2, Star, Share2 } from "lucide-react";
 import { type Event } from "@/types/event";
 import { formatEventCardDate } from "@/lib/utils";
@@ -12,6 +15,8 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, attended, href }: EventCardProps) {
+  const router = useRouter();
+  
   // If organizer is populated (it might be an object), extract its properties
   const orgName = typeof event.organizerProfileId === 'object' ? event.organizerProfileId.brandName : "Organizer";
   const orgLogo = typeof event.organizerProfileId === 'object' ? event.organizerProfileId.logoUrl : undefined;
@@ -83,7 +88,14 @@ export function EventCard({ event, attended, href }: EventCardProps) {
 
           {/* Bottom Section: Organizer & Actions */}
           <div className="flex items-center justify-between mt-auto">
-            <div className="flex items-center gap-3">
+            <div 
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+              onClick={(e) => {
+                e.preventDefault();
+                const orgId = typeof event.organizerProfileId === 'object' ? event.organizerProfileId._id : event.organizerProfileId;
+                if (orgId) router.push(`/organizers/${orgId}`);
+              }}
+            >
               <div className="w-10 h-10 rounded-full bg-[#BAEAFF] text-[#006782] flex items-center justify-center font-black text-xs shrink-0 overflow-hidden">
                 {orgLogo ? (
                    <img src={orgLogo} alt={orgName} className="w-full h-full object-cover" />

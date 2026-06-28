@@ -26,22 +26,50 @@ interface SidebarItemProps {
   label: string;
   isActive: boolean;
   hasSubmenu?: boolean;
+  subItems?: { href: string; label: string }[];
 }
 
-const SidebarItem = ({ href, icon: Icon, label, isActive, hasSubmenu }: SidebarItemProps) => (
-  <Link 
-    href={href}
-    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-semibold ${
-      isActive 
-        ? "text-white" 
-        : "text-gray-400 hover:text-white hover:bg-[#1E293B]"
-    }`}
-  >
-    <Icon size={18} />
-    <span className="flex-1">{label}</span>
-    {hasSubmenu && <ChevronDown size={14} className="opacity-50" />}
-  </Link>
-);
+const SidebarItem = ({ href, icon: Icon, label, isActive, hasSubmenu, subItems }: SidebarItemProps) => {
+  const pathname = usePathname();
+  
+  return (
+    <div className="flex flex-col">
+      <Link 
+        href={href}
+        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-semibold ${
+          isActive 
+            ? "text-white" 
+            : "text-gray-400 hover:text-white hover:bg-[#1E293B]"
+        }`}
+      >
+        <Icon size={18} />
+        <span className="flex-1">{label}</span>
+        {hasSubmenu && <ChevronDown size={14} className={`opacity-50 transition-transform ${isActive ? 'rotate-180' : ''}`} />}
+      </Link>
+      
+      {hasSubmenu && isActive && subItems && (
+        <div className="flex flex-col ml-11 mt-1 space-y-1">
+          {subItems.map((subItem) => {
+            const isSubActive = pathname === subItem.href || (subItem.href !== "/dashboard/events" && pathname.startsWith(subItem.href));
+            return (
+              <Link
+                key={subItem.href}
+                href={subItem.href}
+                className={`py-2 px-3 text-sm rounded-lg transition-colors ${
+                  isSubActive
+                    ? "text-white bg-[#1E293B]"
+                    : "text-gray-400 hover:text-white hover:bg-[#1E293B]"
+                }`}
+              >
+                {subItem.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
 
 function DashboardInner({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -50,7 +78,16 @@ function DashboardInner({ children }: { children: ReactNode }) {
 
   const navItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { href: "/dashboard/events", icon: Calendar, label: "Events", hasSubmenu: true },
+    { 
+      href: "/dashboard/events", 
+      icon: Calendar, 
+      label: "Events", 
+      hasSubmenu: true,
+      subItems: [
+        { href: "/dashboard/events", label: "Events Manager" },
+        { href: "/dashboard/analytics", label: "Events Analytics" }
+      ]
+    },
     { href: "/dashboard/approvals", icon: UserCheck, label: "Attendee Approvals" },
     { href: "/dashboard/qr-scanner", icon: ScanLine, label: "QR Scanner" },
     { href: "/dashboard/attendees", icon: Users, label: "Attendees" },
@@ -130,16 +167,20 @@ function DashboardInner({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="flex-1 px-4 space-y-1 mt-4 overflow-y-auto">
-          {navItems.map((item) => (
-            <SidebarItem 
-              key={item.href}
-              href={item.href}
-              icon={item.icon}
-              label={item.label}
-              hasSubmenu={item.hasSubmenu}
-              isActive={pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))}
-            />
-          ))}
+          {navItems.map((item) => {
+            const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href)) || (item.label === "Events" && pathname.startsWith("/dashboard/analytics"));
+            return (
+              <SidebarItem 
+                key={item.href}
+                href={item.href}
+                icon={item.icon}
+                label={item.label}
+                hasSubmenu={item.hasSubmenu}
+                subItems={item.subItems}
+                isActive={isActive}
+              />
+            );
+          })}
         </nav>
 
         <div className="p-4 space-y-3">
@@ -159,9 +200,9 @@ function DashboardInner({ children }: { children: ReactNode }) {
             onClick={logout}
             className="flex w-full items-center gap-3 px-3 py-3 rounded-xl bg-[#111827] hover:bg-[#1f2937] border border-gray-800 transition-colors text-left"
           >
-            <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center shrink-0 overflow-hidden">
-               {user?.avatarUrl ? (
-                 <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+            <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center overflow-hidden border border-gray-700/50">
+               {user?.profilePicture ? (
+                 <img src={user.profilePicture} alt="" className="w-full h-full object-cover" />
                ) : (
                  <UserCheck size={14} className="text-gray-400" />
                )}

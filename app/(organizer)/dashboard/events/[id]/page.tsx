@@ -9,6 +9,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
+import { AttendeeDetailsPanel } from "@/components/organizer/AttendeeDetailsPanel";
 
 export default function EventDashboardPage() {
   const params = useParams();
@@ -21,6 +22,9 @@ export default function EventDashboardPage() {
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+
+  // Panel State
+  const [selectedAttendee, setSelectedAttendee] = useState<any | null>(null);
 
   useEffect(() => {
     if (!eventId) return;
@@ -271,7 +275,10 @@ export default function EventDashboardPage() {
                              Review Approval <ExternalLink size={12} className="ml-1" />
                            </Link>
                         ) : (
-                          <button className="text-sm font-bold text-[#006782] hover:text-[#004e63] transition-colors">
+                          <button 
+                            onClick={() => setSelectedAttendee(att)}
+                            className="text-sm font-bold text-[#006782] hover:text-[#004e63] transition-colors"
+                          >
                             View Details
                           </button>
                         )}
@@ -296,6 +303,13 @@ export default function EventDashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Attendee Details Panel */}
+      <AttendeeDetailsPanel 
+        attendee={selectedAttendee}
+        isOpen={!!selectedAttendee}
+        onClose={() => setSelectedAttendee(null)}
+      />
     </div>
   );
 }

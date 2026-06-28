@@ -235,4 +235,6 @@ export const organizerApi = {
   createProfile: (data: any) => api.post("/api/organizer/profile", data),
 
   getEventAttendees: (eventId: string) => api.get(`/api/organizer/events/${eventId}/attendees`),
+
+  getEventAnalytics: (eventId: string) => api.get(`/api/organizer/events/${eventId}/analytics`),
 };

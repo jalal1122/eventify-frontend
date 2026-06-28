@@ -333,7 +333,7 @@ function EditEventForm({ eventId: draftId }: { eventId: string }) {
   };
 
   if (isSuccess) {
-    return <SuccessScreen eventId={eventId} />;
+    return <SuccessScreen eventId={eventId as string} />;
   }
 
   if (isLoading || isLoadingEvent) {
