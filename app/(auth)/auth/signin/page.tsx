@@ -65,16 +65,12 @@ function SignInForm() {
           <div className="flex items-center justify-between mb-1.5">
             <label className="block text-sm font-medium text-gray-700">Password</label>
             {/* The user can request password reset here */}
-            <button 
-              type="button"
-              onClick={() => {
-                 // Open forgot password modal or navigate to a dedicated route
-                 // For now, let's assume there's a forgot password route
-              }}
+            <Link 
+              href="/auth/forgot-password"
               className="text-sm font-semibold text-[#006782] hover:underline focus:outline-none"
             >
               Forgot password?
-            </button>
+            </Link>
           </div>
           <Input 
             {...register("password")}
