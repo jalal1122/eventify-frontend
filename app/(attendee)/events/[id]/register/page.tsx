@@ -3,6 +3,7 @@
 import { useEffect, useState, FormEvent, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { eventsApi, registrationsApi } from "@/lib/api";
+import { Textarea } from "@/components/ui/textarea";
 import { type Event, type CustomFormField } from "@/types/event";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ export default function RegisterPage() {
 
   // Form State
   const [selectedTicketId, setSelectedTicketId] = useState<string>("");
-  const [guestDetails, setGuestDetails] = useState({ name: "", email: "", phone: "" });
+  const [guestDetails, setGuestDetails] = useState({ name: "", email: "" });
   const [customAnswers, setCustomAnswers] = useState<Record<string, unknown>>({});
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [tosAccepted, setTosAccepted] = useState(false);
@@ -298,16 +299,6 @@ export default function RegisterPage() {
                     placeholder="john@example.com"
                   />
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label className="text-gray-700 font-bold">Phone Number</Label>
-                  <Input 
-                    type="tel"
-                    className="h-12 rounded-xl bg-gray-50 border-gray-200"
-                    value={guestDetails.phone}
-                    onChange={(e) => setGuestDetails(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="+1 234 567 890"
-                  />
-                </div>
               </div>
             </div>
 
@@ -327,7 +318,7 @@ export default function RegisterPage() {
                         {field.label} {field.isRequired && <span className="text-red-500">*</span>}
                       </Label>
                       
-                      {field.type === "text" && (
+                      {(field.type === "SHORT_ANSWER" || field.type === "text") && (
                         <Input 
                           required={field.isRequired}
                           className="h-12 rounded-xl bg-gray-50 border-gray-200"
@@ -336,7 +327,16 @@ export default function RegisterPage() {
                         />
                       )}
 
-                      {field.type === "select" && field.options && (
+                      {field.type === "LONG_ANSWER" && (
+                        <Textarea 
+                          required={field.isRequired}
+                          className="min-h-[100px] rounded-xl bg-gray-50 border-gray-200 resize-y p-3"
+                          value={(customAnswers[field.fieldId] as string) || ""}
+                          onChange={(e) => handleCustomAnswerChange(field, e.target.value)}
+                        />
+                      )}
+
+                      {(field.type === "MULTIPLE_CHOICE" || field.type === "select") && field.options && (
                         <select
                           required={field.isRequired}
                           className="w-full h-12 rounded-xl border-gray-200 bg-gray-50 px-4 text-sm outline-none focus:ring-2 focus:ring-[#006782]"
@@ -350,7 +350,7 @@ export default function RegisterPage() {
                         </select>
                       )}
 
-                      {field.type === "file" && (
+                      {(field.type === "FILE_UPLOAD" || field.type === "file") && (
                         <div className="mt-2 relative">
                           <Input 
                             type="file" 

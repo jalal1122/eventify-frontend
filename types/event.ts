@@ -11,7 +11,7 @@ export type RegistrationMethod = "native" | "external";
 
 export interface CustomFormField {
   fieldId: string;
-  type: "text" | "select" | "file";
+  type: "text" | "select" | "file" | "SHORT_ANSWER" | "LONG_ANSWER" | "MULTIPLE_CHOICE" | "FILE_UPLOAD";
   label: string;
   isRequired: boolean;
   options?: string[];

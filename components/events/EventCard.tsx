@@ -1,12 +1,15 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MapPin, CheckCircle2, Star, Share2 } from "lucide-react";
+import { MapPin, Globe, CheckCircle2, Star, Share2 } from "lucide-react";
 import { type Event } from "@/types/event";
 import { formatEventCardDate } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
+import { eventsApi } from "@/lib/api";
 
 interface EventCardProps {
   event: Event;
@@ -16,6 +19,18 @@ interface EventCardProps {
 
 export function EventCard({ event, attended, href }: EventCardProps) {
   const router = useRouter();
+  const { user } = useAuth();
+  
+  // Local state for interest to allow optimistic UI updates
+  const [isInterested, setIsInterested] = useState(false);
+
+  useEffect(() => {
+    if (user?.interestedEvents) {
+      setIsInterested(user.interestedEvents.includes(event._id));
+    } else {
+      setIsInterested(false);
+    }
+  }, [user, event._id]);
   
   // If organizer is populated (it might be an object), extract its properties
   const orgName = typeof event.organizerProfileId === 'object' ? event.organizerProfileId.brandName : "Organizer";
@@ -25,6 +40,49 @@ export function EventCard({ event, attended, href }: EventCardProps) {
   const orgInitials = orgName.substring(0, 3).toUpperCase();
 
   const linkHref = href || `/events/${event._id}`;
+
+  const handleInterestClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      router.push("/auth/signin");
+      return;
+    }
+    
+    setIsInterested((prev) => !prev); // Optimistic UI
+    try {
+      await eventsApi.toggleInterest(event._id);
+    } catch (error) {
+      console.error("Failed to toggle interest", error);
+      setIsInterested((prev) => !prev); // Revert on failure
+    }
+  };
+
+  const handleShareClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const eventUrl = `${window.location.origin}/events/${event._id}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: event.title,
+          text: `Check out ${event.title} on Eventify!`,
+          url: eventUrl,
+        });
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(eventUrl);
+        alert("Event link copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy link:", err);
+      }
+    }
+  };
 
   return (
     <Link href={linkHref} className="block h-full">
@@ -79,8 +137,16 @@ export function EventCard({ event, attended, href }: EventCardProps) {
 
           {/* Location */}
           <div className="flex items-center gap-2 text-gray-500 text-sm mb-5 font-medium">
-            <MapPin size={18} className="shrink-0" />
-            <span className="truncate">{event.venueName}, {event.city}</span>
+            {event.locationType === "ONLINE" ? (
+              <Globe size={18} className="shrink-0" />
+            ) : (
+              <MapPin size={18} className="shrink-0" />
+            )}
+            <span className="truncate">
+              {event.locationType === "ONLINE"
+                ? `Online${event.platform ? ` via ${event.platform}` : ''}`
+                : [event.venueName, event.city].filter(Boolean).join(", ")}
+            </span>
           </div>
 
           {/* Divider */}
@@ -114,11 +180,19 @@ export function EventCard({ event, attended, href }: EventCardProps) {
                   <CheckCircle2 size={14} />
                 </div>
               ) : (
-                <button className="hover:text-[#006782] transition-colors p-1" onClick={(e) => e.preventDefault()}>
-                  <Star size={20} />
+                <button 
+                  className={`transition-colors p-1 ${isInterested ? 'text-yellow-400' : 'hover:text-[#006782]'}`} 
+                  onClick={handleInterestClick}
+                  aria-label={isInterested ? "Remove interest" : "Mark as interested"}
+                >
+                  <Star size={20} className={isInterested ? "fill-current" : ""} />
                 </button>
               )}
-              <button className="hover:text-[#006782] transition-colors p-1" onClick={(e) => e.preventDefault()}>
+              <button 
+                className="hover:text-[#006782] transition-colors p-1" 
+                onClick={handleShareClick}
+                aria-label="Share event"
+              >
                 <Share2 size={20} />
               </button>
             </div>

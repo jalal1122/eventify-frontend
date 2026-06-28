@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Share2, Heart, ExternalLink, CalendarPlus, UserCheck, Star, AlertCircle } from "lucide-react";
+import { Calendar, MapPin, Globe, Share2, Heart, ExternalLink, CalendarPlus, UserCheck, Star, AlertCircle } from "lucide-react";
 import { eventsApi, registrationsApi } from "@/lib/api";
 import { type Event } from "@/types/event";
 import { formatShortDate } from "@/lib/utils";
@@ -27,9 +27,10 @@ export default function EventDetailPage() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
   
-  const isOrganizer = !!user && (
-    (event?.organizerProfileId as any)?._id === user?._id || 
-    (event?.organizerProfileId as any)?.ownerId === user?._id
+  const currentUserId = user?._id || (user as any)?.id;
+  const isOrganizer = !!currentUserId && (
+    (event?.organizerProfileId as any)?._id === currentUserId || 
+    (event?.organizerProfileId as any)?.ownerId === currentUserId
   );
 
   const handleInterestClick = async () => {
@@ -232,11 +233,20 @@ export default function EventDetailPage() {
                 </div>
                 <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-6 flex flex-col gap-3">
                   <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 mb-2">
-                    <MapPin size={20} />
+                    {event.locationType === "ONLINE" ? <Globe size={20} /> : <MapPin size={20} />}
                   </div>
                   <h3 className="font-bold text-gray-900 text-lg">Location</h3>
-                  <p className="text-gray-600 text-sm">{event.venueName}</p>
-                  <p className="text-gray-500 text-xs mt-1">{event.city}</p>
+                  {event.locationType === "ONLINE" ? (
+                    <>
+                      <p className="text-gray-600 text-sm">Online Event</p>
+                      {event.platform && <p className="text-gray-500 text-xs mt-1">via {event.platform}</p>}
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-gray-600 text-sm">{event.venueName}</p>
+                      <p className="text-gray-500 text-xs mt-1">{event.city}</p>
+                    </>
+                  )}
                 </div>
               </div>
 
