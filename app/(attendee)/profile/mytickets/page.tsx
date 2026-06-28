@@ -38,10 +38,28 @@ function ProfileContent() {
         setProfile(profileRes.data.user);
         
         const backendTickets = ticketsRes.data.registrations || ticketsRes.data.tickets || [];
-        const mappedTickets = backendTickets.map((t: any) => ({
-          event: t.eventId,
-          ticket: t
-        }));
+        const mappedTickets = backendTickets.map((t: any) => {
+          let mappedStatus = "pending";
+          if (t.status === "cancelled") {
+            mappedStatus = "rejected";
+          } else if (t.paymentStatus === "approved" || t.paymentStatus === "free") {
+            mappedStatus = "confirmed";
+          } else if (t.paymentStatus === "rejected") {
+            mappedStatus = "rejected";
+          } else if (t.paymentStatus === "pending_review") {
+            mappedStatus = "pending";
+          }
+
+          return {
+            event: t.eventId,
+            ticket: {
+              ...t,
+              status: mappedStatus,
+              attendeeName: t.guestDetails?.name || profileRes.data.user?.name || "Attendee",
+              message: t.rejectionReason || "",
+            }
+          };
+        });
 
         setTickets(mappedTickets);
       } catch (err) {

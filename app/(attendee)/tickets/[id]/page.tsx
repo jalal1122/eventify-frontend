@@ -9,11 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Download, QrCode } from "lucide-react";
 import { attendeeApi } from "@/lib/api";
 import { formatEventCardDate } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function TicketDetailPage() {
   const params = useParams();
   const router = useRouter();
   const ticketId = params.id as string;
+  const { user } = useAuth();
 
   const [ticketData, setTicketData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -23,7 +25,9 @@ export default function TicketDetailPage() {
     const fetchTicket = async () => {
       try {
         const res = await attendeeApi.getTicket(ticketId);
-        setTicketData({ ticket: res.data.ticket, event: res.data.ticket.eventId });
+        const ticket = res.data.ticket;
+        ticket.attendeeName = ticket.guestDetails?.name || user?.name || "Attendee";
+        setTicketData({ ticket, event: ticket.eventId });
       } catch (err) {
         console.error(err);
         setError("Ticket not found.");
