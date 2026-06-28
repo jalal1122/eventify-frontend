@@ -26,7 +26,7 @@ export function TicketCard({ event, ticket }: TicketCardProps) {
       {/* Left Image */}
       <div className="w-full md:w-[240px] h-[200px] shrink-0 rounded-2xl overflow-hidden relative">
         <img 
-          src={event.cardImageUrl || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80"} 
+          src={event.cardImageUrl || event.bannerUrl || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80"} 
           alt={event.title} 
           className="w-full h-full object-cover"
         />
