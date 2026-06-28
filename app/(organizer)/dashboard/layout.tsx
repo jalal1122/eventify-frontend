@@ -185,6 +185,14 @@ function DashboardInner({ children }: { children: ReactNode }) {
 
         <div className="p-4 space-y-3">
           <Link 
+            href="/"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-gray-800 text-gray-400 hover:text-white hover:bg-[#1E293B] transition-colors font-semibold justify-center"
+          >
+            <LayoutDashboard size={18} />
+            <span>Landing Page</span>
+          </Link>
+          
+          <Link 
             href="/dashboard/settings"
             className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border ${
               pathname.startsWith("/dashboard/settings") 
@@ -197,7 +205,10 @@ function DashboardInner({ children }: { children: ReactNode }) {
           </Link>
           
           <button 
-            onClick={logout}
+            onClick={async () => {
+              await logout();
+              window.location.href = '/auth/signin';
+            }}
             className="flex w-full items-center gap-3 px-3 py-3 rounded-xl bg-[#111827] hover:bg-[#1f2937] border border-gray-800 transition-colors text-left"
           >
             <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center overflow-hidden border border-gray-700/50">
