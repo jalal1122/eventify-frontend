@@ -233,7 +233,7 @@ export default function Home() {
           </Tabs>
         </section>
 
-        {/* 3.5. Past Events
+        {/* 3.5. Past Events */}
         <section className="max-w-[1280px] mx-auto px-8 mb-20">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
             <h2 className="text-2xl font-bold text-gray-900">Past Events</h2>
@@ -259,7 +259,6 @@ export default function Home() {
             </div>
           )}
         </section>
-        */}
 
         {/* 4. Trending in Top Cities */}
         <section className="max-w-[1280px] mx-auto px-8 mb-24">
@@ -291,10 +290,17 @@ export default function Home() {
             Collaborating with trusted brands, innovators, and organizations to bring you the best events.
           </p>
           <div className="flex flex-wrap justify-center gap-6">
-            {["PTC Foundation", "Peshawar 2.0", "Google Developer Groups", "NIC Pakistan"].map((partner, i) => (
-              <div key={i} className="w-[200px] h-24 bg-white rounded-3xl border border-[#F3F4F6] shadow-sm flex flex-col items-center justify-center">
-                <div className="w-8 h-8 bg-gray-200 mb-2 rounded-sm" /> {/* Placeholder for logo */}
-                <span className="text-xs font-semibold text-gray-600">{partner}</span>
+            {[
+              { name: "PTC Foundation", src: "/ptc.jpeg" },
+              { name: "Peshawar 2.0", src: "/p2p.jpeg" },
+              { name: "Google Developer Groups", src: "/gdg.jpeg" },
+              { name: "NIC Pakistan", src: "/nic.jpeg" }
+            ].map((partner, i) => (
+              <div key={i} className="w-[200px] h-28 bg-white rounded-3xl border border-[#F3F4F6] shadow-sm flex flex-col items-center justify-center p-4 hover:shadow-md transition-shadow">
+                <div className="w-full h-14 relative flex items-center justify-center mb-2">
+                  <img src={partner.src} alt={partner.name} className="max-w-full max-h-full object-contain mix-blend-multiply" />
+                </div>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{partner.name}</span>
               </div>
             ))}
           </div>
