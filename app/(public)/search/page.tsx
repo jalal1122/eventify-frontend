@@ -72,9 +72,6 @@ function SearchContent() {
         if (orgsRes.data.success) {
           setOrganizers(orgsRes.data.profiles);
         }
-        } else {
-          setError("Failed to fetch events.");
-        }
       } catch (err: any) {
         setError(err.response?.data?.message || "An error occurred while fetching results.");
       } finally {
