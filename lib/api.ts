@@ -114,12 +114,20 @@ export const eventsApi = {
     q?: string;
     city?: string;
     category?: string;
-    sort?: "soonest" | "trending";
+    sort?: "soonest" | "trending" | "relevance" | "recent";
+    status?: string;
     limit?: number;
     page?: number;
     startDate?: string;
     endDate?: string;
-  }) => api.get("/api/events/discover", { params }),
+  }) => {
+    const finalParams = { ...params };
+    if (finalParams.search) {
+      finalParams.q = finalParams.search;
+      delete finalParams.search;
+    }
+    return api.get("/api/events/discover", { params: finalParams });
+  },
 
   getById: (id: string) => api.get(`/api/events/${id}`),
 

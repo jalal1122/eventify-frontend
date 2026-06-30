@@ -26,6 +26,9 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [liveResults, setLiveResults] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
+  const [cities, setCities] = useState<string[]>([]);
+  const [selectedCity, setSelectedCity] = useState<string>("");
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -61,6 +64,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
         const response = await eventsApi.discover({ 
           search: debouncedQuery,
           locationType: format === "online" ? "ONLINE" : format === "offline" ? "VENUE" : undefined,
+          city: selectedCity || undefined,
           limit: 3,
           sort: "relevance"
         } as any);
@@ -74,8 +78,20 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
       }
     };
 
+    const fetchCities = async () => {
+      try {
+        const response = await eventsApi.getCities();
+        if (response.data.success) {
+          setCities(response.data.cities);
+        }
+      } catch (err) {
+        console.error("Failed to fetch cities", err);
+      }
+    };
+
     fetchLiveResults();
-  }, [debouncedQuery, format, date, open]);
+    if (cities.length === 0) fetchCities();
+  }, [debouncedQuery, format, date, selectedCity, open]);
 
   const trendingEvents = [
     { title: "Tech Summit 2024", interested: "450+ interested", icon: "bg-blue-600" },
@@ -91,6 +107,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     const searchParams = new URLSearchParams();
     if (finalQuery) searchParams.set("q", finalQuery);
     if (format) searchParams.set("locationType", format === "online" ? "ONLINE" : "VENUE");
+    if (selectedCity) searchParams.set("city", selectedCity);
     // Date mapping can be handled here or inside search page
     router.push(`/search?${searchParams.toString()}`);
     onClose();
@@ -177,12 +194,41 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
               <span className="text-sm text-gray-700 font-medium">All Categories</span>
               <ChevronDown size={16} className="text-gray-400" />
             </div>
-            <div className="flex items-center justify-between border border-[#E5E7EB] rounded-2xl px-4 py-3 cursor-pointer hover:border-[#006782] transition-colors bg-[#F8FAFC]">
-              <div className="flex items-center gap-2">
-                <MapPin size={16} className="text-gray-400" />
-                <span className="text-sm text-gray-700 font-medium">Any City</span>
+            <div className="relative">
+              <div 
+                onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
+                className="flex items-center justify-between border border-[#E5E7EB] rounded-2xl px-4 py-3 cursor-pointer hover:border-[#006782] transition-colors bg-[#F8FAFC]"
+              >
+                <div className="flex items-center gap-2">
+                  <MapPin size={16} className="text-gray-400" />
+                  <span className="text-sm text-gray-700 font-medium">
+                    {selectedCity || "Any City"}
+                  </span>
+                </div>
+                <ChevronDown size={16} className="text-gray-400" />
               </div>
-              <ChevronDown size={16} className="text-gray-400" />
+              
+              {cityDropdownOpen && (
+                <div className="absolute right-0 left-0 top-full mt-2 bg-white border border-gray-100 rounded-xl shadow-lg overflow-y-auto max-h-48 z-20">
+                  <div className="py-1">
+                    <button
+                      onClick={() => { setSelectedCity(""); setCityDropdownOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${!selectedCity ? "text-[#006782] font-semibold bg-blue-50/50" : "text-gray-700"}`}
+                    >
+                      Any City
+                    </button>
+                    {cities.map((city) => (
+                      <button
+                        key={city}
+                        onClick={() => { setSelectedCity(city); setCityDropdownOpen(false); }}
+                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCity === city ? "text-[#006782] font-semibold bg-blue-50/50" : "text-gray-700"}`}
+                      >
+                        {city}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -276,6 +322,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
               setQuery("");
               setFormat(null);
               setDate(null);
+              setSelectedCity("");
             }}
             className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors"
           >
