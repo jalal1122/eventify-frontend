@@ -100,6 +100,9 @@ export const authApi = {
   updateProfile: (data: Record<string, unknown>) =>
     api.put("/api/auth/profile", data),
 
+  updatePassword: (data: Record<string, string>) => 
+    api.put("/api/auth/password", data),
+
   logout: () => {
     // Backend has no logout endpoint for JWT. We just clear the token.
     tokenStore.clear();

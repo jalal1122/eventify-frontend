@@ -7,11 +7,59 @@ import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, Settings, CheckCircle2, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { authApi } from "@/lib/api";
 
 export default function AccountSettingsPage() {
-  const [authType, setAuthType] = useState<"email" | "google">("google"); // For demo purposes
-  const [emailSent, setEmailSent] = useState(true); // For demo of the green alert
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
+  
+  const [authType, setAuthType] = useState<"email" | "google">(user?.authProvider === "google" ? "google" : "email");
+  const [emailSent, setEmailSent] = useState(false);
+  
+  const [phone, setPhone] = useState(user?.phoneNumber || "");
+  const [isSavingPhone, setIsSavingPhone] = useState(false);
+  
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+
+  const handleSavePhone = async () => {
+    setIsSavingPhone(true);
+    try {
+      await authApi.updateProfile({ phoneNumber: phone });
+      await refresh();
+      alert("Phone number updated successfully.");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update phone number.");
+    } finally {
+      setIsSavingPhone(false);
+    }
+  };
+
+  const handleSavePassword = async () => {
+    if (newPassword !== repeatPassword) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+    setIsSavingPassword(true);
+    setPasswordError("");
+    setPasswordSuccess("");
+    try {
+      await authApi.updatePassword({ currentPassword, newPassword });
+      setPasswordSuccess("Password updated successfully.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setRepeatPassword("");
+    } catch (err: any) {
+      console.error(err);
+      setPasswordError(err.response?.data?.message || "Failed to update password.");
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
   
   if (!user) return null;
 
@@ -44,7 +92,7 @@ export default function AccountSettingsPage() {
             </div>
             <h2 className="text-xl font-bold text-gray-900 mb-1">{user.name}</h2>
             <p className="text-gray-500 text-sm font-medium mb-4">{user.email}</p>
-            <Link href="/profile/edit">
+            <Link href="/profile">
               <Button variant="outline" className="h-9 px-6 rounded-full font-bold border-gray-200 hover:bg-gray-50 text-gray-700 shadow-sm text-sm">
                 Edit Profile
               </Button>
@@ -67,14 +115,16 @@ export default function AccountSettingsPage() {
                     </div>
                     <input 
                       type="email" 
-                      defaultValue={user.email}
-                      className="w-full h-11 pl-12 pr-4 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-[#006782] outline-none font-medium text-gray-900"
+                      value={user.email}
+                      disabled
+                      className="w-full h-11 pl-12 pr-4 rounded-xl border border-gray-200 bg-gray-100 text-gray-500 font-medium cursor-not-allowed outline-none"
                     />
                   </div>
-                  <Button className="h-11 px-8 rounded-xl bg-[#006782] hover:bg-[#004E63] text-white font-bold shrink-0">
+                  <Button disabled className="h-11 px-8 rounded-xl bg-gray-200 text-gray-400 font-bold shrink-0">
                     Save
                   </Button>
                 </div>
+                <p className="text-xs text-gray-500 mt-2">Email address cannot be changed for security reasons.</p>
               </div>
 
               <div>
@@ -86,12 +136,14 @@ export default function AccountSettingsPage() {
                     </div>
                     <input 
                       type="tel" 
-                      defaultValue="+92 300 0000000"
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                      placeholder="+92 300 0000000"
                       className="w-full h-11 pl-12 pr-4 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-[#006782] outline-none font-medium text-gray-900"
                     />
                   </div>
-                  <Button className="h-11 px-8 rounded-xl bg-[#006782] hover:bg-[#004E63] text-white font-bold shrink-0">
-                    Save
+                  <Button onClick={handleSavePhone} disabled={isSavingPhone} className="h-11 px-8 rounded-xl bg-[#006782] hover:bg-[#004E63] text-white font-bold shrink-0">
+                    {isSavingPhone ? "Saving..." : "Save"}
                   </Button>
                 </div>
               </div>
@@ -133,12 +185,27 @@ export default function AccountSettingsPage() {
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-6">Set new password</h3>
                   
+                  {passwordError && (
+                    <div className="w-full p-4 mb-4 rounded-xl bg-red-50/50 border border-red-100 flex items-center gap-2 text-red-700 text-sm font-medium">
+                      <span>{passwordError}</span>
+                    </div>
+                  )}
+
+                  {passwordSuccess && (
+                    <div className="w-full p-4 mb-4 rounded-xl bg-green-50/50 border border-green-100 flex items-center gap-2 text-green-700 text-sm font-medium">
+                      <CheckCircle2 size={18} className="shrink-0" />
+                      <span>{passwordSuccess}</span>
+                    </div>
+                  )}
+                  
                   <div className="flex flex-col gap-4">
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-2">Current Password</label>
                       <input 
                         type="password" 
-                        defaultValue="••••••••"
+                        value={currentPassword}
+                        onChange={e => setCurrentPassword(e.target.value)}
+                        placeholder="••••••••"
                         className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-[#006782] outline-none font-medium text-gray-900"
                       />
                     </div>
@@ -146,7 +213,9 @@ export default function AccountSettingsPage() {
                       <label className="block text-sm font-bold text-gray-700 mb-2">New Password</label>
                       <input 
                         type="password" 
-                        defaultValue="••••••••"
+                        value={newPassword}
+                        onChange={e => setNewPassword(e.target.value)}
+                        placeholder="••••••••"
                         className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-[#006782] outline-none font-medium text-gray-900"
                       />
                     </div>
@@ -154,14 +223,16 @@ export default function AccountSettingsPage() {
                       <label className="block text-sm font-bold text-gray-700 mb-2">Repeat Password</label>
                       <input 
                         type="password" 
-                        defaultValue="••••••••"
+                        value={repeatPassword}
+                        onChange={e => setRepeatPassword(e.target.value)}
+                        placeholder="••••••••"
                         className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-[#006782] outline-none font-medium text-gray-900"
                       />
                     </div>
                     
                     <div className="flex justify-end mt-2">
-                      <Button className="h-11 px-8 rounded-xl bg-[#006782] hover:bg-[#004E63] text-white font-bold">
-                        Save Password
+                      <Button onClick={handleSavePassword} disabled={isSavingPassword} className="h-11 px-8 rounded-xl bg-[#006782] hover:bg-[#004E63] text-white font-bold">
+                        {isSavingPassword ? "Saving..." : "Save Password"}
                       </Button>
                     </div>
                   </div>
