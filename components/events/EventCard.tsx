@@ -89,7 +89,7 @@ export function EventCard({ event, attended, href }: EventCardProps) {
       <Card className="h-full flex flex-col group overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer border-gray-100/50 shadow-sm rounded-3xl relative bg-white">
         
         {/* Image Header */}
-        <div className="relative  w-full overflow-hidden bg-gray-100 shrink-0">
+        <div className="relative w-full overflow-hidden bg-gray-100 shrink-0">
           {event.cardImageUrl || event.bannerUrl ? (
             <img
               src={event.cardImageUrl || event.bannerUrl}
