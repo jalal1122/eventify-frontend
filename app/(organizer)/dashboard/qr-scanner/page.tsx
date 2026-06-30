@@ -9,6 +9,7 @@ export default function QRScannerPage() {
   const [scanResult, setScanResult] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "verifying" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [attendeeDetails, setAttendeeDetails] = useState<any>(null);
 
   useEffect(() => {
     // Initialize scanner only on client side
@@ -43,8 +44,24 @@ export default function QRScannerPage() {
       setStatus("verifying");
       const res = await registrationsApi.verifyQr(ticketCode);
       if (res.data.success) {
-        setStatus("success");
-        setMessage("Check-in successful!");
+        if (res.data.accessGranted) {
+          setStatus("success");
+          setMessage("Check-in successful!");
+          setAttendeeDetails({
+            name: res.data.attendee?.name || "Attendee",
+            email: res.data.attendee?.email,
+            eventTitle: res.data.event?.title
+          });
+        } else {
+          setStatus("error");
+          let errorMsg = "Access Denied.";
+          if (res.data.paymentReviewEvaluation === "pending_review") {
+             errorMsg = "Payment is still pending review.";
+          } else if (res.data.paymentReviewEvaluation === "rejected") {
+             errorMsg = "Payment was rejected.";
+          }
+          setMessage(errorMsg);
+        }
       }
     } catch (error: any) {
       setStatus("error");
@@ -56,6 +73,7 @@ export default function QRScannerPage() {
     setScanResult(null);
     setStatus("idle");
     setMessage("");
+    setAttendeeDetails(null);
   };
 
   return (
@@ -98,7 +116,19 @@ export default function QRScannerPage() {
                 <CheckCircle size={48} />
               </div>
               <h2 className="text-2xl font-black mb-2">Valid Ticket!</h2>
-              <p className="font-bold text-green-700 bg-green-50 px-4 py-2 rounded-xl mb-6">{message}</p>
+              <p className="font-bold text-green-700 bg-green-50 px-4 py-2 rounded-xl mb-4">{message}</p>
+              
+              {attendeeDetails && (
+                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 w-full max-w-sm mb-6 text-left">
+                  <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">Attendee</p>
+                  <p className="text-gray-900 font-bold">{attendeeDetails.name}</p>
+                  <p className="text-gray-500 text-sm mb-3">{attendeeDetails.email}</p>
+                  
+                  <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">Event</p>
+                  <p className="text-[#006782] font-semibold text-sm">{attendeeDetails.eventTitle}</p>
+                </div>
+              )}
+
               <button 
                 onClick={resetScanner}
                 className="bg-[#006782] hover:bg-[#004E63] text-white font-bold rounded-xl px-8 h-12 transition-colors shadow-md"

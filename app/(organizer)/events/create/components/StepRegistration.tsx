@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { EventFormValues } from "../schema";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
@@ -18,7 +18,7 @@ import { GripVertical, Plus, Trash2, Copy, AlertCircle, Link as LinkIcon, FileTe
 // Sortable Question Card Component
 function SortableQuestionCard({ id, index, remove, duplicate }: { id: string; index: number; remove: (idx: number) => void; duplicate: (idx: number) => void }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
-  const { control, watch } = useFormContext<EventFormValues>();
+  const { control, watch, setValue } = useFormContext<EventFormValues>();
   
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -26,6 +26,27 @@ function SortableQuestionCard({ id, index, remove, duplicate }: { id: string; in
   };
 
   const questionType = watch(`customQuestions.${index}.type`);
+  const options = watch(`customQuestions.${index}.options`) || [];
+
+  useEffect(() => {
+    if (questionType === "MULTIPLE_CHOICE" && options.length === 0) {
+      setValue(`customQuestions.${index}.options`, ["Option 1", "Option 2"]);
+    }
+  }, [questionType, options.length, index, setValue]);
+
+  const handleAddOption = () => {
+    setValue(`customQuestions.${index}.options`, [...options, `Option ${options.length + 1}`]);
+  };
+
+  const handleUpdateOption = (optIndex: number, val: string) => {
+    const newOptions = [...options];
+    newOptions[optIndex] = val;
+    setValue(`customQuestions.${index}.options`, newOptions);
+  };
+
+  const handleRemoveOption = (optIndex: number) => {
+    setValue(`customQuestions.${index}.options`, options.filter((_, i) => i !== optIndex));
+  };
 
   return (
     <div ref={setNodeRef} style={style} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex gap-4 items-start group">
@@ -81,8 +102,25 @@ function SortableQuestionCard({ id, index, remove, duplicate }: { id: string; in
         {/* Dynamic Options for Multiple Choice */}
         {questionType === "MULTIPLE_CHOICE" && (
            <div className="pl-2 border-l-2 border-[#006782] space-y-2 mt-2">
-             <p className="text-xs text-gray-500 mb-2">Options would go here. (Simplified for this demo)</p>
-             <Button variant="outline" size="sm" type="button" className="text-xs h-7 text-[#006782] border-[#006782]">
+             {options.map((opt: string, optIndex: number) => (
+               <div key={optIndex} className="flex items-center gap-2">
+                 <div className="w-4 h-4 rounded-full border-2 border-gray-300 shrink-0" />
+                 <Input 
+                   value={opt} 
+                   onChange={(e) => handleUpdateOption(optIndex, e.target.value)}
+                   className="h-9 text-sm"
+                   placeholder={`Option ${optIndex + 1}`}
+                 />
+                 <button 
+                   type="button" 
+                   onClick={() => handleRemoveOption(optIndex)}
+                   className="text-gray-400 hover:text-red-500 shrink-0 p-1"
+                 >
+                   <Trash2 className="w-4 h-4" />
+                 </button>
+               </div>
+             ))}
+             <Button variant="outline" size="sm" type="button" onClick={handleAddOption} className="text-xs h-7 text-[#006782] border-[#006782] mt-2">
                + Add Option
              </Button>
            </div>
@@ -116,7 +154,7 @@ function SortableQuestionCard({ id, index, remove, duplicate }: { id: string; in
 
 
 export default function StepRegistration() {
-  const { control, watch, setValue } = useFormContext<EventFormValues>();
+  const { control, watch, setValue, getValues } = useFormContext<EventFormValues>();
   const registrationMethod = watch("registrationMethod");
   
   const [warningModalOpen, setWarningModalOpen] = useState(false);
@@ -167,11 +205,14 @@ export default function StepRegistration() {
   };
 
   const duplicateQuestion = (index: number) => {
-    const questionToDup = fields[index];
-    insert(index + 1, {
-      ...questionToDup,
-      id: crypto.randomUUID(), // new unique id
-    });
+    const allQuestions = getValues("customQuestions") || [];
+    const questionToDup = allQuestions[index];
+    if (questionToDup) {
+      insert(index + 1, {
+        ...questionToDup,
+        id: crypto.randomUUID(), // new unique id
+      });
+    }
   };
 
   return (
