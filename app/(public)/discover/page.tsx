@@ -80,7 +80,7 @@ export default function DiscoverPage() {
 
         {/* Events Stack */}
         <div className="max-w-[1280px] mx-auto px-8 pb-12">
-          <div className="flex flex-col gap-8 max-w-4xl mx-auto">
+          <div className="flex flex-col gap-6 max-w-3xl mx-auto">
             {loading ? (
               <>
                 <EventBannerCardSkeleton />
