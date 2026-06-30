@@ -167,7 +167,7 @@ export default function Home() {
         <section className="max-w-[1280px] mx-auto px-8 mb-16">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-gray-900">Browse by Category</h2>
-            <Link href="/search" className="text-sm font-semibold text-[#006782] hover:underline">
+            <Link href="/categories" className="text-sm font-semibold text-[#006782] hover:underline">
               See all categories
             </Link>
           </div>
