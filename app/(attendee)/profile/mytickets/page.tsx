@@ -21,6 +21,8 @@ function ProfileContent() {
   const [loading, setLoading] = useState(true);
   const [tickets, setTickets] = useState<any[]>([]); 
   const [profile, setProfile] = useState<any>(null);
+  const [visibleUpcoming, setVisibleUpcoming] = useState(5);
+  const [visiblePast, setVisiblePast] = useState(5);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -74,8 +76,12 @@ function ProfileContent() {
 
   if (!isAuthenticated || !user) return null;
 
-  const upcomingTickets = tickets; // For demo, all are upcoming
-  const pastTickets: any[] = []; // For demo
+  const now = new Date();
+  const upcomingTickets = tickets.filter(t => t.event?.dateTime && new Date(t.event.dateTime) >= now);
+  const pastTickets = tickets.filter(t => t.event?.dateTime && new Date(t.event.dateTime) < now);
+
+  const displayedUpcoming = upcomingTickets.slice(0, visibleUpcoming);
+  const displayedPast = pastTickets.slice(0, visiblePast);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -141,14 +147,16 @@ function ProfileContent() {
                   <TabsContent value="upcoming" className="mt-0 outline-none w-full flex flex-col gap-6">
                     {upcomingTickets.length > 0 ? (
                       <>
-                        {upcomingTickets.map((item: any) => (
+                        {displayedUpcoming.map((item: any) => (
                           <TicketCard key={item.ticket._id} event={item.event} ticket={item.ticket} />
                         ))}
-                        <div className="flex justify-center mt-6">
-                          <Button variant="outline" className="rounded-full px-8 h-12 font-bold text-gray-700 hover:bg-gray-50 shadow-sm border-gray-200">
-                            See More
-                          </Button>
-                        </div>
+                        {visibleUpcoming < upcomingTickets.length && (
+                          <div className="flex justify-center mt-6">
+                            <Button onClick={() => setVisibleUpcoming(prev => prev + 5)} variant="outline" className="rounded-full px-8 h-12 font-bold text-gray-700 hover:bg-gray-50 shadow-sm border-gray-200">
+                              See More
+                            </Button>
+                          </div>
+                        )}
                       </>
                     ) : (
                       <div className="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center">
@@ -166,9 +174,18 @@ function ProfileContent() {
 
                   <TabsContent value="past" className="mt-0 outline-none w-full flex flex-col gap-6">
                     {pastTickets.length > 0 ? (
-                      pastTickets.map((item: any) => (
-                        <TicketCard key={item.ticket._id} event={item.event} ticket={item.ticket} />
-                      ))
+                      <>
+                        {displayedPast.map((item: any) => (
+                          <TicketCard key={item.ticket._id} event={item.event} ticket={item.ticket} />
+                        ))}
+                        {visiblePast < pastTickets.length && (
+                          <div className="flex justify-center mt-6">
+                            <Button onClick={() => setVisiblePast(prev => prev + 5)} variant="outline" className="rounded-full px-8 h-12 font-bold text-gray-700 hover:bg-gray-50 shadow-sm border-gray-200">
+                              See More
+                            </Button>
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <div className="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center opacity-70">
                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-400">

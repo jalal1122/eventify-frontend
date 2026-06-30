@@ -11,7 +11,14 @@ import { useEvents } from "@/hooks/useEvents";
 import Link from "next/link";
 export default function DiscoverPage() {
   const [activeFilter, setActiveFilter] = useState("all");
+  const [visibleEvents, setVisibleEvents] = useState(5);
   const { events, loading, error } = useEvents();
+
+  // Helper to change filter and reset visible events
+  const handleFilterChange = (filter: string) => {
+    setActiveFilter(filter);
+    setVisibleEvents(5);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -35,7 +42,7 @@ export default function DiscoverPage() {
         <div className="max-w-[1280px] mx-auto px-8 mb-8">
           <div className="flex flex-wrap items-center gap-3 border-b border-[#F3F4F6] pb-6">
             <button
-              onClick={() => setActiveFilter("all")}
+              onClick={() => handleFilterChange("all")}
               className={`px-6 h-10 rounded-full text-sm font-semibold transition-colors ${
                 activeFilter === "all" ? "bg-[#006782] text-white" : "border border-[#D1D5DB] text-gray-700 hover:bg-gray-50"
               }`}
@@ -43,7 +50,7 @@ export default function DiscoverPage() {
               All
             </button>
             <button
-              onClick={() => setActiveFilter("today")}
+              onClick={() => handleFilterChange("today")}
               className={`px-6 h-10 rounded-full text-sm font-semibold transition-colors ${
                 activeFilter === "today" ? "bg-[#006782] text-white" : "border border-transparent text-gray-700 hover:bg-gray-50"
               }`}
@@ -51,7 +58,7 @@ export default function DiscoverPage() {
               Today
             </button>
             <button
-              onClick={() => setActiveFilter("this-week")}
+              onClick={() => handleFilterChange("this-week")}
               className={`px-6 h-10 rounded-full text-sm font-semibold transition-colors ${
                 activeFilter === "this-week" ? "bg-[#006782] text-white" : "border border-transparent text-gray-700 hover:bg-gray-50"
               }`}
@@ -59,7 +66,7 @@ export default function DiscoverPage() {
               This Week
             </button>
             <button
-              onClick={() => setActiveFilter("next-week")}
+              onClick={() => handleFilterChange("next-week")}
               className={`px-6 h-10 rounded-full text-sm font-semibold transition-colors ${
                 activeFilter === "next-week" ? "bg-[#006782] text-white" : "border border-transparent text-gray-700 hover:bg-gray-50"
               }`}
@@ -96,9 +103,21 @@ export default function DiscoverPage() {
                 onAction={() => setActiveFilter("all")}
               />
             ) : (
-              events.map(event => (
-                <EventBannerCard key={event._id} event={event as Event} />
-              ))
+              <>
+                {events.slice(0, visibleEvents).map(event => (
+                  <EventBannerCard key={event._id} event={event as Event} />
+                ))}
+                {visibleEvents < events.length && (
+                  <div className="flex justify-center mt-4">
+                    <button 
+                      onClick={() => setVisibleEvents(prev => prev + 5)}
+                      className="px-8 h-12 rounded-full border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors shadow-sm"
+                    >
+                      See More Events
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
