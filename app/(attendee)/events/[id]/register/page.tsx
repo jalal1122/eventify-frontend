@@ -39,9 +39,13 @@ export default function RegisterPage() {
     const fetchEvent = async () => {
       try {
         const res = await eventsApi.getById(eventId);
-        setEvent(res.data.event);
-        if (res.data.event.tickets && res.data.event.tickets.length > 0) {
-          setSelectedTicketId(res.data.event.tickets[0].id);
+        const eventData = res.data.event;
+        setEvent(eventData);
+        if (new Date() > new Date(eventData.dateTime)) {
+          setError("Registration is closed. This event has already occurred.");
+        }
+        if (eventData.tickets && eventData.tickets.length > 0) {
+          setSelectedTicketId(eventData.tickets[0].id);
         }
       } catch (err: any) {
         setError("Failed to load event details.");

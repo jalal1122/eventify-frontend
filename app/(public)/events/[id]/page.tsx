@@ -122,6 +122,7 @@ export default function EventDetailPage() {
   }
 
   const isFree = !event.tickets || !event.tickets.some(t => t.type === "PAID");
+  const isPastEvent = new Date() > new Date(event.dateTime);
 
   const getDisplayPrice = () => {
     if (!event.tickets || event.tickets.length === 0) return "Free";
@@ -279,9 +280,9 @@ export default function EventDetailPage() {
                     )}
                   </div>
 
-                  {event.status === "completed" || event.status === "cancelled" ? (
+                  {event.status === "completed" || event.status === "cancelled" || isPastEvent ? (
                     <Button disabled className="w-full h-14 text-base font-bold rounded-xl bg-gray-200 text-gray-500">
-                      Event {event.status === "completed" ? "Ended" : "Cancelled"}
+                      {event.status === "cancelled" ? "Event Cancelled" : "Registration Closed"}
                     </Button>
                   ) : isOrganizer ? (
                     <Button className="w-full h-14 text-base font-bold rounded-xl bg-[#006782] hover:bg-[#004E63] text-white" onClick={() => router.push(`/organizers/dashboard/events/${event._id}`)}>

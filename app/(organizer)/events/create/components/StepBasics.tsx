@@ -16,9 +16,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import CreateOrganizerModal from "./CreateOrganizerModal";
 import { useAuth } from "@/hooks/useAuth";
 import { organizerApi } from "@/lib/api";
+import AiAutofillModal from "./AiAutofillModal";
+import CreateOrganizerModal from "./CreateOrganizerModal";
+import { Sparkles } from "lucide-react";
 
 const CATEGORIES = [
   { id: "1", name: "Music & Concerts" },
@@ -36,6 +38,7 @@ export default function StepBasics() {
   
   const [organizerProfiles, setOrganizerProfiles] = useState<any[]>([]);
   const [isOrganizerModalOpen, setIsOrganizerModalOpen] = useState(false);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
 
   useEffect(() => {
@@ -68,8 +71,40 @@ export default function StepBasics() {
     setValue("organizerProfileId", newId, { shouldValidate: true });
   };
 
+  const handleAiFill = (data: any) => {
+    if (data.title) setValue("title", data.title, { shouldValidate: true });
+    if (data.category) setValue("categoryId", data.category, { shouldValidate: true });
+    if (data.locationType) setValue("locationType", data.locationType, { shouldValidate: true });
+    if (data.venueName) setValue("venueName", data.venueName, { shouldValidate: true });
+    if (data.city) setValue("city", data.city, { shouldValidate: true });
+    if (data.platform) setValue("platform", data.platform, { shouldValidate: true });
+    if (data.startDate) setValue("startDate", new Date(data.startDate), { shouldValidate: true });
+    if (data.startTime) setValue("startTime", data.startTime, { shouldValidate: true });
+    if (data.overview) setValue("overview", data.overview, { shouldValidate: true });
+  };
+
   return (
     <div className="space-y-12 pb-8">
+      {/* AI Autofill Banner */}
+      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-[2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+        <div>
+          <h3 className="text-xl font-bold text-purple-900 flex items-center gap-2 mb-2">
+            <Sparkles className="text-purple-600" size={24} /> 
+            Magic Fill with Gemini AI
+          </h3>
+          <p className="text-purple-800/80">
+            Have an event poster or a drafted message? Upload it and let our AI extract the details to auto-fill this form for you instantly.
+          </p>
+        </div>
+        <Button 
+          type="button"
+          onClick={() => setIsAiModalOpen(true)}
+          className="shrink-0 bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-12 px-6 shadow-lg shadow-purple-200"
+        >
+          <Sparkles className="mr-2 h-5 w-5" /> Auto-fill Details
+        </Button>
+      </div>
+
       {/* 1. Event Details */}
       <section>
         <h2 className="text-2xl font-semibold text-[#001F29] mb-6">1. Event Details</h2>
@@ -404,6 +439,12 @@ export default function StepBasics() {
         isOpen={isOrganizerModalOpen} 
         onClose={() => setIsOrganizerModalOpen(false)} 
         onSuccess={handleOrganizerCreated}
+      />
+
+      <AiAutofillModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        onFill={handleAiFill}
       />
     </div>
   );
