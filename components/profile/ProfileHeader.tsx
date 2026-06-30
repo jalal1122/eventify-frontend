@@ -30,8 +30,8 @@ export function ProfileHeader({ user, profile, setProfile }: ProfileHeaderProps)
     setIsUploading(true);
     try {
       const res = await eventsApi.uploadImage(e.target.files[0]);
-      if (res.data.imageUrl) {
-        setProfilePicture(res.data.imageUrl);
+      if (res.data.url) {
+        setProfilePicture(res.data.url);
       }
     } catch (err) {
       console.error("Failed to upload image", err);

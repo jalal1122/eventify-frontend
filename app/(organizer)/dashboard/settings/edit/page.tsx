@@ -70,8 +70,8 @@ export default function EditOrganizerProfilePage() {
     setUploadingLogo(true);
     try {
       const res = await eventsApi.uploadImage(e.target.files[0]);
-      if (res.data.imageUrl) {
-        setFormData(prev => ({ ...prev, logoUrl: res.data.imageUrl }));
+      if (res.data.url) {
+        setFormData(prev => ({ ...prev, logoUrl: res.data.url }));
       }
     } catch (error) {
       console.error("Failed to upload logo", error);
