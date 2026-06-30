@@ -28,19 +28,22 @@ const categories = [
 ];
 
 
-const cities = [
-  { name: "Karachi", count: "120+ Events", img: "https://images.unsplash.com/photo-1620619741029-d576a92f03c0?w=800&q=80" },
-  { name: "Lahore", count: "95+ Events", img: "https://images.unsplash.com/photo-1586015555655-bd35d10d65b7?w=800&q=80" },
-  { name: "Islamabad", count: "80+ Events", img: "https://images.unsplash.com/photo-1582294437463-228fc4a2b270?w=800&q=80" },
-  { name: "Peshawar", count: "45+ Events", img: "https://images.unsplash.com/photo-1626014493390-349f2b84eb44?w=800&q=80" },
-  { name: "Quetta", count: "30+ Events", img: "https://images.unsplash.com/photo-1601362624564-9602fa9bc5e5?w=800&q=80" },
-];
+const defaultCityImages: Record<string, string> = {
+  "karachi": "/karachi.png",
+  "lahore": "/lahore.png",
+  "islamabad": "/islamabad.png",
+  "peshawar": "/peshawar.png",
+  "quetta": "/quetta.png"
+};
 
 export default function Home() {
   const [loginToCreateOpen, setLoginToCreateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [topCities, setTopCities] = useState<{name: string, count: string, img: string}[]>([]);
+  const [pastEvents, setPastEvents] = useState<Event[]>([]);
+  const [pastLoading, setPastLoading] = useState(true);
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
@@ -81,6 +84,41 @@ export default function Home() {
     };
     fetchEvents();
   }, [activeTab]);
+
+  useEffect(() => {
+    const fetchTopCities = async () => {
+      try {
+        const res = await eventsApi.getTopCities(5);
+        if (res.data.success) {
+          const formatted = res.data.topCities.map((c: any) => ({
+            name: c.name,
+            count: `${c.count} Event${c.count !== 1 ? 's' : ''}`,
+            img: defaultCityImages[c.name.toLowerCase()] || "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&q=80"
+          }));
+          setTopCities(formatted);
+        }
+      } catch (err) {
+        console.error("Failed to fetch top cities:", err);
+      }
+    };
+    
+    const fetchPastEvents = async () => {
+      setPastLoading(true);
+      try {
+        const res = await eventsApi.discover({ status: "completed", sort: "recent", limit: 4 } as any);
+        if (res.data.success) {
+          setPastEvents(res.data.events.slice(0, 4));
+        }
+      } catch (err) {
+        console.error("Failed to fetch past events:", err);
+      } finally {
+        setPastLoading(false);
+      }
+    };
+
+    fetchTopCities();
+    fetchPastEvents();
+  }, []);
 
   const handleCreateEventClick = () => {
     if (isAuthenticated) {
@@ -129,7 +167,7 @@ export default function Home() {
         <section className="max-w-[1280px] mx-auto px-8 mb-16">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-gray-900">Browse by Category</h2>
-            <Link href="/categories" className="text-sm font-semibold text-[#006782] hover:underline">
+            <Link href="/search" className="text-sm font-semibold text-[#006782] hover:underline">
               See all categories
             </Link>
           </div>
@@ -182,9 +220,11 @@ export default function Home() {
                       ))}
                     </div>
                     <div className="flex justify-center mt-10">
-                      <Button className="bg-[#006782] hover:bg-[#004E63] text-white rounded-full px-8 py-6 text-base shadow-md">
-                        View all Events
-                      </Button>
+                      <Link href="/search">
+                        <Button className="bg-[#006782] hover:bg-[#004E63] text-white rounded-full px-8 py-6 text-base shadow-md">
+                          View all Events
+                        </Button>
+                      </Link>
                     </div>
                   </>
                 )}
@@ -193,23 +233,54 @@ export default function Home() {
           </Tabs>
         </section>
 
+        {/* 3.5. Past Events */}
+        <section className="max-w-[1280px] mx-auto px-8 mb-20">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <h2 className="text-2xl font-bold text-gray-900">Past Events</h2>
+          </div>
+          
+          {pastLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map(i => <EventCardSkeleton key={i} />)}
+            </div>
+          ) : pastEvents.length === 0 ? (
+            <EmptyState 
+              icon={CalendarX} 
+              title="No past events" 
+              description="There are no past events to show right now." 
+              actionLabel="View Upcoming Events"
+              onAction={() => window.scrollTo(0, 0)}
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {pastEvents.map((event) => (
+                <EventCard key={event._id} event={event} />
+              ))}
+            </div>
+          )}
+        </section>
+
         {/* 4. Trending in Top Cities */}
         <section className="max-w-[1280px] mx-auto px-8 mb-24">
           <h2 className="text-2xl font-bold text-gray-900 mb-8">Trending in Top Cities</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 h-[320px]">
-            {cities.map((city, i) => (
-              <Link key={i} href={`/cities/${city.name.toLowerCase()}`}>
-                <div className="relative rounded-3xl overflow-hidden group cursor-pointer border border-[#F3F4F6] shadow-sm w-full h-full">
-                  <img src={city.img} alt={city.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute bottom-6 left-6 text-left">
-                    <h3 className="text-xl font-bold text-white mb-1">{city.name}</h3>
-                    <p className="text-sm text-gray-300">{city.count}</p>
+          {topCities.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 h-[320px]">
+              {topCities.map((city, i) => (
+                <Link key={i} href={`/cities/${city.name.toLowerCase()}`}>
+                  <div className="relative rounded-3xl overflow-hidden group cursor-pointer border border-[#F3F4F6] shadow-sm w-full h-full">
+                    <img src={city.img} alt={city.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute bottom-6 left-6 text-left">
+                      <h3 className="text-xl font-bold text-white mb-1">{city.name}</h3>
+                      <p className="text-sm text-gray-300">{city.count}</p>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="w-full h-[320px] bg-gray-100 rounded-3xl animate-pulse"></div>
+          )}
         </section>
 
         {/* 5. Proud Community Partners */}
@@ -243,9 +314,11 @@ export default function Home() {
                 >
                   Create an Event <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
-                <Button variant="outline" className="border-white text-white hover:bg-white hover:text-[#006782] bg-transparent rounded-full px-6 py-6 text-base font-semibold transition-colors">
-                  Learn More
-                </Button>
+                <Link href="/about">
+                  <Button variant="outline" className="border-white text-white hover:bg-white hover:text-[#006782] bg-transparent rounded-full px-6 py-6 text-base font-semibold transition-colors">
+                    Learn More
+                  </Button>
+                </Link>
               </div>
             </div>
             {/* Right side graphic mockup */}

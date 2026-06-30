@@ -21,6 +21,7 @@ export default function CityPage() {
   const city = capitalizeFirstLetter(decodeURIComponent(params.city as string));
   const [activeFilter, setActiveFilter] = useState("all");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [activeSort, setActiveSort] = useState<"soonest" | "trending">("soonest");
 
   const { events, loading, updateFilters } = useEvents({ city });
 
@@ -50,8 +51,8 @@ export default function CityPage() {
       endDate = new Date(lastDay.setHours(23, 59, 59, 999)).toISOString();
     }
 
-    updateFilters({ startDate, endDate, category: activeCategory });
-  }, [activeFilter, activeCategory, updateFilters]);
+    updateFilters({ startDate, endDate, category: activeCategory, sort: activeSort });
+  }, [activeFilter, activeCategory, activeSort, updateFilters]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -98,6 +99,14 @@ export default function CityPage() {
                   </button>
                 ))}
               </div>
+              <select 
+                value={activeSort} 
+                onChange={(e) => setActiveSort(e.target.value as "soonest" | "trending")}
+                className="h-10 rounded-xl border border-[#D1D5DB] bg-white px-4 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-[#006782]"
+              >
+                <option value="soonest">Soonest</option>
+                <option value="trending">Trending</option>
+              </select>
               <select 
                 value={activeCategory} 
                 onChange={(e) => setActiveCategory(e.target.value)}

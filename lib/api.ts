@@ -134,6 +134,7 @@ export const eventsApi = {
   toggleInterest: (id: string) => api.post(`/api/events/${id}/interest`),
 
   getCities: (q?: string) => api.get("/api/events/cities", { params: { q } }),
+  getTopCities: (limit?: number) => api.get("/api/events/top-cities", { params: { limit } }),
 
   getCategories: () => api.get("/api/events/categories"),
 
