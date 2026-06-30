@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useOrganizer } from "@/context/OrganizerContext";
-import { Edit, Eye, Copy, AlertTriangle, Users } from "lucide-react";
+import { Edit, Eye, Copy, AlertTriangle, Users, Plus } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { organizerApi } from "@/lib/api";
@@ -14,8 +14,59 @@ export default function OrganizerSettingsPage() {
   
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newBrandName, setNewBrandName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleCreateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBrandName.trim()) return;
+    try {
+      setIsSubmitting(true);
+      const res = await organizerApi.createProfile({ brandName: newBrandName });
+      if (res.data.success) {
+        await refreshProfiles();
+        setIsCreating(false);
+        setNewBrandName("");
+        setActiveProfileId(res.data.profile._id);
+      }
+    } catch (error) {
+      alert("Failed to create profile. The name might be taken.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (activeProfileId === "all" || !activeProfile) {
+    if (isCreating) {
+      return (
+        <div className="max-w-4xl mx-auto py-12 px-8 flex flex-col items-center text-center">
+          <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-6">
+            <Plus size={32} className="text-blue-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Create New Organizer Page</h2>
+          <p className="text-gray-500 max-w-md mb-8">Enter the brand name for your new organization.</p>
+          <form onSubmit={handleCreateProfile} className="w-full max-w-md bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-4 text-left">
+            <div>
+              <label className="text-sm font-semibold text-gray-700">Brand Name</label>
+              <input 
+                autoFocus
+                value={newBrandName} 
+                onChange={e => setNewBrandName(e.target.value)} 
+                className="w-full px-4 py-3 mt-1 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:border-[#006782]"
+                placeholder="e.g. Nextt Events"
+              />
+            </div>
+            <div className="flex gap-2 mt-4">
+              <Button type="button" variant="outline" onClick={() => setIsCreating(false)} className="flex-1 h-12 rounded-xl border-gray-200 text-gray-600">Cancel</Button>
+              <Button type="submit" disabled={isSubmitting || !newBrandName.trim()} className="flex-1 h-12 rounded-xl bg-[#006782] hover:bg-[#004E63] text-white">
+                {isSubmitting ? "Creating..." : "Create"}
+              </Button>
+            </div>
+          </form>
+        </div>
+      );
+    }
     return (
       <div className="max-w-4xl mx-auto py-12 px-8 flex flex-col items-center text-center">
         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
@@ -41,6 +92,13 @@ export default function OrganizerSettingsPage() {
               </div>
             </button>
           ))}
+          <button
+            onClick={() => setIsCreating(true)}
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-gray-300 hover:border-[#006782] hover:bg-gray-50 text-gray-500 hover:text-[#006782] transition-all text-center h-full min-h-[82px]"
+          >
+            <Plus size={24} />
+            <span className="font-bold text-sm">Create New Page</span>
+          </button>
         </div>
       </div>
     );
