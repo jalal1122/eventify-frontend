@@ -116,7 +116,8 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     if (finalQuery) searchParams.set("q", finalQuery);
     if (format) searchParams.set("locationType", format === "online" ? "ONLINE" : "VENUE");
     if (selectedCity) searchParams.set("city", selectedCity);
-    // Date mapping can be handled here or inside search page
+    if (date) searchParams.set("date", date);
+    
     router.push(`/search?${searchParams.toString()}`);
     onClose();
   };
