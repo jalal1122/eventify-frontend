@@ -85,14 +85,32 @@ function SearchContent() {
         ]);
 
         if (eventsRes.data.success) {
-          setEvents(eventsRes.data.events);
-          setHasMore(eventsRes.data.events.length === limit);
+          let fetchedEvents = eventsRes.data.events as Event[];
+          if (query && sort === "relevance") {
+            const lowerQuery = query.toLowerCase();
+            fetchedEvents.sort((a, b) => {
+              const aMatch = a.title.toLowerCase() === lowerQuery ? 1 : 0;
+              const bMatch = b.title.toLowerCase() === lowerQuery ? 1 : 0;
+              return bMatch - aMatch;
+            });
+          }
+          setEvents(fetchedEvents);
+          setHasMore(fetchedEvents.length === limit);
         } else {
           setError("Failed to fetch events.");
         }
         
         if (orgsRes.data.success) {
-          setOrganizers(orgsRes.data.profiles);
+          let fetchedOrgs = orgsRes.data.profiles as any[];
+          if (query) {
+            const lowerQuery = query.toLowerCase();
+            fetchedOrgs.sort((a, b) => {
+              const aMatch = a.brandName.toLowerCase() === lowerQuery ? 1 : 0;
+              const bMatch = b.brandName.toLowerCase() === lowerQuery ? 1 : 0;
+              return bMatch - aMatch;
+            });
+          }
+          setOrganizers(fetchedOrgs);
         }
       } catch (err: any) {
         setError(err.response?.data?.message || "An error occurred while fetching results.");
