@@ -234,7 +234,7 @@ export default function Home() {
         </section>
 
         {/* 3.5. Past Events */}
-        <section className="max-w-[1280px] mx-auto px-8 mb-20">
+        {/* <section className="max-w-[1280px] mx-auto px-8 mb-20">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
             <h2 className="text-2xl font-bold text-gray-900">Past Events</h2>
           </div>
@@ -258,7 +258,7 @@ export default function Home() {
               ))}
             </div>
           )}
-        </section>
+        </section> */}
 
         {/* 4. Trending in Top Cities */}
         <section className="max-w-[1280px] mx-auto px-8 mb-24">
