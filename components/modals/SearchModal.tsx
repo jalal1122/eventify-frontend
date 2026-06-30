@@ -26,10 +26,16 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [liveResults, setLiveResults] = useState<Event[]>([]);
   const [organizerResults, setOrganizerResults] = useState<any[]>([]);
+  const [trendingResults, setTrendingResults] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
+  
   const [cities, setCities] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string>("");
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -67,6 +73,8 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
             search: debouncedQuery,
             locationType: format === "online" ? "ONLINE" : format === "offline" ? "VENUE" : undefined,
             city: selectedCity || undefined,
+            category: selectedCategory || undefined,
+            date: date || undefined,
             limit: 3,
             sort: "relevance"
           } as any),
@@ -86,20 +94,34 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
       }
     };
 
-    const fetchCities = async () => {
+    const fetchCitiesAndCategories = async () => {
       try {
-        const response = await eventsApi.getCities();
-        if (response.data.success) {
-          setCities(response.data.cities);
-        }
+        const [citiesRes, categoriesRes] = await Promise.all([
+          eventsApi.getCities(),
+          eventsApi.getCategories()
+        ]);
+        if (citiesRes.data.success) setCities(citiesRes.data.cities);
+        if (categoriesRes.data.success) setCategories(categoriesRes.data.categories);
       } catch (err) {
-        console.error("Failed to fetch cities", err);
+        console.error("Failed to fetch filters", err);
       }
     };
 
+    const fetchTrending = async () => {
+      try {
+        const res = await eventsApi.discover({ 
+          sort: "trending", 
+          city: selectedCity || undefined, 
+          limit: 3 
+        } as any);
+        if (res.data.success) setTrendingResults(res.data.events);
+      } catch(err) {}
+    };
+
     fetchLiveResults();
-    if (cities.length === 0) fetchCities();
-  }, [debouncedQuery, format, date, selectedCity, open]);
+    if (cities.length === 0 || categories.length === 0) fetchCitiesAndCategories();
+    fetchTrending();
+  }, [debouncedQuery, format, date, selectedCity, selectedCategory, open]);
 
   const trendingEvents = [
     { title: "Tech Summit 2024", interested: "450+ interested", icon: "bg-blue-600" },
@@ -113,9 +135,10 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     if (finalQuery) saveRecentSearch(finalQuery);
     
     const searchParams = new URLSearchParams();
-    if (finalQuery) searchParams.set("q", finalQuery);
+    if (finalQuery) searchParams.set("search", finalQuery);
     if (format) searchParams.set("locationType", format === "online" ? "ONLINE" : "VENUE");
     if (selectedCity) searchParams.set("city", selectedCity);
+    if (selectedCategory) searchParams.set("category", selectedCategory);
     if (date) searchParams.set("date", date);
     
     router.push(`/search?${searchParams.toString()}`);
@@ -199,9 +222,41 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
 
           {/* Select Dropdowns Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            <div className="flex items-center justify-between border border-[#E5E7EB] rounded-2xl px-4 py-3 cursor-pointer hover:border-[#006782] transition-colors">
-              <span className="text-sm text-gray-700 font-medium">All Categories</span>
-              <ChevronDown size={16} className="text-gray-400" />
+            {/* Category Dropdown */}
+            <div className="relative">
+              <div 
+                onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+                className="flex items-center justify-between border border-[#E5E7EB] rounded-2xl px-4 py-3 cursor-pointer hover:border-[#006782] transition-colors bg-[#F8FAFC]"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700 font-medium line-clamp-1">
+                    {selectedCategory || "All Categories"}
+                  </span>
+                </div>
+                <ChevronDown size={16} className="text-gray-400 shrink-0" />
+              </div>
+              
+              {categoryDropdownOpen && (
+                <div className="absolute right-0 left-0 top-full mt-2 bg-white border border-gray-100 rounded-xl shadow-lg overflow-y-auto max-h-48 z-20">
+                  <div className="py-1">
+                    <button
+                      onClick={() => { setSelectedCategory(""); setCategoryDropdownOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${!selectedCategory ? "text-[#006782] font-semibold bg-blue-50/50" : "text-gray-700"}`}
+                    >
+                      All Categories
+                    </button>
+                    {categories.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => { setSelectedCategory(cat); setCategoryDropdownOpen(false); }}
+                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedCategory === cat ? "text-[#006782] font-semibold bg-blue-50/50" : "text-gray-700"}`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             <div className="relative">
               <div 
@@ -258,6 +313,9 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                     )}
                     
                     {/* Organizer Results */}
+                    {organizerResults.length > 0 && (
+                      <h4 className="text-[10px] font-bold text-gray-400 mb-2 mt-2 tracking-wider">ORGANIZERS</h4>
+                    )}
                     {organizerResults.length > 0 && organizerResults.map((org) => (
                       <li 
                         key={`org-${org._id}`} 
@@ -285,7 +343,14 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                     
                     {/* Event Results */}
                     {liveResults.length > 0 && organizerResults.length > 0 && (
-                      <div className="w-full h-px bg-gray-100 my-2" />
+                      <div className="w-full flex items-center gap-4 my-4">
+                        <div className="h-px bg-gray-200 flex-1" />
+                        <span className="text-[10px] font-bold text-gray-400 tracking-wider">EVENTS</span>
+                        <div className="h-px bg-gray-200 flex-1" />
+                      </div>
+                    )}
+                    {liveResults.length > 0 && organizerResults.length === 0 && (
+                      <h4 className="text-[10px] font-bold text-gray-400 mb-2 mt-4 tracking-wider">EVENTS</h4>
                     )}
                     
                     {liveResults.map((event) => (
@@ -337,19 +402,23 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
             <div>
               <h4 className="text-xs font-bold text-gray-400 mb-4 tracking-wider">TRENDING IN CITY</h4>
               <ul className="space-y-4">
-                {trendingEvents.map((item, i) => (
-                  <li key={i} className="flex items-center gap-4 group cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors -ml-2">
-                    <div className={`w-12 h-12 rounded-xl ${item.icon} shrink-0 text-white flex items-center justify-center font-bold text-xl`}>
-                      {i + 1}
-                    </div>
-                    <div>
-                      <h5 className="text-sm font-bold text-gray-900 mb-0.5 group-hover:text-[#006782] transition-colors">{item.title}</h5>
-                      <div className="flex items-center gap-1 text-xs text-orange-500 font-medium">
-                        <Flame size={12} className="fill-orange-500" /> {item.interested}
+                {trendingResults.length === 0 ? (
+                  <li className="text-sm text-gray-500 py-2">No trending events found.</li>
+                ) : (
+                  trendingResults.map((item, i) => (
+                    <li key={item._id} onClick={() => { router.push(`/events/${item._id}`); onClose(); }} className="flex items-center gap-4 group cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors -ml-2">
+                      <div className={`w-12 h-12 rounded-xl bg-[#006782] shrink-0 text-white flex items-center justify-center font-bold text-xl`}>
+                        {i + 1}
                       </div>
-                    </div>
-                  </li>
-                ))}
+                      <div className="flex-1 overflow-hidden">
+                        <h5 className="text-sm font-bold text-gray-900 mb-0.5 group-hover:text-[#006782] transition-colors truncate">{item.title}</h5>
+                        <div className="flex items-center gap-1 text-xs text-orange-500 font-medium">
+                          <Flame size={12} className="fill-orange-500 shrink-0" /> Trending
+                        </div>
+                      </div>
+                    </li>
+                  ))
+                )}
               </ul>
             </div>
 
