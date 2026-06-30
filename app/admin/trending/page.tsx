@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { adminApi } from "@/lib/adminApi";
 import { AdminEvent } from "@/types/admin";
-import { Pin, TrendingUp, Search, Plus, Trash2 } from "lucide-react";
-import * as Dialog from "@radix-ui/react-dialog";
+import { Pin, TrendingUp, Search, Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function TrendingManagement() {
   const [loading, setLoading] = useState(true);
@@ -22,8 +21,7 @@ export default function TrendingManagement() {
   >([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
+
 
   const fetchTrendingData = async () => {
     setLoading(true);
@@ -56,22 +54,36 @@ export default function TrendingManagement() {
   };
 
   const handlePin = async (eventId: string) => {
-    if (selectedSlot === null) return;
+    if (pinnedEvents.length >= 3) {
+      alert("Hero Carousel is full. Please unpin an event first.");
+      return;
+    }
     try {
-      // Create a copy of current pinned IDs (up to 3)
-      const currentPinned = [...pinnedEvents.map((e) => e._id)];
-      // Ensure the array has 3 spots
-      while (currentPinned.length < 3) currentPinned.push("");
-
-      // Replace the selected slot (0, 1, or 2)
-      currentPinned[selectedSlot] = eventId;
-
-      // Filter out empty strings
-      const newPinned = currentPinned.filter((id) => id !== "");
-
+      const newPinned = [...pinnedEvents.map((e) => e._id), eventId];
       await adminApi.updateTrendingConfig({ pinnedEventIds: newPinned });
-      setIsPinModalOpen(false);
-      setSelectedSlot(null);
+      await fetchTrendingData();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const movePinnedEvent = async (index: number, direction: "up" | "down") => {
+    try {
+      const newPinned = [...pinnedEvents.map((e) => e._id)];
+      if (direction === "up" && index > 0) {
+        [newPinned[index - 1], newPinned[index]] = [
+          newPinned[index],
+          newPinned[index - 1],
+        ];
+      } else if (direction === "down" && index < newPinned.length - 1) {
+        [newPinned[index + 1], newPinned[index]] = [
+          newPinned[index],
+          newPinned[index + 1],
+        ];
+      } else {
+        return;
+      }
+      await adminApi.updateTrendingConfig({ pinnedEventIds: newPinned });
       await fetchTrendingData();
     } catch (e) {
       console.error(e);
@@ -110,17 +122,17 @@ export default function TrendingManagement() {
           </p>
         </div>
         <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[0, 1, 2].map((slotIndex) => {
-            const event = pinnedEvents[slotIndex];
+          {Array.from({ length: 3 }).map((_, index) => {
+            const event = pinnedEvents[index];
 
             if (event) {
               return (
                 <div
-                  key={slotIndex}
+                  key={event._id}
                   className="relative rounded-lg border border-gray-200 bg-white overflow-hidden flex flex-col h-64 shadow-sm group"
                 >
                   <div className="absolute top-2 left-2 z-10 rounded-md bg-black/60 px-2 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-                    Slot {slotIndex + 1}
+                    Position {index + 1}
                   </div>
                   <div className="h-40 bg-gray-100 relative">
                     {event.bannerUrl ? (
@@ -140,12 +152,30 @@ export default function TrendingManagement() {
                     <p className="font-medium text-gray-900 truncate">
                       {event.title}
                     </p>
-                    <button
-                      onClick={() => handleUnpin(event._id)}
-                      className="w-full rounded bg-white px-2 py-1 text-xs font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 mt-2 flex items-center justify-center gap-1"
-                    >
-                      <Trash2 className="w-3 h-3" /> Unpin Event
-                    </button>
+                    <div className="flex items-center gap-2 mt-2">
+                      <button
+                        onClick={() => movePinnedEvent(index, "up")}
+                        disabled={index === 0}
+                        className="flex-1 rounded bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-200 disabled:opacity-50 flex items-center justify-center"
+                        title="Move Left"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleUnpin(event._id)}
+                        className="flex-1 rounded bg-white px-2 py-1 text-xs font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 flex items-center justify-center gap-1"
+                      >
+                        <Trash2 className="w-3 h-3" /> Unpin
+                      </button>
+                      <button
+                        onClick={() => movePinnedEvent(index, "down")}
+                        disabled={index === pinnedEvents.length - 1}
+                        className="flex-1 rounded bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-200 disabled:opacity-50 flex items-center justify-center"
+                        title="Move Right"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -153,7 +183,7 @@ export default function TrendingManagement() {
 
             return (
               <div
-                key={slotIndex}
+                key={`empty-${index}`}
                 className="relative rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center h-64 text-center p-6"
               >
                 <div className="rounded-full bg-white p-2 shadow-sm border border-gray-200 mb-3">
@@ -163,7 +193,7 @@ export default function TrendingManagement() {
                   Slot Available
                 </p>
                 <p className="text-xs text-gray-500 mb-4">
-                  Select an event below to feature it in Slot {slotIndex + 1}.
+                  Pin an event from the queue below to feature it.
                 </p>
               </div>
             );
@@ -266,64 +296,13 @@ export default function TrendingManagement() {
                         })}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Dialog.Root
-                          open={isPinModalOpen && selectedSlot !== null}
-                          onOpenChange={(open) => {
-                            if (!open) {
-                              setIsPinModalOpen(false);
-                              setSelectedSlot(null);
-                            }
-                          }}
+                        <button
+                          onClick={() => handlePin(item.eventId)}
+                          disabled={pinnedEvents.length >= 3}
+                          className="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 gap-1.5 disabled:opacity-50"
                         >
-                          <Dialog.Trigger asChild>
-                            <button
-                              onClick={() => setIsPinModalOpen(true)}
-                              className="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 gap-1.5"
-                            >
-                              <Pin className="h-4 w-4 text-gray-400" /> Pin
-                            </button>
-                          </Dialog.Trigger>
-                          {isPinModalOpen && (
-                            <Dialog.Portal>
-                              <Dialog.Overlay className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50" />
-                              <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-sm translate-x-[-50%] translate-y-[-50%] rounded-xl bg-white p-6 shadow-lg">
-                                <Dialog.Title className="text-lg font-semibold text-gray-900 mb-4">
-                                  Select Hero Slot
-                                </Dialog.Title>
-                                <div className="space-y-3">
-                                  {[0, 1, 2].map((slot) => (
-                                    <button
-                                      key={slot}
-                                      onClick={() => {
-                                        setSelectedSlot(slot);
-                                        handlePin(item.eventId);
-                                      }}
-                                      className="w-full rounded-lg border border-gray-200 p-4 text-left hover:border-teal-500 hover:bg-teal-50 transition-colors flex items-center justify-between"
-                                    >
-                                      <span className="font-medium text-gray-900">
-                                        Slot {slot + 1}
-                                      </span>
-                                      {pinnedEvents[slot] ? (
-                                        <span className="text-xs text-red-500">
-                                          Currently:{" "}
-                                          {pinnedEvents[slot].title.substring(
-                                            0,
-                                            20,
-                                          )}
-                                          ... (Will replace)
-                                        </span>
-                                      ) : (
-                                        <span className="text-xs text-green-600 font-medium">
-                                          Empty - Recommended
-                                        </span>
-                                      )}
-                                    </button>
-                                  ))}
-                                </div>
-                              </Dialog.Content>
-                            </Dialog.Portal>
-                          )}
-                        </Dialog.Root>
+                          <Pin className="h-4 w-4 text-gray-400" /> Pin
+                        </button>
                       </td>
                     </tr>
                   ))
