@@ -246,6 +246,18 @@ export default function EventDetailPage() {
                     <>
                       <p className="text-gray-600 text-sm">{event.venueName}</p>
                       <p className="text-gray-500 text-xs mt-1">{event.city}</p>
+                      
+                      {/* Map Preview */}
+                      <div className="mt-4 w-full h-40 rounded-xl overflow-hidden border border-gray-100">
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          style={{ border: 0 }}
+                          loading="lazy"
+                          allowFullScreen
+                          src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "YOUR_API_KEY_HERE"}&q=${encodeURIComponent(event.venueName ? `${event.venueName}, ${event.city}` : event.city)}`}
+                        ></iframe>
+                      </div>
                     </>
                   )}
                 </div>
@@ -254,9 +266,10 @@ export default function EventDetailPage() {
               {/* Description */}
               <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Description</h2>
-                <div className="prose prose-gray max-w-none text-gray-600 leading-relaxed whitespace-pre-wrap">
-                  {event.description}
-                </div>
+                <div 
+                  className="prose prose-gray max-w-none text-gray-600 leading-relaxed overflow-hidden"
+                  dangerouslySetInnerHTML={{ __html: event.description }}
+                />
               </div>
             </div>
 

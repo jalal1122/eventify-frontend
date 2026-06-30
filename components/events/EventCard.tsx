@@ -132,7 +132,7 @@ export function EventCard({ event, attended, href }: EventCardProps) {
 
           {/* Description */}
           <p className="text-gray-600 line-clamp-2 leading-relaxed text-sm mb-4 flex-1">
-            {event.description}
+            {event.description?.replace(/<[^>]*>?/gm, '')}
           </p>
 
           {/* Location */}
