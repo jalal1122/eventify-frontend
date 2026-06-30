@@ -56,7 +56,7 @@ export default function ImageCropModal({
               image={imageSrc}
               crop={crop}
               zoom={zoom}
-              aspect={2 / 1}
+              aspect={4 / 3}
               onCropChange={setCrop}
               onCropComplete={onCropComplete}
               onZoomChange={setZoom}
@@ -70,7 +70,7 @@ export default function ImageCropModal({
               <h3 className="font-semibold text-sm text-gray-700 mb-2">Preview your image</h3>
               <p className="text-xs text-gray-500 mb-4">This is how your banner will appear on the event page and discovery feed.</p>
               
-              <div className="bg-slate-200 rounded-lg w-full aspect-[2/1] overflow-hidden relative shadow-sm border border-slate-100 flex items-center justify-center">
+              <div className="bg-slate-200 rounded-lg w-full aspect-[4/3] overflow-hidden relative shadow-sm border border-slate-100 flex items-center justify-center">
                  {croppedArea ? (
                    <img 
                      src={imageSrc} 

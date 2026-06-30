@@ -13,7 +13,7 @@ export function EventBannerCard({ event }: EventBannerCardProps) {
   return (
     <div className="w-full bg-white rounded-3xl border border-[#F3F4F6] shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col group">
       {/* Banner Image Area */}
-      <div className="w-full h-48 md:h-[300px] relative bg-gray-100 overflow-hidden shrink-0">
+      <div className="w-full aspect-[16/9] md:aspect-[21/9] relative bg-gray-100 overflow-hidden shrink-0">
         <img 
           src={event.bannerUrl || event.cardImageUrl || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1600&q=80"} 
           alt={event.title}

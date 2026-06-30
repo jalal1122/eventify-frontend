@@ -139,12 +139,12 @@ export default function EventDetailPage() {
       <main className="flex-1 pb-20">
         {/* Banner Section */}
         <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 mt-8">
-          <div className="w-full h-[300px] md:h-[480px] rounded-[2rem] overflow-hidden relative shadow-md">
+          <div className="w-full relative shadow-md rounded-[2rem] overflow-hidden bg-[#006782]/5 flex items-center justify-center">
             {event.bannerUrl || event.cardImageUrl ? (
               <img 
                 src={event.bannerUrl || event.cardImageUrl} 
                 alt={event.title}
-                className="w-full h-full object-cover"
+                className="w-full h-auto max-h-[600px] object-contain"
               />
             ) : (
               <div className="w-full h-full bg-[#006782]/20 flex items-center justify-center">
