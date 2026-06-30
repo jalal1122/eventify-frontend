@@ -171,9 +171,11 @@ export default function AdminOverview() {
               </div>
             ) : (
               pendingEvents.map((event) => (
-                <div
+                <Link
                   key={event._id}
-                  className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between"
+                  href={`/events/${event._id}`}
+                  target="_blank"
+                  className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between block cursor-pointer"
                 >
                   <div>
                     <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">
@@ -183,13 +185,12 @@ export default function AdminOverview() {
                       {event.organizerProfileId?.brandName}
                     </p>
                   </div>
-                  <Link
-                    href="/admin/moderation"
+                  <div
                     className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                   >
                     Review
-                  </Link>
-                </div>
+                  </div>
+                </Link>
               ))
             )}
           </div>

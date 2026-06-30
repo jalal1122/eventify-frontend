@@ -158,7 +158,7 @@ export default function DashboardOverview() {
               <div className="text-center py-10 text-gray-500 text-sm">No recent events found.</div>
             ) : (
               events.slice(0, 4).map(event => (
-                <div key={event._id} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-2xl transition-colors cursor-pointer border border-transparent hover:border-gray-100">
+                <Link key={event._id} href={`/dashboard/events/${event._id}`} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-2xl transition-colors cursor-pointer border border-transparent hover:border-gray-100 block">
                   <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden shrink-0">
                     {event.cardImageUrl ? (
                       <img src={event.cardImageUrl} alt={event.title} className="w-full h-full object-cover" />
@@ -175,7 +175,7 @@ export default function DashboardOverview() {
                   <div className="text-right shrink-0">
                     <p className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-lg">Active</p>
                   </div>
-                </div>
+                </Link>
               ))
             )}
           </div>
