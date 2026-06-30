@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { TicketCard } from "@/components/events/TicketCard";
 import { TicketCardSkeleton } from "@/components/ui/skeletons";
 import { attendeeApi, authApi } from "@/lib/api";
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
 function ProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -89,33 +90,9 @@ function ProfileContent() {
       
       <main className="flex-1 pb-24">
         
-        {/* Simplified Profile Header */}
-        <div className="pt-12 pb-8 flex flex-col items-center relative max-w-xl mx-auto px-4">
-          {/* Avatar */}
-          <div className="relative mb-4">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-[4px] border-white shadow-sm overflow-hidden bg-gray-200 shrink-0">
-              <img 
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80" 
-                alt={profile?.name || user.name} 
-                className="w-full h-full object-cover" 
-              />
-            </div>
-            {/* Small settings badge could go here if needed */}
-          </div>
+        <ProfileHeader user={user} profile={profile} setProfile={setProfile} />
 
-          {/* User Info */}
-          <h1 className="text-2xl font-black text-gray-900 mb-1">{profile?.name || user.name || "User Name"}</h1>
-          <p className="text-gray-500 font-medium text-sm mb-6">{profile?.email || user.email || "email@example.com"}</p>
-
-          {/* Action */}
-          <Link href="/profile/edit">
-            <Button variant="outline" className="h-9 px-6 rounded-full font-bold border-gray-200 hover:bg-gray-50 text-gray-700 shadow-sm text-sm">
-              Edit Profile
-            </Button>
-          </Link>
-        </div>
-
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 mt-6">
           <h2 className="text-3xl font-black text-[#006782]">My Tickets</h2>
         </div>
 
