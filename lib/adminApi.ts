@@ -21,7 +21,7 @@ export const adminApi = {
       pendingEvents: AdminEvent[];
       pendingClaims: AdminClaim[];
       activeReports: ActiveReport[];
-    }>("/admin/snapshot");
+    }>("/api/admin/snapshot");
     return res.data;
   },
 
@@ -40,7 +40,7 @@ export const adminApi = {
       }[];
       cities: { name: string; count: number; pct: number }[];
       categories: { name: string; count: number; pct: number }[];
-    }>("/admin/analytics");
+    }>("/api/admin/analytics");
     return res.data;
   },
 
@@ -52,7 +52,7 @@ export const adminApi = {
       total: number;
       page: number;
       pages: number;
-    }>(`/admin/events/pending?page=${page}&limit=${limit}`);
+    }>(`/api/admin/events/pending?page=${page}&limit=${limit}`);
     return res.data;
   },
 
@@ -65,7 +65,7 @@ export const adminApi = {
       success: boolean;
       event: AdminEvent;
       message: string;
-    }>(`/admin/events/${eventId}/review`, { decision, reason });
+    }>(`/api/admin/events/${eventId}/review`, { decision, reason });
     return res.data;
   },
 
@@ -76,7 +76,7 @@ export const adminApi = {
       total: number;
       page: number;
       pages: number;
-    }>(`/admin/organizers/pending?page=${page}&limit=${limit}`);
+    }>(`/api/admin/organizers/pending?page=${page}&limit=${limit}`);
     return res.data;
   },
 
@@ -89,7 +89,7 @@ export const adminApi = {
       success: boolean;
       profile: AdminOrganizerProfile;
       message: string;
-    }>(`/admin/organizers/${id}/review`, { decision, reason });
+    }>(`/api/admin/organizers/${id}/review`, { decision, reason });
     return res.data;
   },
 
@@ -116,13 +116,13 @@ export const adminApi = {
       total: number;
       page: number;
       pages: number;
-    }>(`/admin/users?${searchParams.toString()}`);
+    }>(`/api/admin/users?${searchParams.toString()}`);
     return res.data;
   },
 
   updateUserRole: async (userId: string, role: string) => {
     const res = await api.put<{ success: boolean; message: string }>(
-      `/admin/users/${userId}/role`,
+      `/api/admin/users/${userId}/role`,
       { role },
     );
     return res.data;
@@ -130,7 +130,7 @@ export const adminApi = {
 
   banUser: async (userId: string, ban: boolean) => {
     const res = await api.put<{ success: boolean; message: string }>(
-      `/admin/users/${userId}/ban`,
+      `/api/admin/users/${userId}/ban`,
       { ban },
     );
     return res.data;
@@ -144,7 +144,7 @@ export const adminApi = {
       total: number;
       page: number;
       pages: number;
-    }>(`/admin/reports/community?page=${page}&limit=${limit}`);
+    }>(`/api/admin/reports/community?page=${page}&limit=${limit}`);
     return res.data;
   },
 
@@ -154,7 +154,7 @@ export const adminApi = {
     notes?: string,
   ) => {
     const res = await api.put<{ success: boolean; message: string }>(
-      `/admin/reports/community/${reportId}/resolve`,
+      `/api/admin/reports/community/${reportId}/resolve`,
       { action, notes },
     );
     return res.data;
@@ -165,7 +165,7 @@ export const adminApi = {
       success: boolean;
       flaggedEvents: FlaggedEvent[];
       count: number;
-    }>("/admin/reports/flagged");
+    }>("/api/admin/reports/flagged");
     return res.data;
   },
 
@@ -174,7 +174,7 @@ export const adminApi = {
     action: "dismiss_reports" | "takedown",
   ) => {
     const res = await api.put<{ success: boolean; message: string }>(
-      `/admin/reports/flagged/${eventId}/resolve`,
+      `/api/admin/reports/flagged/${eventId}/resolve`,
       { action },
     );
     return res.data;
@@ -187,7 +187,7 @@ export const adminApi = {
       total: number;
       page: number;
       pages: number;
-    }>(`/admin/reports/claims?page=${page}&limit=${limit}`);
+    }>(`/api/admin/reports/claims?page=${page}&limit=${limit}`);
     return res.data;
   },
 
@@ -197,7 +197,7 @@ export const adminApi = {
     explanation?: string,
   ) => {
     const res = await api.post<{ success: boolean; message: string }>(
-      `/admin/claims/${claimId}/process`,
+      `/api/admin/claims/${claimId}/process`,
       { decision, explanation },
     );
     return res.data;
@@ -214,13 +214,13 @@ export const adminApi = {
         score: number;
         velocity: string;
       }[];
-    }>("/admin/trending");
+    }>("/api/admin/trending");
     return res.data;
   },
 
   updateTrendingConfig: async (config: Partial<TrendingConfig>) => {
     const res = await api.put<{ success: boolean; config: TrendingConfig }>(
-      "/admin/trending",
+      "/api/admin/trending",
       config,
     );
     return res.data;
@@ -229,14 +229,14 @@ export const adminApi = {
   // --- System Settings ---
   getSystemSettings: async () => {
     const res = await api.get<{ success: boolean; settings: SystemSettings }>(
-      "/admin/settings",
+      "/api/admin/settings",
     );
     return res.data;
   },
 
   updateSystemSettings: async (settings: Partial<SystemSettings>) => {
     const res = await api.put<{ success: boolean; settings: SystemSettings }>(
-      "/admin/settings",
+      "/api/admin/settings",
       settings,
     );
     return res.data;
