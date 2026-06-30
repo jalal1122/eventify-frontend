@@ -211,7 +211,7 @@ export default function OrganizerSettingsPage() {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
                 <input 
                   type="tel" 
@@ -219,7 +219,7 @@ export default function OrganizerSettingsPage() {
                   value="+92315878421221"
                   className="w-full px-4 py-3 bg-gray-50 text-gray-600 rounded-xl border border-gray-200"
                 />
-              </div>
+              </div> */}
             </div>
           </div>
 
