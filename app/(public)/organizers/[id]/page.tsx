@@ -12,8 +12,12 @@ import { EventCard } from "@/components/events/EventCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EventCardSkeleton } from "@/components/ui/skeletons";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { CalendarX } from "lucide-react";
+import { CalendarX, Edit2, Save, Camera, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import ImageUploadModal from "@/components/modals/ImageUploadModal";
+import { toast } from "sonner";
 
 const TwitterIcon = ({ size = 20 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
@@ -34,12 +38,29 @@ export default function OrganizerProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    brandName: "", city: "", bio: "", logoUrl: "", website: "", twitter: "", instagram: ""
+  });
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await organizerApi.getPublicProfile(organizerId);
-        setProfile(res.data.profile);
+        const p = res.data.profile;
+        setProfile(p);
         setEvents(res.data.events);
+        setEditData({
+          brandName: p.brandName || "",
+          city: p.city || "",
+          bio: p.bio || "",
+          logoUrl: p.logoUrl || "",
+          website: p.socialLinks?.website || "",
+          twitter: p.socialLinks?.twitter || "",
+          instagram: p.socialLinks?.instagram || ""
+        });
         
         // If user is logged in, check if they are following
         if (isAuthenticated && user) {
@@ -70,6 +91,32 @@ export default function OrganizerProfilePage() {
       console.error("Follow toggle failed", error);
     } finally {
       setFollowLoading(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setIsSaving(true);
+      const res = await organizerApi.updateProfile(profile!._id, {
+        brandName: editData.brandName,
+        city: editData.city,
+        bio: editData.bio,
+        logoUrl: editData.logoUrl,
+        socialLinks: {
+          website: editData.website,
+          twitter: editData.twitter,
+          instagram: editData.instagram
+        }
+      });
+      if (res.data.success) {
+        setProfile(res.data.profile);
+        setIsEditing(false);
+        toast.success("Profile updated successfully!");
+      }
+    } catch (err) {
+      toast.error("Failed to update profile.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -143,50 +190,107 @@ export default function OrganizerProfilePage() {
             <div className="p-8 md:p-10 flex flex-col lg:flex-row items-center lg:items-start justify-between gap-8">
               
               {/* Left Side: Avatar & Details */}
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2rem] bg-gray-50 overflow-hidden shrink-0 border-2 border-gray-100 shadow-sm flex items-center justify-center">
-                  {profile.logoUrl ? (
-                    <img src={profile.logoUrl} alt={profile.brandName} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-[#006782]/5 flex items-center justify-center text-4xl font-black text-[#006782]">
-                      ORG
-                    </div>
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-6 w-full lg:w-auto flex-1">
+                <div className="relative group shrink-0">
+                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2rem] bg-gray-50 overflow-hidden border-2 border-gray-100 shadow-sm flex items-center justify-center">
+                    {(isEditing ? editData.logoUrl : profile.logoUrl) ? (
+                      <img src={isEditing ? editData.logoUrl : profile.logoUrl} alt={profile.brandName} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-[#006782]/5 flex items-center justify-center text-4xl font-black text-[#006782]">
+                        ORG
+                      </div>
+                    )}
+                  </div>
+                  {isEditing && (
+                    <button 
+                      onClick={() => setIsUploadModalOpen(true)}
+                      className="absolute inset-0 bg-black/50 text-white rounded-[2rem] flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Camera size={24} className="mb-2" />
+                      <span className="text-xs font-semibold">Change Logo</span>
+                    </button>
                   )}
                 </div>
                 
-                <div className="text-center md:text-left mt-2">
-                  <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2 flex items-center justify-center md:justify-start gap-2">
-                    {profile.brandName}
-                    {profile.isVerified && (
-                      <span className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm shadow-sm">✓</span>
-                    )}
-                  </h1>
-                  
-                  <div className="flex items-center justify-center md:justify-start gap-4 text-sm font-semibold text-gray-500 mb-4">
-                    {profile.city && (
-                      <span className="flex items-center gap-1.5 bg-gray-50 px-3 py-1 rounded-full"><MapPin size={14} /> {profile.city}</span>
-                    )}
-                    <span className="bg-gray-50 px-3 py-1 rounded-full">{profile.followersCount || 0} Followers</span>
-                  </div>
-
-                  {profile.bio && (
-                    <p className="text-gray-600 leading-relaxed max-w-xl text-sm mb-4">
-                      {profile.bio}
-                    </p>
-                  )}
-
-                  {profile.socialLinks && (
-                    <div className="flex items-center justify-center md:justify-start gap-3">
-                      {profile.socialLinks.website && (
-                        <a href={profile.socialLinks.website} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:text-[#006782] hover:bg-[#006782]/10 transition-colors"><Globe size={18} /></a>
-                      )}
-                      {profile.socialLinks.twitter && (
-                        <a href={profile.socialLinks.twitter} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:text-[#006782] hover:bg-[#006782]/10 transition-colors"><TwitterIcon size={18} /></a>
-                      )}
-                      {profile.socialLinks.instagram && (
-                        <a href={profile.socialLinks.instagram} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:text-[#006782] hover:bg-[#006782]/10 transition-colors"><InstagramIcon size={18} /></a>
-                      )}
+                <div className="text-center md:text-left mt-2 flex-1 w-full max-w-xl">
+                  {isEditing ? (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs font-semibold text-gray-500 uppercase">Brand Name</label>
+                        <Input 
+                          value={editData.brandName} 
+                          onChange={(e) => setEditData({...editData, brandName: e.target.value})} 
+                          className="font-bold text-xl mt-1"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-500 uppercase">City</label>
+                        <Input 
+                          value={editData.city} 
+                          onChange={(e) => setEditData({...editData, city: e.target.value})} 
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-500 uppercase">Bio</label>
+                        <Textarea 
+                          value={editData.bio} 
+                          onChange={(e) => setEditData({...editData, bio: e.target.value})} 
+                          className="mt-1 resize-none"
+                          rows={3}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                         <div>
+                            <label className="text-xs font-semibold text-gray-500 uppercase">Website</label>
+                            <Input placeholder="https://" value={editData.website} onChange={(e) => setEditData({...editData, website: e.target.value})} className="mt-1 text-xs" />
+                         </div>
+                         <div>
+                            <label className="text-xs font-semibold text-gray-500 uppercase">Twitter</label>
+                            <Input placeholder="URL" value={editData.twitter} onChange={(e) => setEditData({...editData, twitter: e.target.value})} className="mt-1 text-xs" />
+                         </div>
+                         <div>
+                            <label className="text-xs font-semibold text-gray-500 uppercase">Instagram</label>
+                            <Input placeholder="URL" value={editData.instagram} onChange={(e) => setEditData({...editData, instagram: e.target.value})} className="mt-1 text-xs" />
+                         </div>
+                      </div>
                     </div>
+                  ) : (
+                    <>
+                      <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2 flex items-center justify-center md:justify-start gap-2">
+                        {profile.brandName}
+                        {profile.isVerified && (
+                          <span className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm shadow-sm">✓</span>
+                        )}
+                      </h1>
+                      
+                      <div className="flex items-center justify-center md:justify-start gap-4 text-sm font-semibold text-gray-500 mb-4">
+                        {profile.city && (
+                          <span className="flex items-center gap-1.5 bg-gray-50 px-3 py-1 rounded-full"><MapPin size={14} /> {profile.city}</span>
+                        )}
+                        <span className="bg-gray-50 px-3 py-1 rounded-full">{profile.followersCount || 0} Followers</span>
+                      </div>
+
+                      {profile.bio && (
+                        <p className="text-gray-600 leading-relaxed text-sm mb-4">
+                          {profile.bio}
+                        </p>
+                      )}
+
+                      {profile.socialLinks && (
+                        <div className="flex items-center justify-center md:justify-start gap-3">
+                          {profile.socialLinks.website && (
+                            <a href={profile.socialLinks.website} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:text-[#006782] hover:bg-[#006782]/10 transition-colors"><Globe size={18} /></a>
+                          )}
+                          {profile.socialLinks.twitter && (
+                            <a href={profile.socialLinks.twitter} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:text-[#006782] hover:bg-[#006782]/10 transition-colors"><TwitterIcon size={18} /></a>
+                          )}
+                          {profile.socialLinks.instagram && (
+                            <a href={profile.socialLinks.instagram} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:text-[#006782] hover:bg-[#006782]/10 transition-colors"><InstagramIcon size={18} /></a>
+                          )}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -213,7 +317,7 @@ export default function OrganizerProfilePage() {
                   </div>
                 </div>
 
-                {user?._id !== profile._id && (
+                {user?._id !== profile.ownerId ? (
                   <Button 
                     onClick={handleFollowToggle} 
                     disabled={followLoading}
@@ -222,6 +326,34 @@ export default function OrganizerProfilePage() {
                   >
                     {isFollowing ? "Following" : <><Plus size={18} className="mr-2" /> Follow Organizer</>}
                   </Button>
+                ) : (
+                  <div className="w-full md:w-[240px] flex gap-2">
+                    {isEditing ? (
+                      <>
+                        <Button 
+                          onClick={() => setIsEditing(false)}
+                          variant="outline" 
+                          className="flex-1 h-12 rounded-xl text-sm font-bold border-gray-200 text-gray-600 hover:bg-gray-50"
+                        >
+                          <X size={16} className="mr-1" /> Cancel
+                        </Button>
+                        <Button 
+                          onClick={handleSaveProfile}
+                          disabled={isSaving}
+                          className="flex-1 h-12 rounded-xl text-sm font-bold bg-[#006782] hover:bg-[#004E63] text-white shadow-sm"
+                        >
+                          <Save size={16} className="mr-1" /> {isSaving ? "Saving..." : "Save"}
+                        </Button>
+                      </>
+                    ) : (
+                      <Button 
+                        onClick={() => setIsEditing(true)}
+                        className="w-full h-12 rounded-xl text-base font-bold bg-gray-100 hover:bg-gray-200 text-gray-800 shadow-sm transition-colors border border-transparent"
+                      >
+                        <Edit2 size={16} className="mr-2 text-gray-500" /> Edit Profile
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -315,6 +447,15 @@ export default function OrganizerProfilePage() {
       </main>
 
 
+      <ImageUploadModal
+        open={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUploadComplete={(url) => {
+          setEditData(prev => ({ ...prev, logoUrl: url }));
+          setIsUploadModalOpen(false);
+        }}
+        type="profile"
+      />
     </div>
   );
 }
