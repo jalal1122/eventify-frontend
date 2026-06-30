@@ -7,6 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Download, QrCode } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { attendeeApi } from "@/lib/api";
 import { formatEventCardDate } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,6 +21,59 @@ export default function TicketDetailPage() {
   const [ticketData, setTicketData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const downloadTicket = async () => {
+    setIsDownloading(true);
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const jsPDF = (await import("jspdf")).default;
+
+      const ticketElement = document.getElementById("ticket-card");
+      if (!ticketElement) return;
+
+      const canvas = await html2canvas(ticketElement, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL("image/png");
+
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+      });
+
+      const pdfWidth = 210;
+      const imgWidth = 100;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      const xOffset = (pdfWidth - imgWidth) / 2;
+      const yOffset = 20;
+
+      pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth, imgHeight);
+      pdf.save(`Ticket_${ticketData.event.title.replace(/\s+/g, "_")}.pdf`);
+    } catch (err) {
+      console.error("Failed to generate PDF", err);
+      alert("Failed to download ticket.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = `Ticket for ${ticketData?.event?.title}`;
+    const text = `I'm going to ${ticketData?.event?.title}! Check out my ticket here.`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text, url });
+      } catch (err) {
+        console.error("Share failed", err);
+      }
+    } else {
+      navigator.clipboard.writeText(url);
+      alert("Ticket link copied to clipboard!");
+    }
+  };
 
   useEffect(() => {
     const fetchTicket = async () => {
@@ -81,7 +135,7 @@ export default function TicketDetailPage() {
           </h1>
 
           {/* Ticket Card */}
-          <div className="w-full max-w-[340px] bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden flex flex-col relative mb-8">
+          <div id="ticket-card" className="w-full max-w-[340px] bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden flex flex-col relative mb-8">
             
             {/* Top Header */}
             <div className="bg-[#0f172a] py-4 text-center">
@@ -90,9 +144,13 @@ export default function TicketDetailPage() {
 
             {/* QR Section */}
             <div className="bg-white p-8 flex justify-center">
-              <div className="w-48 h-48 bg-gray-100 rounded-xl flex items-center justify-center p-4">
-                {/* Real QR would go here, using an icon as placeholder */}
-                <QrCode size={140} className="text-gray-800" strokeWidth={1} />
+              <div className="w-48 h-48 bg-white rounded-xl flex items-center justify-center p-4">
+                <QRCodeSVG 
+                  value={ticket.ticketCode || ticket._id} 
+                  size={160} 
+                  level="M"
+                  includeMargin={true}
+                />
               </div>
             </div>
 
@@ -144,17 +202,26 @@ export default function TicketDetailPage() {
           </div>
 
           {/* Actions */}
-          <div className="w-full max-w-[340px] flex flex-col gap-8 items-center">
-            <Button className="w-full h-12 rounded-xl bg-[#0f172a] hover:bg-black text-white font-bold flex items-center justify-center gap-2">
-              <Download size={18} /> Download Ticket
+          <div className="w-full max-w-[340px] flex flex-col gap-4 items-center">
+            <Button 
+              onClick={downloadTicket}
+              disabled={isDownloading}
+              className="w-full h-12 rounded-xl bg-[#0f172a] hover:bg-black text-white font-bold flex items-center justify-center gap-2"
+            >
+              <Download size={18} /> {isDownloading ? "Generating PDF..." : "Download Ticket"}
             </Button>
-
-            <div className="text-center w-full">
+            <Button 
+              onClick={handleShare}
+              variant="outline"
+              className="w-full h-12 rounded-xl border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors shadow-sm"
+            >
+              Share Ticket
+            </Button>
+            <div className="text-center w-full mt-4">
               <p className="text-sm font-bold text-gray-900 mb-4">Invite your friends and create memories together.</p>
               
               {/* Social Buttons Placeholder */}
               <div className="flex justify-center gap-4 mb-8">
-                {/* These are placeholder buttons visually matching the design */}
                 <button className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors bg-white shadow-sm">
                   <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                 </button>
