@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users } from "lucide-react";
+import { MapPin, Users, CheckCircle2 } from "lucide-react";
 
 interface OrganizerCardProps {
   organizer: {
@@ -10,6 +10,7 @@ interface OrganizerCardProps {
     city?: string;
     followersCount?: number;
     bio?: string;
+    isVerified?: boolean;
   };
   onUnfollow?: (id: string) => void;
 }
@@ -29,8 +30,11 @@ export function OrganizerCard({ organizer, onUnfollow }: OrganizerCardProps) {
             )}
           </div>
           <div className="flex-1 pt-1">
-            <h3 className="font-bold text-gray-900 text-lg leading-tight line-clamp-1 mb-1">
+            <h3 className="font-bold text-gray-900 text-lg leading-tight line-clamp-1 mb-1 flex items-center gap-1.5">
               {organizer.brandName}
+              {organizer.isVerified && (
+                <CheckCircle2 className="w-4 h-4 text-teal-500 shrink-0" />
+              )}
             </h3>
             <div className="flex items-center gap-3 text-xs font-semibold text-gray-500">
               {organizer.city && (

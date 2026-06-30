@@ -12,7 +12,7 @@ import { EventCard } from "@/components/events/EventCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EventCardSkeleton } from "@/components/ui/skeletons";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { CalendarX, Edit2, Save, Camera, X } from "lucide-react";
+import { CalendarX, Edit2, Save, Camera, X, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -260,7 +260,7 @@ export default function OrganizerProfilePage() {
                       <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2 flex items-center justify-center md:justify-start gap-2">
                         {profile.brandName}
                         {profile.isVerified && (
-                          <span className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm shadow-sm">✓</span>
+                          <CheckCircle2 className="w-6 h-6 text-teal-500 shrink-0" />
                         )}
                       </h1>
                       
