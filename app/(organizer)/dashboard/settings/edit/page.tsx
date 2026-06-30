@@ -4,15 +4,18 @@ import { useState, useEffect } from "react";
 import { Upload, Camera, Save, Globe, Briefcase, MessageSquare, Image as ImageIcon, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useOrganizer } from "@/context/OrganizerContext";
-import { organizerApi } from "@/lib/api";
+import { organizerApi, eventsApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { useRef } from "react";
 import Link from "next/link";
 
 export default function EditOrganizerProfilePage() {
   const { activeProfile, activeProfileId, refreshProfiles } = useOrganizer();
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [loading, setLoading] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [formData, setFormData] = useState({
     brandName: "",
     bio: "",
@@ -62,6 +65,22 @@ export default function EditOrganizerProfilePage() {
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    setUploadingLogo(true);
+    try {
+      const res = await eventsApi.uploadImage(e.target.files[0]);
+      if (res.data.imageUrl) {
+        setFormData(prev => ({ ...prev, logoUrl: res.data.imageUrl }));
+      }
+    } catch (error) {
+      console.error("Failed to upload logo", error);
+      alert("Failed to upload logo. Please try again.");
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   const handleSocialChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -91,8 +110,22 @@ export default function EditOrganizerProfilePage() {
           <h2 className="text-lg font-bold text-gray-900 mb-6">Profile Logo</h2>
           
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <div className="relative w-32 h-32 rounded-full bg-gray-100 border-4 border-white shadow-md flex flex-col items-center justify-center overflow-hidden group cursor-pointer">
-              {formData.logoUrl ? (
+            <div 
+              className="relative w-32 h-32 rounded-full bg-gray-100 border-4 border-white shadow-md flex flex-col items-center justify-center overflow-hidden group cursor-pointer"
+              onClick={() => !uploadingLogo && fileInputRef.current?.click()}
+            >
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleLogoUpload} 
+                accept="image/*" 
+                className="hidden" 
+              />
+              {uploadingLogo ? (
+                <div className="flex flex-col items-center text-gray-400">
+                  <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mb-2"></div>
+                </div>
+              ) : formData.logoUrl ? (
                 <img src={formData.logoUrl} alt="Logo" className="w-full h-full object-cover" />
               ) : (
                 <>
@@ -101,23 +134,18 @@ export default function EditOrganizerProfilePage() {
                 </>
               )}
               
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Upload className="text-white w-8 h-8" />
-              </div>
+              {!uploadingLogo && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Upload className="text-white w-8 h-8" />
+                </div>
+              )}
             </div>
             
             <div className="flex-1 w-full">
-              <h3 className="font-medium text-gray-900 mb-1">Logo URL</h3>
-              <p className="text-sm text-gray-500 mb-3">
-                For now, please provide a direct URL to your logo image.
+              <h3 className="font-medium text-gray-900 mb-1">Upload Profile Logo</h3>
+              <p className="text-sm text-gray-500">
+                Recommended size: 500x500px. Max size: 2MB. Click the image placeholder to select a file.
               </p>
-              <input 
-                type="url"
-                value={formData.logoUrl}
-                onChange={e => setFormData({...formData, logoUrl: e.target.value})}
-                placeholder="https://example.com/logo.png"
-                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#006782]"
-              />
             </div>
           </div>
         </div>
