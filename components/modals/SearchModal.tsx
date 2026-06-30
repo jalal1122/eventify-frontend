@@ -7,7 +7,7 @@ import { Search, MapPin, X, History, Flame, ChevronDown, Loader2, Calendar } fro
 import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDebounce } from "@/hooks/useDebounce";
-import { eventsApi } from "@/lib/api";
+import { eventsApi, organizerApi } from "@/lib/api";
 import { Event } from "@/types/event";
 
 interface SearchModalProps {
@@ -25,6 +25,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
   
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [liveResults, setLiveResults] = useState<Event[]>([]);
+  const [organizerResults, setOrganizerResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string>("");
@@ -61,15 +62,22 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     const fetchLiveResults = async () => {
       setLoading(true);
       try {
-        const response = await eventsApi.discover({ 
-          search: debouncedQuery,
-          locationType: format === "online" ? "ONLINE" : format === "offline" ? "VENUE" : undefined,
-          city: selectedCity || undefined,
-          limit: 3,
-          sort: "relevance"
-        } as any);
-        if (response.data.success) {
-          setLiveResults(response.data.events);
+        const [eventsRes, orgsRes] = await Promise.all([
+          eventsApi.discover({ 
+            search: debouncedQuery,
+            locationType: format === "online" ? "ONLINE" : format === "offline" ? "VENUE" : undefined,
+            city: selectedCity || undefined,
+            limit: 3,
+            sort: "relevance"
+          } as any),
+          debouncedQuery ? organizerApi.searchOrganizers(debouncedQuery) : Promise.resolve({ data: { profiles: [] } })
+        ]);
+
+        if (eventsRes.data.success) {
+          setLiveResults(eventsRes.data.events);
+        }
+        if (orgsRes.data.success) {
+          setOrganizerResults(orgsRes.data.profiles.slice(0, 3));
         }
       } catch (err) {
         console.error("Live search failed", err);
@@ -244,9 +252,41 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                     LIVE RESULTS
                   </h4>
                   <ul className="space-y-4">
-                    {liveResults.length === 0 && !loading && (
-                      <li className="text-sm text-gray-500 py-2">No matching events found.</li>
+                    {liveResults.length === 0 && organizerResults.length === 0 && !loading && (
+                      <li className="text-sm text-gray-500 py-2">No matching events or organizers found.</li>
                     )}
+                    
+                    {/* Organizer Results */}
+                    {organizerResults.length > 0 && organizerResults.map((org) => (
+                      <li 
+                        key={`org-${org._id}`} 
+                        onClick={() => {
+                          router.push(`/organizers/${org._id}`);
+                          onClose();
+                        }}
+                        className="flex items-center gap-4 group cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors -ml-2 border border-transparent hover:border-[#E6F0F3]"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-blue-50 shrink-0 overflow-hidden flex items-center justify-center text-blue-600 font-bold text-sm">
+                          {org.logoUrl ? (
+                            <img src={org.logoUrl} alt={org.brandName} className="w-full h-full object-cover" />
+                          ) : (
+                            org.brandName.substring(0, 2).toUpperCase()
+                          )}
+                        </div>
+                        <div>
+                          <h5 className="text-sm font-bold text-gray-900 mb-0.5 group-hover:text-[#006782] transition-colors line-clamp-1">{org.brandName}</h5>
+                          <div className="flex items-center gap-1 text-xs text-gray-500 font-medium">
+                            Organizer Profile
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                    
+                    {/* Event Results */}
+                    {liveResults.length > 0 && organizerResults.length > 0 && (
+                      <div className="w-full h-px bg-gray-100 my-2" />
+                    )}
+                    
                     {liveResults.map((event) => (
                       <li 
                         key={event._id} 

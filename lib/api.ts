@@ -222,6 +222,9 @@ export const attendeeApi = {
 
 // ── Organizer ────────────────────────────────────────────────────────────────
 export const organizerApi = {
+  searchOrganizers: (q: string) =>
+    api.get("/api/organizer/public-search", { params: { q } }),
+
   getPublicProfile: (organizerId: string) =>
     api.get(`/api/organizer/public/${organizerId}`),
 

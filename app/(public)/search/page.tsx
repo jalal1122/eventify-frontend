@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { eventsApi } from "@/lib/api";
+import { useSearchParams, useRouter } from "next/navigation";
+import { eventsApi, organizerApi } from "@/lib/api";
 import { Event } from "@/types/event";
 import { EventCard } from "@/components/events/EventCard";
 import { Search, Loader2, X, Plus, LayoutGrid, List, ChevronDown, Home, MapPin, Calendar, Flame } from "lucide-react";
@@ -32,10 +32,12 @@ function getStartAndEndDate(tab: string) {
 
 function SearchContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const query = searchParams.get("q") || "";
   const locationType = searchParams.get("locationType") || "";
 
   const [events, setEvents] = useState<Event[]>([]);
+  const [organizers, setOrganizers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -50,15 +52,26 @@ function SearchContent() {
       setError(null);
       try {
         const { startDate, endDate } = getStartAndEndDate(activeDateTab);
-        const response = await eventsApi.discover({ 
-          search: query, 
-          ...(locationType && { locationType }),
-          ...(startDate && { startDate }),
-          ...(endDate && { endDate }),
-          sort
-        } as any);
-        if (response.data.success) {
-          setEvents(response.data.events);
+        const [eventsRes, orgsRes] = await Promise.all([
+          eventsApi.discover({ 
+            search: query, 
+            ...(locationType && { locationType }),
+            ...(startDate && { startDate }),
+            ...(endDate && { endDate }),
+            sort
+          } as any),
+          query ? organizerApi.searchOrganizers(query) : Promise.resolve({ data: { profiles: [] } })
+        ]);
+
+        if (eventsRes.data.success) {
+          setEvents(eventsRes.data.events);
+        } else {
+          setError("Failed to fetch events.");
+        }
+        
+        if (orgsRes.data.success) {
+          setOrganizers(orgsRes.data.profiles);
+        }
         } else {
           setError("Failed to fetch events.");
         }
@@ -182,6 +195,34 @@ function SearchContent() {
             </div>
           </div>
         </div>
+
+        {/* Organizers Results (if any) */}
+        {!loading && !error && organizers.length > 0 && (
+          <div className="mb-10">
+            <h3 className="text-xl font-bold text-gray-900 mb-4 tracking-tight">Organizers matching "{query}"</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {organizers.map(org => (
+                <div 
+                  key={org._id} 
+                  onClick={() => router.push(`/organizers/${org._id}`)}
+                  className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:border-[#006782] hover:shadow-md transition-all group"
+                >
+                  <div className="w-14 h-14 rounded-full bg-blue-50 shrink-0 overflow-hidden flex items-center justify-center text-blue-600 font-bold text-lg">
+                    {org.logoUrl ? (
+                      <img src={org.logoUrl} alt={org.brandName} className="w-full h-full object-cover" />
+                    ) : (
+                      org.brandName.substring(0, 2).toUpperCase()
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-gray-900 truncate group-hover:text-[#006782] transition-colors">{org.brandName}</h4>
+                    <p className="text-sm text-gray-500 truncate">Organizer Profile</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Results Grid / List */}
         {loading ? (
