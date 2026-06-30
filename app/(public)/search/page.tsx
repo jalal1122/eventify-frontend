@@ -27,6 +27,11 @@ function getStartAndEndDate(tab: string) {
     const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToSat + 1, 23, 59, 59, 999);
     return { startDate: start.toISOString(), endDate: end.toISOString() };
   }
+  if (tab === "This Month") {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    return { startDate: start.toISOString(), endDate: end.toISOString() };
+  }
   return {};
 }
 
@@ -35,20 +40,34 @@ function SearchContent() {
   const router = useRouter();
   const query = searchParams.get("q") || "";
   const locationType = searchParams.get("locationType") || "";
+  
+  // Map modal date values to tab names
+  const paramDate = searchParams.get("date");
+  const initialDateTab = paramDate === "today" ? "Today" 
+    : paramDate === "tomorrow" ? "Tomorrow" 
+    : paramDate === "weekend" ? "This Weekend"
+    : paramDate === "month" ? "This Month"
+    : "All";
 
   const [events, setEvents] = useState<Event[]>([]);
   const [organizers, setOrganizers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const [activeDateTab, setActiveDateTab] = useState("All");
+  const [activeDateTab, setActiveDateTab] = useState(initialDateTab);
   const [sort, setSort] = useState<"relevance" | "soonest" | "trending">("relevance");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const limit = 24;
 
   useEffect(() => {
     const fetchResults = async () => {
       setLoading(true);
+      setPage(1);
       setError(null);
       try {
         const { startDate, endDate } = getStartAndEndDate(activeDateTab);
@@ -58,13 +77,16 @@ function SearchContent() {
             ...(locationType && { locationType }),
             ...(startDate && { startDate }),
             ...(endDate && { endDate }),
-            sort
+            sort,
+            limit,
+            page: 1
           } as any),
           query ? organizerApi.searchOrganizers(query) : Promise.resolve({ data: { profiles: [] } })
         ]);
 
         if (eventsRes.data.success) {
           setEvents(eventsRes.data.events);
+          setHasMore(eventsRes.data.events.length === limit);
         } else {
           setError("Failed to fetch events.");
         }
@@ -82,7 +104,35 @@ function SearchContent() {
     fetchResults();
   }, [query, locationType, activeDateTab, sort]);
 
-  const dateTabs = ["All", "Today", "Tomorrow", "This Weekend"];
+  const loadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const { startDate, endDate } = getStartAndEndDate(activeDateTab);
+      const response = await eventsApi.discover({ 
+        search: query, 
+        ...(locationType && { locationType }),
+        ...(startDate && { startDate }),
+        ...(endDate && { endDate }),
+        sort,
+        limit,
+        page: nextPage
+      } as any);
+      
+      if (response.data.success) {
+        setEvents(prev => [...prev, ...response.data.events]);
+        setHasMore(response.data.events.length === limit);
+        setPage(nextPage);
+      }
+    } catch (err) {
+      console.error("Failed to load more events", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const dateTabs = ["All", "Today", "Tomorrow", "This Weekend", "This Month"];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -124,12 +174,12 @@ function SearchContent() {
             <span className="text-gray-500 font-medium">Events Found</span>
           </div>
 
-          <div className="flex items-center gap-1 bg-gray-50/50 p-1 rounded-xl">
+          <div className="flex items-center gap-1 bg-gray-50/50 p-1 rounded-xl overflow-x-auto scrollbar-hide max-w-full">
             {dateTabs.map(tab => (
               <button 
                 key={tab}
                 onClick={() => setActiveDateTab(tab)}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${
                   activeDateTab === tab 
                   ? "bg-white text-[#006782] shadow-sm" 
                   : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
@@ -240,11 +290,24 @@ function SearchContent() {
                 <EventCard key={event._id} event={event} />
               ))}
             </div>
-            <div className="flex justify-center">
-              <Button className="bg-[#006782] hover:bg-[#004E63] text-white px-8 h-12 rounded-full font-bold">
-                Load More Events
-              </Button>
-            </div>
+            {hasMore && (
+              <div className="flex justify-center mt-8">
+                <Button 
+                  onClick={loadMore} 
+                  disabled={loadingMore}
+                  className="bg-[#006782] hover:bg-[#004E63] text-white px-8 h-12 rounded-full font-bold shadow-md"
+                >
+                  {loadingMore ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    "Load More Events"
+                  )}
+                </Button>
+              </div>
+            )}
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-32 text-center bg-white rounded-3xl border border-gray-100 shadow-sm">
