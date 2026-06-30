@@ -247,17 +247,7 @@ export default function EventDetailPage() {
                       <p className="text-gray-600 text-sm">{event.venueName}</p>
                       <p className="text-gray-500 text-xs mt-1">{event.city}</p>
                       
-                      {/* Map Preview */}
-                      <div className="mt-4 w-full h-40 rounded-xl overflow-hidden border border-gray-100">
-                        <iframe
-                          width="100%"
-                          height="100%"
-                          style={{ border: 0 }}
-                          loading="lazy"
-                          allowFullScreen
-                          src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "YOUR_API_KEY_HERE"}&q=${encodeURIComponent(event.venueName ? `${event.venueName}, ${event.city}` : event.city)}`}
-                        ></iframe>
-                      </div>
+
                     </>
                   )}
                 </div>
@@ -339,6 +329,27 @@ export default function EventDetailPage() {
                     <a href="#" className="text-xs text-gray-400 hover:text-gray-600 underline underline-offset-2">Report or Claim Event</a>
                   </div>
                 </div>
+
+                {/* Event Location Map - Right Sidebar */}
+                {event.locationType !== "ONLINE" && (
+                  <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-sm mt-6">
+                    <h3 className="font-bold text-gray-900 mb-4">Event Location</h3>
+                    <div className="w-full h-[250px] rounded-xl overflow-hidden border border-slate-200 relative bg-slate-50">
+                       <iframe 
+                         title="Location Map"
+                         width="100%" 
+                         height="100%" 
+                         frameBorder="0" 
+                         scrolling="no" 
+                         src={`https://maps.google.com/maps?q=${encodeURIComponent(event.venueName ? `${event.venueName}, ${event.city}` : event.city)}&t=&z=15&ie=UTF8&iwloc=&output=embed`} 
+                         className="absolute inset-0"
+                       />
+                       <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded text-[10px] text-gray-500 shadow-sm opacity-70 pointer-events-none">
+                         Map Preview
+                       </div>
+                    </div>
+                  </div>
+                )}
 
               </div>
             </div>

@@ -242,7 +242,11 @@ function ProfileContent() {
                 <TabsContent value="attended" className="mt-0 outline-none">
                   {tickets.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                      {tickets.map((registration: any) => (
+                      {tickets
+                        .filter((ticket: any, index: number, self: any[]) => 
+                          index === self.findIndex((t: any) => (t.eventId?._id || t.eventId) === (ticket.eventId?._id || ticket.eventId))
+                        )
+                        .map((registration: any) => (
                         <EventCard key={registration._id} event={registration.eventId} attended={true} href={`/tickets/${registration.ticketCode || registration._id}`} />
                       ))}
                     </div>
