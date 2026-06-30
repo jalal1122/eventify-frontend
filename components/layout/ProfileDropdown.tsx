@@ -40,91 +40,112 @@ export default function ProfileDropdown() {
             </div>
           </div>
 
-          <div className="py-1 mt-1 border-b border-gray-100">
-            <DropdownMenu.Item asChild>
-              <Link
-                href="/profile"
-                className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
-                onClick={() => setOpen(false)}
-              >
-                <User size={16} className="text-gray-400" />
-                Main Profile
-              </Link>
-            </DropdownMenu.Item>
-            <DropdownMenu.Item asChild>
-              <Link
-                href="/profile/mytickets"
-                className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
-                onClick={() => setOpen(false)}
-              >
-                <Ticket size={16} className="text-gray-400" />
-                My tickets
-              </Link>
-            </DropdownMenu.Item>
-            <DropdownMenu.Item asChild>
-              <Link
-                href="/profile?tab=interested"
-                className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
-                onClick={() => setOpen(false)}
-              >
-                <Star size={16} className="text-gray-400" />
-                Interested Events
-              </Link>
-            </DropdownMenu.Item>
-            {user.role === "attendee" && (
+          {user.role === "admin" ? (
+            <div className="py-1 mt-1">
               <DropdownMenu.Item asChild>
                 <Link
-                  href="/events/create"
-                  className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
-                  onClick={() => setOpen(false)}
-                >
-                  <Plus size={16} className="text-gray-400" />
-                  Create An Event
-                </Link>
-              </DropdownMenu.Item>
-            )}
-          </div>
-
-          {user.role !== "attendee" && (
-            <div className="py-1 border-b border-gray-100">
-              <div className="px-3 py-2 text-xs font-semibold text-gray-400 tracking-wider">
-                ORGANIZER CONTROL
-              </div>
-              <DropdownMenu.Item asChild>
-                <Link
-                  href="/events/create"
-                  className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
-                  onClick={() => setOpen(false)}
-                >
-                  <Plus size={16} className="text-gray-400" />
-                  Create An Event
-                </Link>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item asChild>
-                <Link
-                  href="/dashboard"
+                  href="/admin"
                   className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
                   onClick={() => setOpen(false)}
                 >
                   <LayoutGrid size={16} className="text-gray-400" />
-                  Organizer Dashboard
+                  Admin Dashboard
                 </Link>
               </DropdownMenu.Item>
             </div>
+          ) : (
+            <>
+              <div className="py-1 mt-1 border-b border-gray-100">
+                <DropdownMenu.Item asChild>
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
+                    onClick={() => setOpen(false)}
+                  >
+                    <User size={16} className="text-gray-400" />
+                    Main Profile
+                  </Link>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item asChild>
+                  <Link
+                    href="/profile/mytickets"
+                    className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
+                    onClick={() => setOpen(false)}
+                  >
+                    <Ticket size={16} className="text-gray-400" />
+                    My tickets
+                  </Link>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item asChild>
+                  <Link
+                    href="/profile?tab=interested"
+                    className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
+                    onClick={() => setOpen(false)}
+                  >
+                    <Star size={16} className="text-gray-400" />
+                    Interested Events
+                  </Link>
+                </DropdownMenu.Item>
+                {user.role === "attendee" && (
+                  <DropdownMenu.Item asChild>
+                    <Link
+                      href="/events/create"
+                      className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      <Plus size={16} className="text-gray-400" />
+                      Create An Event
+                    </Link>
+                  </DropdownMenu.Item>
+                )}
+              </div>
+
+              {user.role !== "attendee" && (
+                <div className="py-1 border-b border-gray-100">
+                  <div className="px-3 py-2 text-xs font-semibold text-gray-400 tracking-wider">
+                    ORGANIZER CONTROL
+                  </div>
+                  <DropdownMenu.Item asChild>
+                    <Link
+                      href="/events/create"
+                      className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      <Plus size={16} className="text-gray-400" />
+                      Create An Event
+                    </Link>
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item asChild>
+                    <Link
+                      href="/dashboard"
+                      className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      <LayoutGrid size={16} className="text-gray-400" />
+                      Organizer Dashboard
+                    </Link>
+                  </DropdownMenu.Item>
+                </div>
+              )}
+
+              {/* Settings Section */}
+              <div className="py-1">
+                <DropdownMenu.Item asChild>
+                  <Link
+                    href="/settings"
+                    className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
+                    onClick={() => setOpen(false)}
+                  >
+                    <Settings size={16} className="text-gray-400" />
+                    Account Settings
+                  </Link>
+                </DropdownMenu.Item>
+              </div>
+            </>
           )}
 
-          {/* Settings & Logout Section */}
-          <div className="py-1">
-            <DropdownMenu.Item asChild>
-              <Link
-                href="/settings"
-                className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer outline-none transition-colors"
-                onClick={() => setOpen(false)}
-              >
-                <Settings size={16} className="text-gray-400" />
-                Account Settings
-              </Link>
-            </DropdownMenu.Item>
+          {/* Logout Section */}
+          <div className="py-1 border-t border-gray-100">
             <DropdownMenu.Item asChild>
               <button
                 className="flex items-center gap-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer outline-none transition-colors w-full text-left"
