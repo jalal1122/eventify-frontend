@@ -181,7 +181,7 @@ export default function EventDetailPage() {
                 </h1>
                 
                 <div className="flex items-center gap-4 mt-2">
-                  <Link href={`/organizers/${(event.organizerProfileId as any)?._id || ''}`} className="flex items-center gap-3 p-1.5 pr-4 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                  <Link href={`/organizers/${(event.organizerProfileId as any)?._id || (typeof event.organizerProfileId === 'string' ? event.organizerProfileId : '')}`} className="flex items-center gap-3 p-1.5 pr-4 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                     <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
                       {(event.organizerProfileId as any)?.logoUrl ? (
                          <img src={(event.organizerProfileId as any).logoUrl} alt="Organizer" className="w-full h-full object-cover" />
@@ -192,7 +192,7 @@ export default function EventDetailPage() {
                     <div className="flex flex-col">
                       <span className="text-xs text-gray-500 font-medium">Organized by</span>
                       <span className="text-sm font-bold text-gray-900 leading-tight">
-                        {(event.organizerProfileId as any)?.brandName || "Unknown Organizer"}
+                        {((event.organizerProfileId || (event as any).organizerProfile || (event as any).organizer) as any)?.brandName || "Unknown Organizer"}
                       </span>
                     </div>
                   </Link>
@@ -307,7 +307,7 @@ export default function EventDetailPage() {
                 {/* Organizer Info Summary Card */}
                 <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-sm">
                   <h3 className="font-bold text-gray-900 mb-4">Organizer</h3>
-                  <Link href={`/organizers/${(event.organizerProfileId as any)?._id || ''}`} className="flex items-center gap-4 mb-4 hover:opacity-80 transition-opacity">
+                  <Link href={`/organizers/${(event.organizerProfileId as any)?._id || (typeof event.organizerProfileId === 'string' ? event.organizerProfileId : '')}`} className="flex items-center gap-4 mb-4 hover:opacity-80 transition-opacity">
                     <div className="w-14 h-14 rounded-2xl bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
                       {(event.organizerProfileId as any)?.logoUrl ? (
                          <img src={(event.organizerProfileId as any).logoUrl} alt="Organizer" className="w-full h-full object-cover" />
@@ -317,7 +317,7 @@ export default function EventDetailPage() {
                     </div>
                     <div>
                       <p className="font-bold text-gray-900 leading-tight mb-1">
-                        {(event.organizerProfileId as any)?.brandName || "Unknown Organizer"}
+                        {((event.organizerProfileId || (event as any).organizerProfile || (event as any).organizer) as any)?.brandName || "Unknown Organizer"}
                       </p>
                       <p className="text-xs text-gray-500 font-medium">12.5k Followers • 42 Events</p>
                     </div>

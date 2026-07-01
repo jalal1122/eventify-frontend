@@ -9,6 +9,10 @@ interface EventBannerCardProps {
 
 export function EventBannerCard({ event }: EventBannerCardProps) {
   const isFree = !event.tickets || !event.tickets.some(t => t.type === "PAID");
+  
+  const rawOrg = event.organizerProfileId || (event as any).organizerProfile || (event as any).organizer;
+  const isObj = rawOrg && typeof rawOrg === 'object';
+  const orgName = (isObj ? rawOrg.brandName : null) || "Organizer";
 
   return (
     <div className="w-full bg-white rounded-3xl border border-[#F3F4F6] shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col group">
@@ -23,7 +27,7 @@ export function EventBannerCard({ event }: EventBannerCardProps) {
         <div className="absolute top-4 left-4">
           <div className="bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-semibold px-3 py-1.5 rounded-full flex items-center shadow-sm">
             <span className="w-2 h-2 rounded-full bg-blue-600 mr-2" />
-            {(event.organizerProfileId as any)?.brandName || "Organizer"}
+            {orgName}
           </div>
         </div>
 

@@ -32,12 +32,16 @@ export function EventCard({ event, attended, href }: EventCardProps) {
     }
   }, [user, event._id]);
   
-  // If organizer is populated (it might be an object), extract its properties
-  const orgName = typeof event.organizerProfileId === 'object' ? event.organizerProfileId.brandName : "Organizer";
-  const orgLogo = typeof event.organizerProfileId === 'object' ? event.organizerProfileId.logoUrl : undefined;
+  // Safely extract organizer data
+  // The backend might return event.organizerProfileId, event.organizerProfile, or event.organizer
+  const rawOrg = event.organizerProfileId || (event as any).organizerProfile || (event as any).organizer;
+  const isObj = rawOrg && typeof rawOrg === 'object';
+  
+  const orgName = (isObj ? rawOrg.brandName : null) || "Organizer";
+  const orgLogo = isObj ? rawOrg.logoUrl : undefined;
   
   // Create a placeholder string for the avatar if logo is missing (e.g., "UA" from "UAP IT Society")
-  const orgInitials = orgName.substring(0, 3).toUpperCase();
+  const orgInitials = orgName ? orgName.substring(0, 3).toUpperCase() : "ORG";
 
   const linkHref = href || `/events/${event._id}`;
 
@@ -158,7 +162,7 @@ export function EventCard({ event, attended, href }: EventCardProps) {
               className="flex items-center gap-3 hover:opacity-80 transition-opacity"
               onClick={(e) => {
                 e.preventDefault();
-                const orgId = typeof event.organizerProfileId === 'object' ? event.organizerProfileId._id : event.organizerProfileId;
+                const orgId = isObj ? rawOrg._id : rawOrg;
                 if (orgId) router.push(`/organizers/${orgId}`);
               }}
             >
