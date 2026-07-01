@@ -38,27 +38,10 @@ export default function DashboardOverview() {
           );
           setEvents(activeEvents.slice(0, 4));
 
-          // Generate Chart Data (Revenue over the last 6 months based on event dates)
-          const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-          const dataMap = new Map();
-          const today = new Date();
-          for (let i = 5; i >= 0; i--) {
-            const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-            dataMap.set(months[d.getMonth()], 0);
+          // Consume real chart data from the backend
+          if (metricsRes.data.success && metricsRes.data.metrics.chartData) {
+            setChartData(metricsRes.data.metrics.chartData);
           }
-          
-          allEvents.forEach(event => {
-            const d = new Date(event.dateTime);
-            const monthStr = months[d.getMonth()];
-            if (dataMap.has(monthStr)) {
-              // Estimate revenue (if ticketPrice and ticketsSold are populated)
-              // We'll add a default fallback so the chart isn't completely flat if data is missing
-              const revenue = (event.ticketsSold || Math.floor(Math.random() * 50)) * (event.ticketPrice || Math.floor(Math.random() * 100 + 50));
-              dataMap.set(monthStr, dataMap.get(monthStr) + revenue);
-            }
-          });
-          
-          setChartData(Array.from(dataMap.entries()).map(([name, revenue]) => ({ name, revenue })));
         }
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);
@@ -80,12 +63,12 @@ export default function DashboardOverview() {
     );
   }
 
-  // Use the fetched metrics
+  // Use the fetched metrics with actual growth rates
   const metrics = [
-    { label: "Total Events", value: metricsData.totalEvents, increase: "+0%", icon: Calendar, color: "text-green-600", bg: "bg-green-50" },
-    { label: "Registrations", value: metricsData.totalRegistrations, increase: "+0%", icon: Ticket, color: "text-blue-600", bg: "bg-blue-50" },
-    { label: "Total Views", value: metricsData.totalViews, increase: "+0%", icon: Eye, color: "text-purple-600", bg: "bg-purple-50" },
-    { label: "Interested", value: metricsData.totalInterested, increase: "+0%", icon: Users, color: "text-orange-600", bg: "bg-orange-50" },
+    { label: "Total Events", value: metricsData.totalEvents, increase: `${Number(metricsData.eventsGrowth) >= 0 ? "+" : ""}${metricsData.eventsGrowth}%`, icon: Calendar, color: "text-green-600", bg: "bg-green-50" },
+    { label: "Registrations", value: metricsData.totalRegistrations, increase: `${Number(metricsData.regsGrowth) >= 0 ? "+" : ""}${metricsData.regsGrowth}%`, icon: Ticket, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: "Total Views", value: metricsData.totalViews, increase: `${Number(metricsData.viewsGrowth) >= 0 ? "+" : ""}${metricsData.viewsGrowth}%`, icon: Eye, color: "text-purple-600", bg: "bg-purple-50" },
+    { label: "Interested", value: metricsData.totalInterested, increase: `${Number(metricsData.interestedGrowth) >= 0 ? "+" : ""}${metricsData.interestedGrowth}%`, icon: Users, color: "text-orange-600", bg: "bg-orange-50" },
   ];
 
   return (

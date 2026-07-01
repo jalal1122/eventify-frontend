@@ -236,7 +236,20 @@ export const organizerApi = {
     api.get(`/api/organizer/public/${organizerId}`),
 
   getDashboardMetrics: (profileId?: string | "all") => 
-    api.get("/api/organizer/dashboard/metrics", { params: { profileId } }),
+    api.get<{
+      success: boolean;
+      metrics: {
+        totalEvents: number;
+        eventsGrowth: string;
+        totalViews: number;
+        viewsGrowth: string;
+        totalInterested: number;
+        interestedGrowth: string;
+        totalRegistrations: number;
+        regsGrowth: string;
+        chartData: { name: string; revenue: number }[];
+      };
+    }>("/api/organizer/dashboard/metrics", { params: { profileId } }),
 
   getMyEvents: (profileId?: string | "all") => 
     api.get("/api/organizer/events", { params: { profileId } }),
