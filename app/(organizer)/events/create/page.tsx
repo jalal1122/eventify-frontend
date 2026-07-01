@@ -170,7 +170,7 @@ function CreateEventForm() {
         cardImageUrl: uploadedCardImageUrl,
         category: data.categoryId,
         locationType: data.locationType,
-        venueName: data.venueName,
+        venueName: data.address ? `${data.venueName} - ${data.address}` : data.venueName,
         city: data.city,
         platform: data.platform,
         virtualLink: data.virtualLink,
