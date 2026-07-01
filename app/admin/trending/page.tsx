@@ -118,11 +118,11 @@ export default function TrendingManagement() {
             Homepage Hero Carousel
           </h3>
           <p className="text-sm text-gray-500">
-            Pin up to 3 events to force them into the primary hero rotation.
+            Pin up to 10 events to force them into the primary hero rotation.
           </p>
         </div>
-        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {Array.from({ length: 3 }).map((_, index) => {
+        <div className="p-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          {Array.from({ length: 10 }).map((_, index) => {
             const event = pinnedEvents[index];
 
             if (event) {
@@ -298,7 +298,7 @@ export default function TrendingManagement() {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                           onClick={() => handlePin(item.eventId)}
-                          disabled={pinnedEvents.length >= 3}
+                          disabled={pinnedEvents.length >= 10}
                           className="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 gap-1.5 disabled:opacity-50"
                         >
                           <Pin className="h-4 w-4 text-gray-400" /> Pin

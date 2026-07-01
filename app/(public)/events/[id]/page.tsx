@@ -165,13 +165,13 @@ export default function EventDetailPage() {
               <div className="flex flex-col gap-4">
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="px-4 py-1.5 bg-blue-50 text-blue-700 font-bold text-sm rounded-full border border-blue-100 shadow-sm">
-                    1.2k Views
+                    {Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(event.viewsCount || 0)} Views
                   </span>
                   <span className="px-4 py-1.5 bg-yellow-50 text-yellow-800 font-bold text-sm rounded-full border border-yellow-100 shadow-sm">
-                    27+ interested
+                    {event.interestedCount || 0} interested
                   </span>
                   <span className="px-4 py-1.5 bg-[#006782]/10 text-[#006782] font-black tracking-wide text-sm rounded-full border border-[#006782]/20 shadow-sm uppercase">
-                    UPCOMING
+                    {new Date(event.dateTime) > new Date() ? "UPCOMING" : "COMPLETED"}
                   </span>
                 </div>
                 <h1 className="text-4xl md:text-5xl font-black text-[#0F172A] leading-[1.1]">
