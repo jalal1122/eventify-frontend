@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { EventBannerCard } from "@/components/events/EventBannerCard";
 import { type Event } from "@/types/event";
@@ -9,16 +9,57 @@ import { EventBannerCardSkeleton } from "@/components/ui/skeletons";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useEvents } from "@/hooks/useEvents";
 import Link from "next/link";
+import { eventsApi } from "@/lib/api";
+
 export default function DiscoverPage() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [visibleEvents, setVisibleEvents] = useState(5);
-  const { events, loading, error } = useEvents();
+  const [categories, setCategories] = useState<string[]>([]);
+  const [formats, setFormats] = useState<string[]>([]);
+  // Default to trending so pinned events show up on top
+  const { events, loading, error, updateFilters, filters } = useEvents({ sort: "trending" });
 
   // Helper to change filter and reset visible events
   const handleFilterChange = (filter: string) => {
     setActiveFilter(filter);
     setVisibleEvents(5);
+    
+    const now = new Date();
+    let startDate: string | undefined = undefined;
+    let endDate: string | undefined = undefined;
+
+    if (filter === "today") {
+      startDate = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+      endDate = new Date(now.setHours(23, 59, 59, 999)).toISOString();
+    } else if (filter === "this-week") {
+      const currentDay = now.getDay();
+      const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+      const firstDay = new Date(now.setDate(now.getDate() + distanceToMonday));
+      const lastDay = new Date(firstDay);
+      lastDay.setDate(lastDay.getDate() + 6);
+      startDate = new Date(firstDay.setHours(0, 0, 0, 0)).toISOString();
+      endDate = new Date(lastDay.setHours(23, 59, 59, 999)).toISOString();
+    } else if (filter === "next-week") {
+      const currentDay = now.getDay();
+      const distanceToNextMonday = currentDay === 0 ? 1 : 8 - currentDay;
+      const firstDay = new Date(now.setDate(now.getDate() + distanceToNextMonday));
+      const lastDay = new Date(firstDay);
+      lastDay.setDate(lastDay.getDate() + 6);
+      startDate = new Date(firstDay.setHours(0, 0, 0, 0)).toISOString();
+      endDate = new Date(lastDay.setHours(23, 59, 59, 999)).toISOString();
+    }
+
+    updateFilters({ startDate, endDate });
   };
+
+  useEffect(() => {
+    eventsApi.getCategories().then((res) => {
+      if (res.data.success) {
+        setCategories(res.data.categories || []);
+        setFormats(res.data.formats || []);
+      }
+    }).catch(console.error);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -76,12 +117,35 @@ export default function DiscoverPage() {
 
             <div className="h-6 w-[1px] bg-gray-200 mx-2 hidden md:block" />
 
-            <button className="px-5 h-10 rounded-full border border-[#D1D5DB] text-gray-700 text-sm font-semibold flex items-center gap-2 hover:bg-gray-50 transition-colors ml-auto md:ml-0">
-              Select Category <ChevronDown size={16} className="text-gray-400" />
-            </button>
-            <button className="px-5 h-10 rounded-full border border-[#D1D5DB] text-gray-700 text-sm font-semibold flex items-center gap-2 hover:bg-gray-50 transition-colors">
-              Format <ChevronDown size={16} className="text-gray-400" />
-            </button>
+            <div className="relative ml-auto md:ml-0">
+              <select 
+                value={filters.category || "All"}
+                onChange={(e) => updateFilters({ category: e.target.value })}
+                className="appearance-none px-5 h-10 rounded-full border border-[#D1D5DB] text-gray-700 text-sm font-semibold flex items-center bg-transparent gap-2 hover:bg-gray-50 transition-colors pr-10 outline-none focus:border-[#006782] focus:ring-1 focus:ring-[#006782]"
+              >
+                <option value="All">All Categories</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="text-gray-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+
+            <div className="relative">
+              <select 
+                value={filters.locationType || "All"}
+                onChange={(e) => updateFilters({ locationType: e.target.value })}
+                className="appearance-none px-5 h-10 rounded-full border border-[#D1D5DB] text-gray-700 text-sm font-semibold flex items-center bg-transparent gap-2 hover:bg-gray-50 transition-colors pr-10 outline-none focus:border-[#006782] focus:ring-1 focus:ring-[#006782]"
+              >
+                <option value="All">All Formats</option>
+                {formats.map((f) => (
+                  <option key={f} value={f}>
+                    {f === "VENUE" ? "In Person" : f === "ONLINE" ? "Virtual" : f}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="text-gray-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
           </div>
         </div>
 

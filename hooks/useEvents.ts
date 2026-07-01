@@ -11,6 +11,7 @@ export interface DiscoverFilters {
   sort?: "soonest" | "trending";
   startDate?: string;
   endDate?: string;
+  locationType?: string;
 }
 
 export function useEvents(initialFilters: DiscoverFilters = {}) {
@@ -30,6 +31,7 @@ export function useEvents(initialFilters: DiscoverFilters = {}) {
         sort: currentFilters.sort,
         startDate: currentFilters.startDate,
         endDate: currentFilters.endDate,
+        locationType: currentFilters.locationType && currentFilters.locationType !== "All" ? currentFilters.locationType : undefined,
         limit: 20, // Example fixed limit
       });
       setEvents(res.data.events);
