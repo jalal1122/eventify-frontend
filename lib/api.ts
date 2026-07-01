@@ -220,8 +220,11 @@ export const attendeeApi = {
 
   upgradeToOrganizer: () => api.post("/api/attendee/upgrade"),
 
-  submitClaim: (eventId: string, reason: string, description: string) =>
-    api.post("/api/attendee/claims", { eventId, reason, description }),
+  submitReport: (eventId: string, reason: string, description: string) =>
+    api.post("/api/attendee/reports", { eventId, reason, description }),
+
+  submitClaim: (eventId: string, proofScreenshotUrl: string) =>
+    api.post("/api/attendee/claims", { eventId, proofScreenshotUrl }),
 };
 
 // ── Organizer ────────────────────────────────────────────────────────────────

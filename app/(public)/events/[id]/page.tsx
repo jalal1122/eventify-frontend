@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import { ShareEventModal } from "@/components/ShareEventModal";
 import { GuestRegistrationModal } from "@/components/GuestRegistrationModal";
+import { ReportClaimModal } from "@/components/events/ReportClaimModal";
 
 export default function EventDetailPage() {
   const params = useParams();
@@ -26,6 +27,7 @@ export default function EventDetailPage() {
   const [isInterested, setIsInterested] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
+  const [isReportClaimOpen, setIsReportClaimOpen] = useState(false);
   
   const currentUserId = user?._id || (user as any)?.id;
   const isOrganizer = !!currentUserId && (
@@ -246,8 +248,6 @@ export default function EventDetailPage() {
                     <>
                       <p className="text-gray-600 text-sm">{event.venueName}</p>
                       <p className="text-gray-500 text-xs mt-1">{event.city}</p>
-                      
-
                     </>
                   )}
                 </div>
@@ -326,7 +326,15 @@ export default function EventDetailPage() {
                     Follow
                   </Button>
                   <div className="mt-4 text-center">
-                    <a href="#" className="text-xs text-gray-400 hover:text-gray-600 underline underline-offset-2">Report or Claim Event</a>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsReportClaimOpen(true);
+                      }}
+                      className="text-xs text-gray-400 hover:text-gray-600 underline underline-offset-2 bg-transparent border-none p-0 cursor-pointer"
+                    >
+                      Report or Claim Event
+                    </button>
                   </div>
                 </div>
 
@@ -367,6 +375,11 @@ export default function EventDetailPage() {
       <GuestRegistrationModal
         isOpen={isGuestModalOpen}
         onClose={() => setIsGuestModalOpen(false)}
+        eventId={eventId}
+      />
+      <ReportClaimModal
+        isOpen={isReportClaimOpen}
+        onClose={() => setIsReportClaimOpen(false)}
         eventId={eventId}
       />
     </div>
