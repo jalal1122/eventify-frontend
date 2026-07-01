@@ -123,6 +123,7 @@ export const eventsApi = {
     page?: number;
     startDate?: string;
     endDate?: string;
+    locationType?: string;
   }) => {
     const finalParams = { ...params };
     if (finalParams.search) {
