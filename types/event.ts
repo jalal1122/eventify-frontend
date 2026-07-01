@@ -75,6 +75,8 @@ export interface Event {
   createdAt: string;
   updatedAt: string;
   pendingApprovalsCount?: number;
+  ticketsSold?: number;
+  ticketPrice?: number;
 }
 
 export interface EventsResponse {

@@ -18,6 +18,7 @@ export interface User {
   city: string;
   profilePicture?: string;
   bio?: string;
+  phoneNumber?: string;
   socialLinks?: SocialLinks;
   interestedEvents: string[];
   followedOrganizers: string[];
